@@ -1,0 +1,7 @@
+# Environment + heavy/generated artifacts — never commit these.
+.venv/
+.cache/
+output/
+chips/
+*.pt
+__pycache__/

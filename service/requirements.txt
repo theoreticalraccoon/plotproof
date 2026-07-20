@@ -1,0 +1,11 @@
+# Sentinel-2 access service — Step 1 (imagery + SCL masking + cached time series).
+# Targets Python 3.13 (3.12 was requested but not installed; 3.13 is present and
+# has mature geospatial wheels — well clear of 3.14, which lacks them). No system
+# GDAL is needed: rasterio ships GDAL inside its binary wheel.
+pystac-client>=0.8        # STAC search (pure Python)
+planetary-computer>=1.0   # signs Microsoft Planetary Computer asset URLs (pure Python)
+rasterio>=1.4             # windowed COG reads; bundles GDAL in the wheel
+numpy>=2.1                # arrays
+shapely>=2.0             # plot polygon / bbox geometry
+pyproj>=3.6              # CRS transforms (WGS84 <-> scene UTM, equal-area for hectares)
+matplotlib>=3.8          # renders the time-series contact sheet + NDVI trace

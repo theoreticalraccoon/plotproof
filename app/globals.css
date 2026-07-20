@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Global base. Keep minimal — component styling lives with components. */
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
