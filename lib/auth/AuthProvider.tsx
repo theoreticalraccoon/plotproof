@@ -14,7 +14,15 @@ import { clearLocalState, syncOnLogin } from "@/lib/supabase/userState";
 interface AuthResult {
   error?: string;
   needsConfirmation?: boolean;
+  /** Sign-up found an existing account and signed the user straight in. */
+  signedInExisting?: boolean;
 }
+
+/**
+ * Sign-up hit an existing account and the password did not match it, so we
+ * could not sign them in. The caller should switch to the sign-in form.
+ */
+export const ACCOUNT_EXISTS = "account_exists";
 
 interface AuthContextValue {
   configured: boolean;
@@ -89,6 +97,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
     });
+
+    // Someone signing up with an address they already registered is a person
+    // who forgot, not an error to scold them for. Supabase reports this two
+    // different ways depending on the project's email-confirmation setting:
+    // confirmations off gives an explicit error, confirmations on deliberately
+    // obfuscates it as a success carrying a user with no identities. Treat both
+    // as "this account exists" and just log them in.
+    const explicit = error ? /already\s*(been\s*)?registered|already exists/i.test(error.message) : false;
+    const obfuscated = !error && !data.session && (data.user?.identities?.length ?? 1) === 0;
+
+    if (explicit || obfuscated) {
+      const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
+      // Signed in on the existing account. The password had to match for this
+      // to succeed, so nothing is bypassed.
+      if (!signInError) return { signedInExisting: true };
+      return { error: ACCOUNT_EXISTS };
+    }
+
     if (error) return { error: error.message };
     // No session back = the project requires email confirmation first.
     return { needsConfirmation: !data.session };

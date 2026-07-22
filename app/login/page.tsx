@@ -11,9 +11,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Leaf, Mail, Lock, ArrowRight } from "lucide-react";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { ACCOUNT_EXISTS, useAuth } from "@/lib/auth/AuthProvider";
 import { t, useLang } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useToast } from "@/components/shell/Toast";
 
 type Mode = "signin" | "signup" | "magic";
 
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const lang = useLang();
   const router = useRouter();
   const { configured, user, loading, signIn, signUp, magicLink } = useAuth();
+  const { toast } = useToast();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,9 +57,20 @@ export default function LoginPage() {
         setMsg(r.error ? { ok: false, text: t(lang, "auth_error") } : { ok: true, text: t(lang, "auth_magic_sent") });
       } else if (mode === "signup") {
         const r = await signUp(email, password);
-        if (r.error) setMsg({ ok: false, text: t(lang, "auth_error") });
+        if (r.error === ACCOUNT_EXISTS) {
+          // The address is taken but this password is not the one on it. Move
+          // them to sign-in with their email kept, rather than a dead end.
+          setMode("signin");
+          setPassword("");
+          setMsg({ ok: false, text: t(lang, "auth_exists_wrong_password") });
+        } else if (r.error) setMsg({ ok: false, text: t(lang, "auth_error") });
         else if (r.needsConfirmation) setMsg({ ok: true, text: t(lang, "auth_check_email") });
-        else router.replace(destination());
+        else {
+          // Tell them what happened, otherwise being sent straight in after
+          // pressing "Create account" looks like it made a duplicate.
+          if (r.signedInExisting) toast(t(lang, "auth_existing_signed_in"), "success");
+          router.replace(destination());
+        }
       } else {
         const r = await signIn(email, password);
         if (r.error) setMsg({ ok: false, text: t(lang, "auth_error") });
@@ -70,6 +83,13 @@ export default function LoginPage() {
 
   const cta =
     mode === "magic" ? "auth_magic_cta" : mode === "signup" ? "auth_signup_cta" : "auth_signin_cta";
+
+  const heading =
+    mode === "signup"
+      ? { title: "auth_title_signup", subtitle: "auth_subtitle_signup" } as const
+      : mode === "magic"
+        ? { title: "auth_title_magic", subtitle: "auth_subtitle_magic" } as const
+        : { title: "auth_title", subtitle: "auth_subtitle" } as const;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-6 py-10">
@@ -89,8 +109,17 @@ export default function LoginPage() {
           <LanguageSwitcher />
         </div>
 
-        <h1 className="font-display text-2xl sm:text-[1.7rem]">{t(lang, "auth_title")}</h1>
-        <p className="mt-2 text-sm muted">{t(lang, "auth_subtitle")}</p>
+        {/* The heading names the task, so it is never ambiguous whether this
+            form is about to create an account or open an existing one. */}
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <h1 className="font-display text-2xl sm:text-[1.7rem]">{t(lang, heading.title)}</h1>
+          <p className="mt-2 text-sm muted">{t(lang, heading.subtitle)}</p>
+        </motion.div>
 
         {!configured ? (
           <div className="mt-5 rounded-xl p-3 text-sm" style={{ background: "var(--warn-soft)", color: "var(--warn)" }}>
@@ -161,7 +190,10 @@ export default function LoginPage() {
               {mode !== "magic" && (
                 <button
                   type="button"
-                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                  onClick={() => {
+                    setMode(mode === "signin" ? "signup" : "signin");
+                    setMsg(null);
+                  }}
                   className="faint hover:underline underline-offset-2"
                 >
                   {t(lang, mode === "signin" ? "auth_to_signup" : "auth_to_signin")}
