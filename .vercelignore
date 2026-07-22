@@ -1,0 +1,9 @@
+# Keep secrets and non-web assets out of the Vercel upload.
+# The Next.js app is all Vercel needs to build. Env comes from Vercel project
+# settings, not uploaded .env files.
+.claude
+service
+design-system
+.env
+.env.local
+.env*.local

@@ -7,7 +7,7 @@
  * `poll`. This mirrors the real service, which writes results when done.
  *
  * All dates/datetimes are ISO 8601. Satellite acquisition times are UTC
- * (see PROJECT.md "Time zones") — the caller is responsible for rendering
+ * (see PROJECT.md "Time zones"), the caller is responsible for rendering
  * them in local time and labelling the zone in the PDF.
  */
 

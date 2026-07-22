@@ -4,7 +4,7 @@
  * would fill the device (DECISIONS.md D-009).
  *
  * Downscaling + JPEG re-encode also strips EXIF (including camera GPS), which is
- * a privacy win — we attach our OWN geolocation reading as data instead of
+ * a privacy win, we attach our OWN geolocation reading as data instead of
  * trusting embedded EXIF.
  *
  * Browser-only (uses canvas / createImageBitmap).

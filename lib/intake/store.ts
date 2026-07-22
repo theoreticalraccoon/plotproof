@@ -1,6 +1,6 @@
 /**
  * Persistence operations over the local DB. Every write commits immediately
- * and enqueues an outbox item — there is no "save at end of session".
+ * and enqueues an outbox item, there is no "save at end of session".
  */
 import { db } from "./db";
 import type { ExistingPlot } from "./geometry";
@@ -96,11 +96,13 @@ export interface AttestationInput {
   confirmationMethod: ConfirmationMethod;
   photo: ProcessedImage;
   signature: ProcessedImage;
+  /** ISO UTC moment the farmer consented. See LocalAttestation.consentAt. */
+  consentAt: string;
 }
 
 /**
  * Persist an attestation with its photo and signature, flip the plot to
- * 'attested', and queue everything for sync — all in one transaction, so a
+ * 'attested', and queue everything for sync, all in one transaction, so a
  * crash can never leave a plot marked attested with a missing photo.
  */
 export async function saveAttestation(input: AttestationInput): Promise<LocalAttestation> {
@@ -120,6 +122,7 @@ export async function saveAttestation(input: AttestationInput): Promise<LocalAtt
     confirmationMethod: input.confirmationMethod,
     photoMediaId: photo.id,
     signatureMediaId: signature.id,
+    consentAt: input.consentAt,
     syncStatus: "queued",
     createdAt: now,
   };

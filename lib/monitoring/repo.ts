@@ -5,7 +5,7 @@
  * migration is signed off. Swapping it is one line in `getMonitoringRepo`.
  *
  * NOTE: in-memory state is per-process. Fine for `next dev`/`next start` and for
- * demos; on Vercel's serverless model it does not persist between invocations —
+ * demos; on Vercel's serverless model it does not persist between invocations -
  * that's exactly why the Supabase impl is the production target.
  */
 import type { Wgs84Polygon } from "@/lib/analysis";
@@ -134,7 +134,15 @@ function seedAlerts(): Alert[] {
 let _repo: MonitoringRepo | null = null;
 export function getMonitoringRepo(): MonitoringRepo {
   if (!_repo) {
-    _repo = new InMemoryMonitoringRepo({ subs: seedSubs(), alerts: seedAlerts() });
+    // Start empty so a new user sees a genuine clean slate (empty state + the
+    // "Run sweep now" action), not pre-seeded demo alerts. The seedSubs/
+    // seedAlerts fixtures below are kept for local demos/tests but no longer
+    // loaded by default.
+    _repo = new InMemoryMonitoringRepo({ subs: [], alerts: [] });
   }
   return _repo;
 }
+
+// Reference the demo fixtures so they aren't flagged unused; not loaded above.
+void seedSubs;
+void seedAlerts;

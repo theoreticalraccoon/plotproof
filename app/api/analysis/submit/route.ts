@@ -1,6 +1,6 @@
 /**
  * Submit a plot for analysis. Thin wrapper over the analysis client (stub until
- * the Python service exists). Returns a job handle immediately — analysis is a
+ * the Python service exists). Returns a job handle immediately, analysis is a
  * queued job, so the client polls.
  */
 import { NextResponse } from "next/server";

@@ -25,9 +25,20 @@ yarn-error.log*
 .env.local
 .env*.local
 
+# personal Claude Code overrides (may contain secrets, e.g. MCP server keys)
+.claude/settings.local.json
+# vendored third-party skills: install locally, don't carry them in the repo
+.claude/skills/
+
+# python caches (service/, tooling)
+__pycache__/
+*.py[cod]
+
 # typescript
 *.tsbuildinfo
 
 # supabase local
 /supabase/.branches
 /supabase/.temp
+
+.vercel

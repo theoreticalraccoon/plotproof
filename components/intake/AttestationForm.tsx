@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * Attestation — what turns a saved polygon into evidence (PROJECT.md).
+ * Attestation, what turns a saved polygon into evidence (PROJECT.md).
  * Captures automatically: officer identity + timestamp. Captures in the field:
  * a geotagged, compressed photo taken at the plot, and the farmer's confirmation
  * (signature or thumbprint) with name and ID. Persists offline with the plot.
  */
 import { useEffect, useRef, useState } from "react";
 import SignaturePad, { type SignaturePadHandle } from "./SignaturePad";
+import ActionButton from "@/components/motion/ActionButton";
 import { processPhoto, type ProcessedImage } from "@/lib/intake/image";
 import { getOfficer, setOfficer, type OfficerIdentity } from "@/lib/intake/officer";
 import { getPosition } from "@/lib/geo/locate";
@@ -41,8 +42,9 @@ export default function AttestationForm({
   const [farmerName, setFarmerName] = useState(defaultFarmerName);
   const [farmerId, setFarmerId] = useState(defaultFarmerId ?? "");
   const [method, setMethod] = useState<ConfirmationMethod>("signature");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  // Timestamped at the moment the farmer consents, not at save, so the record
+  // reflects when consent was actually given. Cleared if the box is unticked.
+  const [consentAt, setConsentAt] = useState<string | null>(null);
   const sigRef = useRef<SignaturePadHandle>(null);
 
   useEffect(() => {
@@ -63,13 +65,12 @@ export default function AttestationForm({
   const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError(null);
     const processed = await processPhoto(file);
     setPhoto(processed);
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     setPhotoUrl(URL.createObjectURL(processed.blob));
     // Capture where the officer is standing, at photo time. A denied fix is
-    // fine — the photo and attestation still stand, just without coordinates.
+    // fine, the photo and attestation still stand, just without coordinates.
     setLocNote("locating…");
     const r = await getPosition({ timeoutMs: 6000 });
     if (r.status === "ok") {
@@ -81,46 +82,43 @@ export default function AttestationForm({
     }
   };
 
+  // Throws on any validation or save failure so the Save button surfaces it as
+  // an error toast + shake; resolves on success (which closes the form).
   const submit = async () => {
-    if (!officer) return setError("Enter the officer name first.");
-    if (!photo) return setError("Take a photo standing at the plot.");
-    if (!farmerName.trim()) return setError("Enter the farmer's name.");
+    if (!officer) throw new Error("Enter the officer name first.");
+    if (!photo) throw new Error("Take a photo standing at the plot.");
+    if (!farmerName.trim()) throw new Error("Enter the farmer's name.");
+    if (!consentAt) throw new Error("Read the consent statement to the farmer and tick the box.");
     const signature = await sigRef.current?.toPng();
-    if (!signature) return setError(`Capture the farmer's ${method}.`);
+    if (!signature) throw new Error(`Capture the farmer's ${method}.`);
 
-    setBusy(true);
-    try {
-      await saveAttestation({
-        plotId,
-        officer,
-        location,
-        farmerNameSnapshot: farmerName.trim(),
-        farmerIdSnapshot: farmerId.trim() || undefined,
-        confirmationMethod: method,
-        photo,
-        signature,
-      });
-      onDone();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save attestation.");
-    } finally {
-      setBusy(false);
-    }
+    await saveAttestation({
+      plotId,
+      officer,
+      location,
+      farmerNameSnapshot: farmerName.trim(),
+      farmerIdSnapshot: farmerId.trim() || undefined,
+      confirmationMethod: method,
+      photo,
+      signature,
+      consentAt,
+    });
+    onDone();
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border-2 border-green-600 p-3">
+    <div className="glass-card flex flex-col gap-3 p-4" style={{ borderColor: "var(--accent)" }}>
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Attest this plot</h3>
-        <button onClick={onSkip} className="text-sm text-gray-500 underline">
+        <button onClick={onSkip} className="text-sm faint underline underline-offset-2">
           Skip for now
         </button>
       </div>
 
-      {/* Officer identity — auto once set */}
+      {/* Officer identity, auto once set */}
       {officer ? (
-        <p className="text-sm text-gray-600">
-          Officer: <span className="font-medium">{officer.name}</span> · time recorded
+        <p className="text-sm muted">
+          Officer: <span className="font-semibold">{officer.name}</span> · time recorded
           automatically
         </p>
       ) : (
@@ -129,9 +127,9 @@ export default function AttestationForm({
             value={officerName}
             onChange={(e) => setOfficerName(e.target.value)}
             placeholder="Officer name"
-            className="flex-1 rounded border px-2 py-2 text-sm"
+            className="field flex-1"
           />
-          <button onClick={saveOfficerName} className="rounded bg-gray-800 px-3 py-2 text-sm text-white">
+          <button onClick={saveOfficerName} className="btn btn-ghost btn-sm">
             Set
           </button>
         </div>
@@ -139,19 +137,19 @@ export default function AttestationForm({
 
       {/* Geotagged photo at the plot */}
       <div>
-        <label className="text-sm font-medium">Photo at the plot</label>
+        <label className="label">Photo at the plot</label>
         <input
           type="file"
           accept="image/*"
           capture="environment"
           onChange={onPhoto}
-          className="mt-1 block text-sm"
+          className="block text-sm file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[var(--accent-soft)] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[var(--accent)]"
         />
         {photoUrl && (
           <div className="mt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl} alt="Plot" className="max-h-40 rounded border" />
-            <p className="text-xs text-gray-500">
+            <img src={photoUrl} alt="Plot" loading="lazy" decoding="async" className="max-h-40 rounded-xl border" style={{ borderColor: "var(--glass-border)" }} />
+            <p className="text-xs faint">
               {photo && `${photo.width}×${photo.height}, ${formatBytes(photo.bytes)}`}
               {location ? ` · GPS ±${Math.round(location.accuracy ?? 0)} m` : locNote ? ` · ${locNote}` : ""}
             </p>
@@ -160,48 +158,50 @@ export default function AttestationForm({
       </div>
 
       {/* Farmer identity snapshot */}
-      <div className="grid gap-2 sm:grid-cols-2">
-        <label className="text-sm">
-          Farmer name
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label>
+          <span className="label">Farmer name</span>
           <input
             value={farmerName}
             onChange={(e) => setFarmerName(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           />
         </label>
-        <label className="text-sm">
-          Farmer ID
+        <label>
+          <span className="label">Farmer ID</span>
           <input
             value={farmerId}
             onChange={(e) => setFarmerId(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           />
         </label>
       </div>
 
       {/* Farmer confirmation */}
       <div>
-        <div className="mb-1 flex items-center gap-4 text-sm">
-          <span className="font-medium">Farmer confirmation</span>
-          <label className="flex items-center gap-1">
+        <div className="mb-1.5 flex items-center gap-4 text-sm">
+          <span className="label !mb-0">Farmer confirmation</span>
+          <label className="flex items-center gap-1.5">
             <input
               type="radio"
               checked={method === "signature"}
               onChange={() => setMethod("signature")}
+              className="accent-[var(--accent)]"
             />
             Signature
           </label>
-          <label className="flex items-center gap-1">
+          <label className="flex items-center gap-1.5">
             <input
               type="radio"
               checked={method === "thumbprint"}
               onChange={() => setMethod("thumbprint")}
+              className="accent-[var(--accent)]"
             />
             Thumbprint
           </label>
           <button
             onClick={() => sigRef.current?.clear()}
-            className="ml-auto text-sm text-gray-500 underline"
+            className="ml-auto text-sm faint underline underline-offset-2"
           >
             Clear
           </button>
@@ -209,15 +209,45 @@ export default function AttestationForm({
         <SignaturePad ref={sigRef} />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <button
-        onClick={submit}
-        disabled={busy}
-        className="rounded bg-green-600 px-4 py-3 font-medium text-white disabled:opacity-40"
+      {/* Explicit consent. A thumbprint is biometric data, so implied consent is
+          not sufficient: the officer reads this aloud and the farmer agrees. */}
+      <div
+        className="rounded-xl p-3 text-sm"
+        style={{ background: "var(--info-soft)", border: "1px solid var(--info)" }}
       >
-        {busy ? "Saving…" : "Save attestation"}
-      </button>
+        <p className="mb-2 font-semibold" style={{ color: "var(--info)" }}>
+          Read this to the farmer before saving
+        </p>
+        <p className="muted">
+          &ldquo;This records your name, your plot boundary, a photo of the plot,
+          and your {method}. It is used only to prove your land was not deforested,
+          so you can sell to buyers who require that proof. You can ask for it to
+          be deleted at any time, and you do not have to agree.&rdquo;
+        </p>
+        <label className="mt-2.5 flex cursor-pointer items-start gap-2">
+          <input
+            type="checkbox"
+            checked={consentAt !== null}
+            onChange={(e) => setConsentAt(e.target.checked ? new Date().toISOString() : null)}
+            className="mt-0.5 accent-[var(--accent)]"
+          />
+          <span>
+            The farmer heard this and agreed.
+            {consentAt && (
+              <span className="faint"> Recorded {new Date(consentAt).toLocaleTimeString()}.</span>
+            )}
+          </span>
+        </label>
+      </div>
+
+      <ActionButton
+        onAction={submit}
+        className="btn btn-primary"
+        loadingLabel="Saving"
+        successToast="Attestation saved"
+      >
+        Save attestation
+      </ActionButton>
     </div>
   );
 }

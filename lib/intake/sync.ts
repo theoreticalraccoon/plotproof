@@ -4,7 +4,7 @@
  * The actual server write is behind the `SyncTransport` interface. The default
  * `stubTransport` just marks items done after a short delay, so the full queue
  * lifecycle (queued → syncing → synced) is demonstrable with no backend. Swap
- * in a `supabaseTransport` once the migration from SCHEMA.md is applied — no
+ * in a `supabaseTransport` once the migration from SCHEMA.md is applied, no
  * caller changes. (Mirrors the analysis-client stub pattern.)
  */
 import { db, type OutboxItem } from "./db";
@@ -41,7 +41,7 @@ let running = false;
 
 /**
  * Drain the outbox. Safe to call often (e.g. on 'online', after each save, on
- * an interval) — it no-ops if already running or offline. Deletes items on
+ * an interval), it no-ops if already running or offline. Deletes items on
  * success and flips the corresponding plot/farmer to 'synced'.
  */
 export async function drainOutbox(

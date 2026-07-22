@@ -2,7 +2,7 @@
 
 /**
  * Tiny language store: localStorage-persisted, hydration-safe (server snapshot is
- * always "en"), shared across every component via useSyncExternalStore — no
+ * always "en"), shared across every component via useSyncExternalStore, no
  * provider wiring, so any client component can call useLang().
  */
 import { useSyncExternalStore } from "react";

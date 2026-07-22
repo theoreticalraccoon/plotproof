@@ -1,7 +1,7 @@
 /**
  * Network helper for the demo path: conference wifi is slow and flaky, so every
  * fetch gets a timeout, one retry on server/transport errors, and a
- * HUMAN-READABLE error — never a hung promise or a raw stack trace.
+ * HUMAN-READABLE error, never a hung promise or a raw stack trace.
  */
 export type NetErrorKind = "timeout" | "offline" | "server" | "client";
 
@@ -41,7 +41,7 @@ export async function fetchJson<T>(url: string, opts: FetchOpts = {}): Promise<T
 
       const kind: NetErrorKind = res.status >= 500 ? "server" : "client";
       lastErr = new NetError(statusMessage(res.status), kind);
-      if (kind === "server" && attempt < retries) continue; // transient — retry
+      if (kind === "server" && attempt < retries) continue; // transient, retry
       throw lastErr;
     } catch (e) {
       clearTimeout(timer);
@@ -54,7 +54,7 @@ export async function fetchJson<T>(url: string, opts: FetchOpts = {}): Promise<T
       }
       const isAbort = e instanceof DOMException && e.name === "AbortError";
       lastErr = isAbort
-        ? new NetError("The network is slow — that request timed out. Try again.", "timeout")
+        ? new NetError("The network is slow, that request timed out. Try again.", "timeout")
         : new NetError("Couldn't reach the server. Check the connection.", "offline");
       if (attempt < retries) continue;
       throw lastErr;

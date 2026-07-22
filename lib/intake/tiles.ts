@@ -4,7 +4,7 @@
  * field, the map reads them from there with no signal.
  *
  * Provider is configuration, not hardcoded per country (PROJECT.md global rule).
- * Default: Esri World Imagery — free, global, no API key. Note the {z}/{y}/{x}
+ * Default: Esri World Imagery, free, global, no API key. Note the {z}/{y}/{x}
  * order (y before x).
  */
 import { db, type CachedTile } from "./db";

@@ -2,27 +2,28 @@
 
 /**
  * Captured plots on this device. Shows capture method, measured vs claimed
- * area, any acknowledged warnings, and sync state — the officer's running
+ * area, any acknowledged warnings, and sync state, the officer's running
  * tally for the day's work.
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { MapPinned } from "lucide-react";
 import { listFarmers, listPlots } from "@/lib/intake/store";
 import { captureConfidence, type ConfidenceLevel } from "@/lib/intake/confidence";
 import type { LocalFarmer, LocalPlot, SyncStatus } from "@/lib/intake/types";
 
 const CONFIDENCE_DOT: Record<ConfidenceLevel, string> = {
-  high: "bg-green-500",
-  medium: "bg-amber-500",
-  low: "bg-gray-400",
+  high: "var(--accent)",
+  medium: "var(--warn)",
+  low: "var(--fg-faint)",
 };
 
 const SYNC_STYLE: Record<SyncStatus, string> = {
-  local: "bg-gray-200 text-gray-700",
-  queued: "bg-amber-100 text-amber-800",
-  syncing: "bg-blue-100 text-blue-800",
-  synced: "bg-green-100 text-green-800",
-  error: "bg-red-100 text-red-800",
+  local: "tag-muted",
+  queued: "tag-warn",
+  syncing: "tag-info",
+  synced: "tag-accent",
+  error: "tag-warn",
 };
 
 export default function PlotList({ refreshSignal }: { refreshSignal: number }) {
@@ -35,46 +36,43 @@ export default function PlotList({ refreshSignal }: { refreshSignal: number }) {
   }, [refreshSignal]);
 
   if (plots.length === 0) {
-    return <p className="text-sm text-gray-500">No plots captured yet.</p>;
+    return (
+      <div className="glass flex flex-col items-center gap-2 p-8 text-center">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
+          <MapPinned size={20} />
+        </span>
+        <p className="text-sm font-medium">No plots yet</p>
+        <p className="max-w-xs text-sm faint">
+          Add your first plot with <strong>Import</strong> or <strong>Trace on satellite</strong> above. It saves on this device instantly, even offline.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <ul className="divide-y divide-gray-200 rounded border border-gray-200">
+    <ul className="flex flex-col gap-2">
       {plots.map((p) => {
         const farmer = farmers.get(p.farmerId);
         const conf = captureConfidence(p.captureMethod);
         return (
-          <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 p-3 text-sm">
-            <span className="font-medium">{farmer?.fullName ?? "Unknown farmer"}</span>
-            <span
-              className="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-              title={conf.rationale}
-            >
-              <span className={`h-2 w-2 rounded-full ${CONFIDENCE_DOT[conf.level]}`} />
+          <li key={p.id} className="glass-card flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 text-sm">
+            <span className="font-semibold">{farmer?.fullName ?? "Unknown farmer"}</span>
+            <span className="tag tag-muted inline-flex items-center gap-1" title={conf.rationale}>
+              <span className="h-2 w-2 rounded-full" style={{ background: CONFIDENCE_DOT[conf.level] }} />
               {conf.label}
             </span>
-            <span className="text-gray-700">{p.computedAreaHa.toFixed(2)} ha</span>
+            <span className="muted tabular-nums">{p.computedAreaHa.toFixed(2)} ha</span>
             {p.claimedAreaHa != null && (
-              <span className="text-gray-400">claimed {p.claimedAreaHa.toFixed(2)}</span>
+              <span className="faint tabular-nums">claimed {p.claimedAreaHa.toFixed(2)}</span>
             )}
             {p.acknowledgedWarnings.length > 0 && (
-              <span className="text-amber-600">⚠ {p.acknowledgedWarnings.join(", ")}</span>
+              <span style={{ color: "var(--warn)" }}>⚠ {p.acknowledgedWarnings.join(", ")}</span>
             )}
-            <span
-              className={`rounded px-2 py-0.5 text-xs ${
-                p.status === "attested"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-500"
-              }`}
-            >
+            <span className={`tag ${p.status === "attested" ? "tag-accent" : "tag-muted"}`}>
               {p.status === "attested" ? "attested ✓" : "not attested"}
             </span>
-            <span
-              className={`ml-auto rounded px-2 py-0.5 text-xs ${SYNC_STYLE[p.syncStatus]}`}
-            >
-              {p.syncStatus}
-            </span>
-            <Link href={`/plot/${p.id}`} className="text-xs font-medium text-green-700 underline">
+            <span className={`tag ${SYNC_STYLE[p.syncStatus]} ml-auto`}>{p.syncStatus}</span>
+            <Link href={`/plot/${p.id}`} className="text-xs font-semibold underline underline-offset-2" style={{ color: "var(--accent)" }}>
               Evidence pack →
             </Link>
           </li>

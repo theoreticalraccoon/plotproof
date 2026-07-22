@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
  * Actions). Uses the anon key + the user's session cookie, so RLS still
  * applies as that user. For privileged jobs that must bypass RLS (e.g. the
  * background analysis writer), build a separate client with the service-role
- * key instead — never expose that key to the browser.
+ * key instead, never expose that key to the browser.
  */
 export async function createClient() {
   const cookieStore = await cookies();

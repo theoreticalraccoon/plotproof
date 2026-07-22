@@ -3,7 +3,7 @@
  *
  * Sweep (cron, daily) re-analyses every plot that is DUE (weekly cadence) and
  * alerts on new clearing. Recheck (on-demand) forces one plot against the newest
- * pass regardless of cadence — the "before the container leaves" guarantee
+ * pass regardless of cadence, the "before the container leaves" guarantee
  * (D-010). Server-only.
  */
 import {

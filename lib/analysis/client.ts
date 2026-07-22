@@ -4,7 +4,7 @@ import type { AnalysisRequest, JobHandle, JobPoll } from "./types";
  * The single interface every downstream feature is built against. Two
  * implementations: `StubAnalysisClient` (fake verdicts, no service needed) and
  * `HttpAnalysisClient` (calls the real Python service once it exists). Swap
- * implementations via `getAnalysisClient()` — callers never branch on which.
+ * implementations via `getAnalysisClient()`, callers never branch on which.
  */
 export interface AnalysisClient {
   /** Enqueue analysis for one plot. Returns immediately with a job handle. */

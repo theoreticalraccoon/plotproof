@@ -1,19 +1,26 @@
 "use client";
 
 /**
- * Certificate of origin — DRAFT preparer. This is an authority-issued document:
+ * Certificate of origin, DRAFT preparer. This is an authority-issued document:
  * only a Chamber of Commerce or national trade authority can certify it. We
- * honour the project's rule that the app never issues what an authority must —
+ * honour the project's rule that the app never issues what an authority must -
  * so we prepare a filled draft the farmer prints and takes to be certified,
  * which saves the tedious form-filling without pretending to be the certificate.
  */
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { Printer, AlertTriangle } from "lucide-react";
 import { getProduct } from "@/lib/compliance/catalog";
 import { loadIntent } from "@/lib/compliance/intent";
 import { markInProgress } from "@/lib/compliance/status";
 import { countryName } from "@/lib/public/format";
 import { docNumber } from "@/lib/compliance/documents";
+import NoIntent from "@/components/documents/NoIntent";
+import DocBreadcrumb from "@/components/documents/DocBreadcrumb";
+import Reveal from "@/components/motion/Reveal";
+import CopyButton from "@/components/motion/CopyButton";
+import { hoverLift } from "@/lib/motion/variants";
+import { printAs } from "@/lib/print";
 import type { SaleIntent } from "@/lib/compliance/types";
 
 export default function CertificateOfOriginPage() {
@@ -35,31 +42,31 @@ export default function CertificateOfOriginPage() {
   }, []);
 
   if (!intent) {
-    return (
-      <main className="mx-auto max-w-lg p-8 text-center">
-        <p className="text-sm text-gray-600">No sale details yet.</p>
-        <Link href="/sell" className="mt-3 inline-block rounded bg-green-600 px-4 py-2 text-sm text-white">
-          Start with “Sell your harvest”
-        </Link>
-      </main>
-    );
+    return <NoIntent />;
   }
 
   const product = getProduct(intent.productId);
   const origin = countryName(intent.originCountry);
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      {/* not-yet-valid banner — printed too, on purpose */}
-      <div className="mb-4 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
-        <strong>This is a draft, not a valid certificate.</strong> A certificate of origin
-        only becomes valid once it is certified and stamped by an authorised body —
-        usually the Chamber of Commerce or trade authority in {origin}. Print this draft,
-        then take or submit it to them to be certified. We prepared it; we cannot issue it.
+    <main className="mx-auto max-w-3xl px-5 py-6 sm:px-6">
+      <DocBreadcrumb />
+      {/* not-yet-valid banner, printed too, on purpose */}
+      <Reveal>
+      <div className="mb-5 flex items-start gap-3 rounded-2xl p-4 text-sm" style={{ background: "var(--warn-soft)", color: "var(--warn)", border: "1px solid var(--warn)" }}>
+        <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+        <span>
+          <strong>This is a draft, not a valid certificate.</strong> A certificate of origin
+          only becomes valid once it is certified and stamped by an authorised body -
+          usually the Chamber of Commerce or trade authority in {origin}. Print this draft,
+          then take or submit it to them to be certified. We prepared it; we cannot issue it.
+        </span>
       </div>
+      </Reveal>
 
-      {/* editor — hidden when printing */}
-      <div className="mb-4 grid gap-2 rounded-lg border border-gray-200 p-4 text-sm print:hidden sm:grid-cols-2">
+      {/* editor, hidden when printing */}
+      <Reveal delay={0.05}>
+      <div className="glass-card mb-5 grid gap-3 p-5 text-sm print:hidden sm:grid-cols-2">
         <h2 className="col-span-full font-semibold">Fill in the details</h2>
         <Field label="Your name / farm (exporter)" value={sellerName} onChange={setSellerName} />
         <Field label="Your address" value={sellerAddr} onChange={setSellerAddr} />
@@ -68,33 +75,40 @@ export default function CertificateOfOriginPage() {
         <Field label="Transport (optional)" value={transport} onChange={setTransport} placeholder="e.g. sea, Colombo → Rotterdam" />
         <Field label="Marks & numbers (optional)" value={marks} onChange={setMarks} placeholder="e.g. 1-40" />
         <div className="col-span-full">
-          <button onClick={() => window.print()} className="rounded bg-green-600 px-4 py-2 text-sm text-white">
-            Print / Save as PDF
-          </button>
+          <motion.div {...hoverLift} className="inline-block">
+            <button onClick={() => printAs(`Certificate of Origin (Draft) ${refNo}`)} className="btn btn-primary">
+              <Printer size={16} /> Download PDF
+            </button>
+          </motion.div>
         </div>
       </div>
+      </Reveal>
 
       {/* the draft document */}
-      <article className="rounded-lg border border-gray-300 p-6 print:border-0 print:p-0">
+      <Reveal delay={0.1}>
+      <article className="doc-sheet p-6 sm:p-8 print:border-0 print:p-0 print:shadow-none">
         <div className="flex items-start justify-between border-b border-gray-300 pb-3">
           <div>
             <h1 className="text-xl font-bold">CERTIFICATE OF ORIGIN</h1>
-            <p className="text-sm text-gray-600">Draft ref. {refNo} · {date}</p>
+            <p className="flex items-center gap-2 text-sm text-gray-600">
+              Draft ref. {refNo} · {date}
+              <CopyButton text={refNo} toastMsg="Reference copied" className="print:hidden" />
+            </p>
           </div>
           <div className="text-right text-xs font-semibold uppercase text-amber-700">
-            Draft — awaiting certification
+            Draft, awaiting certification
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-xs uppercase text-gray-400">1. Exporter</div>
-            <div className="font-medium">{sellerName || "—"}</div>
+            <div className="font-medium">{sellerName || "-"}</div>
             <div className="whitespace-pre-line text-gray-600">{sellerAddr}</div>
           </div>
           <div>
             <div className="text-xs uppercase text-gray-400">2. Consignee</div>
-            <div className="font-medium">{buyerName || "—"}</div>
+            <div className="font-medium">{buyerName || "-"}</div>
             <div className="whitespace-pre-line text-gray-600">{buyerAddr}</div>
             <div className="text-gray-600">Destination: {intent.destination}</div>
           </div>
@@ -107,7 +121,7 @@ export default function CertificateOfOriginPage() {
           </div>
           <div>
             <div className="text-xs uppercase text-gray-400">4. Transport details</div>
-            <div className="text-gray-600">{transport || "—"}</div>
+            <div className="text-gray-600">{transport || "-"}</div>
           </div>
         </div>
 
@@ -122,12 +136,12 @@ export default function CertificateOfOriginPage() {
           </thead>
           <tbody>
             <tr className="border-b border-gray-200">
-              <td className="py-2">{marks || "—"}</td>
+              <td className="py-2">{marks || "-"}</td>
               <td className="py-2">
                 {product?.name ?? intent.productId}
                 {intent.organicClaim ? " (organic)" : ""}
               </td>
-              <td className="py-2">{product?.hsCode ?? "—"}</td>
+              <td className="py-2">{product?.hsCode ?? "-"}</td>
               <td className="py-2 text-right">{intent.quantityKg.toLocaleString()}</td>
             </tr>
           </tbody>
@@ -157,9 +171,10 @@ export default function CertificateOfOriginPage() {
         <p className="mt-6 text-xs text-gray-400">
           Prepared with PlotProof. Not valid until certified by an authorised body in {origin}.
           Some destinations or preferential trade schemes require a specific form (e.g. EUR.1,
-          Form A) — check with your Chamber of Commerce which form applies.
+          Form A), check with your Chamber of Commerce which form applies.
         </p>
       </article>
+      </Reveal>
     </main>
   );
 }
@@ -176,13 +191,13 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="text-sm">
-      {label}
+    <label>
+      <span className="label">{label}</span>
       <input
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded border px-2 py-2"
+        className="field"
       />
     </label>
   );

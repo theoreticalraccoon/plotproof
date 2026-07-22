@@ -2,7 +2,7 @@
 
 /**
  * On-screen signature / thumbprint pad. Pointer-based so it works with a finger
- * on the phone (the one moment the farmer touches the device — DECISIONS.md
+ * on the phone (the one moment the farmer touches the device, DECISIONS.md
  * D-006). Exposes an imperative handle to export the mark as a compact PNG.
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
@@ -90,7 +90,9 @@ const SignaturePad = forwardRef<SignaturePadHandle, { className?: string }>(
         onPointerUp={up}
         onPointerLeave={up}
         // touch-none stops the page scrolling while the farmer signs.
-        className={`h-40 w-full touch-none rounded border border-gray-300 bg-white ${className ?? ""}`}
+        // Canvas stays white: it's the signature surface and the PNG export needs it.
+        className={`h-40 w-full touch-none rounded-xl border-2 border-dashed bg-white ${className ?? ""}`}
+        style={{ borderColor: "var(--accent-ring)" }}
       />
     );
   },

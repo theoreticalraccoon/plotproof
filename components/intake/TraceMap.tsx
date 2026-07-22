@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * Satellite basemap tracing — the production-default capture path (PROJECT.md).
+ * Satellite basemap tracing, the production-default capture path (PROJECT.md).
  * Officer and farmer sit together; the farmer points, the officer taps corners.
  *
  * Every rule runs live as corners are added: area is measured, self-intersection
  * blocks the save, and overlap / area-mismatch surface as warnings. Tiles come
- * from the offline cache. Nothing saves at "end of session" — Save persists one
+ * from the offline cache. Nothing saves at "end of session", Save persists one
  * plot immediately and queues it for sync.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -84,7 +84,7 @@ export default function TraceMap({ onSaved }: { onSaved?: () => void }) {
     mapRef.current = map;
     // Fix sizing after layout settles.
     setTimeout(() => map.invalidateSize(), 0);
-    // Try to centre on the officer's location — but never depend on it.
+    // Try to centre on the officer's location, but never depend on it.
     void getPosition({ timeoutMs: 5000 }).then((r) => {
       if (r.status === "ok") map.setView([r.lat, r.lng], 17);
     });
@@ -137,7 +137,7 @@ export default function TraceMap({ onSaved }: { onSaved?: () => void }) {
       setMessage(null);
     } else {
       // Explainable, and reassuring: tracing doesn't need GPS at all.
-      setMessage(`${r.message} You can still trace on the map — it doesn't use GPS.`);
+      setMessage(`${r.message} You can still trace on the map, it doesn't use GPS.`);
     }
   };
 
@@ -232,30 +232,30 @@ export default function TraceMap({ onSaved }: { onSaved?: () => void }) {
     <div className="flex flex-col gap-3">
       <div
         ref={mapDiv}
-        className="h-[60vh] w-full rounded-lg border border-gray-300"
-        style={{ minHeight: 320 }}
+        className="h-[60vh] w-full overflow-hidden rounded-2xl border"
+        style={{ minHeight: 320, borderColor: "var(--glass-border)" }}
       />
 
       {tileWarn && (
-        <p className="rounded bg-amber-50 px-3 py-1 text-xs text-amber-800">
+        <p className="rounded-xl px-3 py-2 text-xs" style={{ background: "var(--warn-soft)", color: "var(--warn)" }}>
           Some map imagery couldn&apos;t load (slow or no signal). You can still trace, and
           you can pre-cache a district with “Download this area” when you have signal.
         </p>
       )}
 
       {/* live readout */}
-      <div className="text-sm">
-        <span className="font-medium">{points.length} corners</span>
+      <div className="glass px-3 py-2 text-sm">
+        <span className="font-semibold tabular-nums">{points.length} corners</span>
         {validation.areaHa != null && points.length >= 3 && (
-          <span className="ml-3">≈ {validation.areaHa.toFixed(3)} ha</span>
+          <span className="ml-3 tabular-nums">≈ {validation.areaHa.toFixed(3)} ha</span>
         )}
         {validation.errors.map((e) => (
-          <span key={e.code} className="ml-3 text-red-600">
+          <span key={e.code} className="ml-3" style={{ color: "var(--danger)" }}>
             {e.message}
           </span>
         ))}
         {validation.warnings.map((w) => (
-          <span key={w.code} className="ml-3 text-amber-600">
+          <span key={w.code} className="ml-3" style={{ color: "var(--warn)" }}>
             {w.message}
           </span>
         ))}
@@ -263,52 +263,44 @@ export default function TraceMap({ onSaved }: { onSaved?: () => void }) {
 
       {/* capture controls */}
       <div className="flex flex-wrap gap-2">
-        <button onClick={locate} className="rounded bg-gray-200 px-3 py-2 text-sm">
+        <button onClick={locate} className="btn btn-ghost btn-sm">
           Locate me
         </button>
-        <button
-          onClick={undo}
-          disabled={points.length === 0}
-          className="rounded bg-gray-200 px-3 py-2 text-sm disabled:opacity-40"
-        >
+        <button onClick={undo} disabled={points.length === 0} className="btn btn-ghost btn-sm">
           Undo
         </button>
-        <button
-          onClick={clear}
-          disabled={points.length === 0}
-          className="rounded bg-gray-200 px-3 py-2 text-sm disabled:opacity-40"
-        >
+        <button onClick={clear} disabled={points.length === 0} className="btn btn-ghost btn-sm">
           Clear
         </button>
       </div>
 
       {/* offline pre-cache */}
-      <div className="flex flex-wrap items-center gap-2 rounded border border-gray-200 p-2">
-        <span className="text-sm text-gray-600">Offline basemap:</span>
+      <div className="glass flex flex-wrap items-center gap-2 p-3">
+        <span className="text-sm muted">Offline basemap:</span>
         <input
           value={district}
           onChange={(e) => setDistrict(e.target.value)}
-          className="w-32 rounded border px-2 py-1 text-sm"
+          className="field !min-h-0 w-32 py-1.5 text-sm"
           aria-label="District name"
         />
-        <button onClick={downloadArea} className="rounded bg-gray-800 px-3 py-2 text-sm text-white">
+        <button onClick={downloadArea} className="btn btn-ghost btn-sm">
           Download this area
         </button>
         {caching && (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm muted tabular-nums">
             {caching.done}/{caching.total} tiles{caching.failed ? ` (${caching.failed} failed)` : ""}
           </span>
         )}
       </div>
 
       {/* farmer + save */}
-      <div className="grid gap-2 rounded border border-gray-200 p-2 sm:grid-cols-2">
-        <label className="text-sm">
-          Farmer
+      <div className="glass-card grid gap-3 p-4 sm:grid-cols-2">
+        <label>
+          <span className="label">Farmer</span>
           <select
             value={farmerChoice}
             onChange={(e) => setFarmerChoice(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           >
             <option value="new">+ New farmer…</option>
             {farmers.map((f) => (
@@ -320,45 +312,41 @@ export default function TraceMap({ onSaved }: { onSaved?: () => void }) {
           </select>
         </label>
         {farmerChoice === "new" && (
-          <label className="text-sm">
-            New farmer name
+          <label>
+            <span className="label">New farmer name</span>
             <input
               value={newFarmerName}
               onChange={(e) => setNewFarmerName(e.target.value)}
-              className="mt-1 w-full rounded border px-2 py-2"
+              className="field"
             />
           </label>
         )}
-        <label className="text-sm">
-          Claimed area (ha)
+        <label>
+          <span className="label">Claimed area (ha)</span>
           <input
             inputMode="decimal"
             value={claimedArea}
             onChange={(e) => setClaimedArea(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           />
         </label>
-        <label className="text-sm">
-          Commodity
+        <label>
+          <span className="label">Commodity</span>
           <input
             value={commodity}
             onChange={(e) => setCommodity(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           />
         </label>
       </div>
 
       {!attest && (
-        <button
-          onClick={save}
-          disabled={!validation.canSave || saving}
-          className="rounded bg-green-600 px-4 py-3 font-medium text-white disabled:opacity-40"
-        >
+        <button onClick={save} disabled={!validation.canSave || saving} className="btn btn-primary">
           {saving ? "Saving…" : "Save plot"}
         </button>
       )}
 
-      {message && <p className="text-sm text-gray-700">{message}</p>}
+      {message && <p className="glass p-3 text-sm">{message}</p>}
 
       {attest && (
         <AttestationForm

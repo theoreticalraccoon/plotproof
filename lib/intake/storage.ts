@@ -22,7 +22,7 @@ export async function estimateStorage(): Promise<StorageEstimate | null> {
 /**
  * Ask the browser to keep our IndexedDB from being evicted under storage
  * pressure. Field devices fill up; without this, a full phone could silently
- * drop unsynced plots. Best-effort — returns whether persistence is granted.
+ * drop unsynced plots. Best-effort, returns whether persistence is granted.
  */
 export async function requestPersistence(): Promise<boolean> {
   if (typeof navigator === "undefined" || !navigator.storage?.persist) return false;

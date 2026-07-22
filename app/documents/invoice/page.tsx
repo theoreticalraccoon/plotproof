@@ -1,17 +1,24 @@
 "use client";
 
 /**
- * Commercial invoice generator — a real customs document the farmer produces
+ * Commercial invoice generator, a real customs document the farmer produces
  * here from their sale details, then prints or saves as PDF. Prefilled from the
  * saved sale intent; the farmer adds buyer + price and it's done.
  */
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { Printer } from "lucide-react";
 import { getProduct } from "@/lib/compliance/catalog";
 import { loadIntent } from "@/lib/compliance/intent";
 import { markInProgress } from "@/lib/compliance/status";
 import { countryName } from "@/lib/public/format";
 import { docNumber, lineAmount } from "@/lib/compliance/documents";
+import NoIntent from "@/components/documents/NoIntent";
+import DocBreadcrumb from "@/components/documents/DocBreadcrumb";
+import Reveal from "@/components/motion/Reveal";
+import CopyButton from "@/components/motion/CopyButton";
+import { hoverLift } from "@/lib/motion/variants";
+import { printAs } from "@/lib/print";
 import type { SaleIntent } from "@/lib/compliance/types";
 
 export default function InvoicePage() {
@@ -33,14 +40,7 @@ export default function InvoicePage() {
   }, []);
 
   if (!intent) {
-    return (
-      <main className="mx-auto max-w-lg p-8 text-center">
-        <p className="text-sm text-gray-600">No sale details yet.</p>
-        <Link href="/sell" className="mt-3 inline-block rounded bg-green-600 px-4 py-2 text-sm text-white">
-          Start with “Sell your harvest”
-        </Link>
-      </main>
-    );
+    return <NoIntent />;
   }
 
   const product = getProduct(intent.productId);
@@ -49,44 +49,53 @@ export default function InvoicePage() {
   const total = lineAmount(qty, price);
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      {/* editor — hidden when printing */}
-      <div className="mb-4 grid gap-2 rounded-lg border border-gray-200 p-4 text-sm print:hidden sm:grid-cols-2">
+    <main className="mx-auto max-w-3xl px-5 py-6 sm:px-6">
+      <DocBreadcrumb />
+      {/* editor, hidden when printing */}
+      <Reveal>
+      <div className="glass-card mb-5 grid gap-3 p-5 text-sm print:hidden sm:grid-cols-2">
         <h2 className="col-span-full font-semibold">Fill in the details</h2>
         <Field label="Your name / farm" value={sellerName} onChange={setSellerName} />
         <Field label="Your address" value={sellerAddr} onChange={setSellerAddr} />
         <Field label="Buyer name" value={buyerName} onChange={setBuyerName} />
         <Field label="Buyer address" value={buyerAddr} onChange={setBuyerAddr} />
         <Field label={`Unit price per kg (${currency})`} value={unitPrice} onChange={setUnitPrice} inputMode="decimal" />
-        <label className="text-sm">
-          Currency
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-1 w-full rounded border px-2 py-2">
+        <label>
+          <span className="label">Currency</span>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="field">
             {["USD", "EUR", "GBP"].map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </label>
-        <label className="text-sm">
-          Incoterm
-          <select value={incoterm} onChange={(e) => setIncoterm(e.target.value)} className="mt-1 w-full rounded border px-2 py-2">
+        <label>
+          <span className="label">Incoterm</span>
+          <select value={incoterm} onChange={(e) => setIncoterm(e.target.value)} className="field">
             {["FOB", "CIF", "CIP", "DAP", "EXW"].map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </label>
         <div className="col-span-full">
-          <button onClick={() => window.print()} className="rounded bg-green-600 px-4 py-2 text-sm text-white">
-            Print / Save as PDF
-          </button>
+          <motion.div {...hoverLift} className="inline-block">
+            <button onClick={() => printAs(`Commercial Invoice ${invoiceNo}`)} className="btn btn-primary">
+              <Printer size={16} /> Download PDF
+            </button>
+          </motion.div>
         </div>
       </div>
+      </Reveal>
 
       {/* the document */}
-      <article className="rounded-lg border border-gray-300 p-6 print:border-0 print:p-0">
+      <Reveal delay={0.08}>
+      <article className="doc-sheet p-6 sm:p-8 print:border-0 print:p-0 print:shadow-none">
         <div className="flex items-start justify-between border-b border-gray-300 pb-3">
           <div>
             <h1 className="text-xl font-bold">COMMERCIAL INVOICE</h1>
-            <p className="text-sm text-gray-600">No. {invoiceNo} · {date}</p>
+            <p className="flex items-center gap-2 text-sm text-gray-600">
+              No. {invoiceNo} · {date}
+              <CopyButton text={invoiceNo} toastMsg="Invoice number copied" className="print:hidden" />
+            </p>
           </div>
           <div className="text-right text-xs text-gray-500">Incoterm: {incoterm}</div>
         </div>
@@ -94,13 +103,13 @@ export default function InvoicePage() {
         <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-xs uppercase text-gray-400">Exporter (seller)</div>
-            <div className="font-medium">{sellerName || "—"}</div>
+            <div className="font-medium">{sellerName || "-"}</div>
             <div className="whitespace-pre-line text-gray-600">{sellerAddr}</div>
             <div className="text-gray-600">Country of origin: {countryName(intent.originCountry)}</div>
           </div>
           <div>
             <div className="text-xs uppercase text-gray-400">Importer (buyer)</div>
-            <div className="font-medium">{buyerName || "—"}</div>
+            <div className="font-medium">{buyerName || "-"}</div>
             <div className="whitespace-pre-line text-gray-600">{buyerAddr}</div>
             <div className="text-gray-600">Destination: {intent.destination}</div>
           </div>
@@ -122,7 +131,7 @@ export default function InvoicePage() {
                 {product?.name ?? intent.productId}
                 {intent.organicClaim ? " (organic)" : ""}
               </td>
-              <td className="py-2">{product?.hsCode ?? "—"}</td>
+              <td className="py-2">{product?.hsCode ?? "-"}</td>
               <td className="py-2 text-right">{qty.toLocaleString()}</td>
               <td className="py-2 text-right">{price.toFixed(2)}</td>
               <td className="py-2 text-right">{total.toFixed(2)}</td>
@@ -143,6 +152,7 @@ export default function InvoicePage() {
           Confirm required fields with your customs broker before submission.
         </p>
       </article>
+      </Reveal>
     </main>
   );
 }
@@ -159,13 +169,13 @@ function Field({
   inputMode?: "text" | "decimal" | "numeric";
 }) {
   return (
-    <label className="text-sm">
-      {label}
+    <label>
+      <span className="label">{label}</span>
       <input
         value={value}
         inputMode={inputMode}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded border px-2 py-2"
+        className="field"
       />
     </label>
   );

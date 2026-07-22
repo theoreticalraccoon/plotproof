@@ -15,7 +15,7 @@ import type {
 
 const NODES: AcousticNode[] = [];
 const EVENTS: AcousticEvent[] = [];
-/** devEui:fCnt keys already seen — LoRa delivers duplicates via many gateways. */
+/** devEui:fCnt keys already seen, LoRa delivers duplicates via many gateways. */
 const seen = new Set<string>();
 
 // --- deterministic simulation ---------------------------------------------

@@ -1,6 +1,6 @@
 /**
  * Requirements resolver. Given what/where/where-to, returns the exact documents
- * a shipment needs, each with its issuer, plain explanation, and source. Pure —
+ * a shipment needs, each with its issuer, plain explanation, and source. Pure -
  * document types are injected so this stays Node-testable.
  */
 import type {

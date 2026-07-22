@@ -5,8 +5,8 @@
  *
  * The chain is real even though the hardware isn't yet: node → LoRa → gateway /
  * network server (TTN, ChirpStack) → HTTP webhook → our ingest. So the model
- * uses LoRaWAN concepts — DevEUI identity, a frame counter for dedup, radio
- * quality metadata — and location resolves from the event's GPS or the node's
+ * uses LoRaWAN concepts, DevEUI identity, a frame counter for dedup, radio
+ * quality metadata, and location resolves from the event's GPS or the node's
  * registered position (most low-power nodes carry no GPS).
  */
 
@@ -40,7 +40,7 @@ export interface AcousticEvent {
   receivedAt: string; // when ingest received it, ISO UTC
   location: LatLng; // event GPS, else node registered location
   // LoRa radio metadata (present for real uplinks):
-  fCnt?: number; // frame counter — dedup / replay protection
+  fCnt?: number; // frame counter, dedup / replay protection
   rssi?: number; // received signal strength at the gateway (dBm)
   snr?: number; // signal-to-noise ratio (dB)
   gatewayId?: string;

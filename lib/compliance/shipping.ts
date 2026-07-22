@@ -2,7 +2,7 @@
  * Shipping suggester. From the product's perishability, the volume, and the
  * destination, propose sensible modes + an Incoterm, in plain language. Pure.
  *
- * These are guidance defaults, not quotes — the farmer confirms with a freight
+ * These are guidance defaults, not quotes, the farmer confirms with a freight
  * forwarder. Kept honest, like every other output.
  */
 import type { Market, Product, ShippingOption } from "./types";
@@ -21,7 +21,7 @@ export function suggestShipping(
     options.push({
       mode: "air",
       label: "Air freight",
-      rationale: "Your product is perishable — speed protects quality.",
+      rationale: "Your product is perishable, speed protects quality.",
       incoterm: "CIP (you arrange carriage + insurance to the airport of arrival)",
       transit: "2–5 days",
       notes: "Confirm cold-chain handling. Higher cost per kg, but far less spoilage risk.",
@@ -41,7 +41,7 @@ export function suggestShipping(
   if (quantityKg >= FCL_THRESHOLD_KG) {
     options.push({
       mode: "sea_fcl",
-      label: "Sea freight — full container (FCL)",
+      label: "Sea freight, full container (FCL)",
       rationale: `${Math.round(quantityKg).toLocaleString()} kg fills a container, the cheapest per kg.`,
       incoterm: "FOB (you deliver to the departure port; buyer takes it from there)",
       transit: destination === "US" ? "20–35 days" : "22–40 days",
@@ -50,11 +50,11 @@ export function suggestShipping(
   } else {
     options.push({
       mode: "sea_lcl",
-      label: "Sea freight — shared container (LCL)",
+      label: "Sea freight, shared container (LCL)",
       rationale: "Your volume is below a full container, so you share space.",
       incoterm: "FOB (you deliver to the departure port)",
       transit: destination === "US" ? "25–40 days" : "28–45 days",
-      notes: "Economical without needing a full container. Pack sturdily — shared handling.",
+      notes: "Economical without needing a full container. Pack sturdily, shared handling.",
     });
   }
   options.push({

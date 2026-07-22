@@ -1,9 +1,9 @@
 /**
- * Alert delivery — email or webhook, the exporter's choice per subscription.
+ * Alert delivery, email or webhook, the exporter's choice per subscription.
  *
  * Webhook delivery is real (HTTP POST with an HMAC signature so the receiver can
  * verify authenticity). Email is behind a transport interface with a stub
- * default, consistent with the analysis/sync stubs — swap in Resend/SES/Postmark
+ * default, consistent with the analysis/sync stubs, swap in Resend/SES/Postmark
  * without touching callers. Server-only (uses node:crypto).
  */
 import { createHmac } from "node:crypto";

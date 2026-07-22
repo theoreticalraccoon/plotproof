@@ -1,7 +1,7 @@
 /**
  * Geolocation that never throws and always explains itself. A denied or
  * unavailable fix must degrade into a clear message, not a silent no-op or an
- * unhandled error — and capture must continue regardless (tracing needs no GPS).
+ * unhandled error, and capture must continue regardless (tracing needs no GPS).
  */
 export type LocateResult =
   | { status: "ok"; lng: number; lat: number; accuracyM: number }

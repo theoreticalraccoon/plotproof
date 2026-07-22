@@ -3,14 +3,21 @@
 /**
  * Evidence pack (on-screen). The demo's "show the generated pack" step.
  *
- * Every way the analysis step can stall is handled explicitly — cold serverless
+ * Every way the analysis step can stall is handled explicitly, cold serverless
  * start, queued/running job, slow network, outright failure, or an
- * insufficient-data verdict — each degrades into a sentence the presenter can
+ * insufficient-data verdict, each degrades into a sentence the presenter can
  * read out, never a spinner or a stack trace. Print / Save-as-PDF is the pack
  * output for now (the PDFKit generator is still parked on caveats sign-off).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Printer } from "lucide-react";
+import Reveal from "@/components/motion/Reveal";
+import Breadcrumb from "@/components/shell/Breadcrumb";
+import { Skeleton } from "@/components/motion/Skeleton";
+import { hoverLift } from "@/lib/motion/variants";
+import { printAs } from "@/lib/print";
 import { getAttestationForPlot, getFarmer, getPlot, mediaObjectUrl } from "@/lib/intake/store";
 import { captureConfidence } from "@/lib/intake/confidence";
 import { fetchJson, NetError, warmup } from "@/lib/net";
@@ -129,12 +136,31 @@ export default function EvidencePackPage() {
     };
   }, [id, runAnalysis]);
 
-  if (state === "loading") return <Centered>Loading the plot…</Centered>;
+  if (state === "loading")
+    return (
+      <main className="mx-auto max-w-3xl px-5 py-6 sm:px-6" role="status" aria-label="Loading the evidence pack">
+        <Skeleton className="h-4 w-40" />
+        <div className="glass-card mt-4 p-6 sm:p-8">
+          <Skeleton className="h-7 w-64" />
+          <Skeleton className="mt-2 h-4 w-40" />
+          <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-4" style={{ width: `${70 + (i % 3) * 10}%` }} />
+            ))}
+          </div>
+          <Skeleton className="mt-6 h-28 w-full" />
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Skeleton className="aspect-square w-full" />
+            <Skeleton className="aspect-square w-full" />
+          </div>
+        </div>
+      </main>
+    );
   if (state === "notfound")
     return (
       <Centered>
         <p>This plot isn&apos;t on this device.</p>
-        <a href="/intake" className="mt-3 rounded bg-gray-800 px-4 py-2 text-sm text-white">
+        <a href="/intake" className="btn btn-primary mt-3">
           Go to intake
         </a>
       </Centered>
@@ -145,20 +171,27 @@ export default function EvidencePackPage() {
   const generatedAt = new Date();
 
   return (
-    <main className="mx-auto max-w-3xl p-6 print:p-0">
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <a href="/intake" className="text-sm text-gray-500 underline">
-          ← Back to intake
-        </a>
-        <button
-          onClick={() => window.print()}
-          disabled={state !== "ready"}
-          className="rounded bg-green-600 px-4 py-2 text-sm text-white disabled:opacity-40"
-        >
-          Print / Save as PDF
-        </button>
+    <main className="mx-auto max-w-3xl px-5 py-6 sm:px-6 print:p-0">
+      <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
+        <Breadcrumb
+          items={[
+            { label: "Intake", href: "/intake" },
+            { label: "EUDR evidence pack" },
+          ]}
+        />
+        <motion.div {...hoverLift}>
+          <button
+            onClick={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
+            disabled={state !== "ready"}
+            className="btn btn-primary btn-sm"
+          >
+            <Printer size={15} /> Download PDF
+          </button>
+        </motion.div>
       </div>
 
+      <Reveal>
+      <article className="doc-sheet p-6 sm:p-8 print:border-0 print:p-0 print:shadow-none">
       <header className="border-b border-gray-300 pb-3">
         <h1 className="text-xl font-bold">EUDR Evidence Pack</h1>
         <p className="text-sm text-gray-600">PlotProof · document {plot.id.slice(0, 8)}</p>
@@ -170,11 +203,11 @@ export default function EvidencePackPage() {
       {/* identifiers */}
       <Section title="Plot & farmer">
         <Grid>
-          <Field k="Farmer" v={farmer?.fullName ?? "—"} />
-          <Field k="Farmer ID" v={farmer?.nationalId ?? attestation?.farmerIdSnapshot ?? "—"} />
+          <Field k="Farmer" v={farmer?.fullName ?? "-"} />
+          <Field k="Farmer ID" v={farmer?.nationalId ?? attestation?.farmerIdSnapshot ?? "-"} />
           <Field k="Cooperative" v={plot.cooperativeId} />
           <Field k="Country" v={plot.countryCode} />
-          <Field k="Commodity" v={plot.commodity ?? "—"} />
+          <Field k="Commodity" v={plot.commodity ?? "-"} />
           <Field k="Capture method" v={`${conf.label} (${conf.level} confidence)`} />
           <Field k="Captured" v={`${plot.capturedAt} (UTC)`} />
           <Field k="Generated" v={`${generatedAt.toISOString()} (UTC) / ${generatedAt.toLocaleString()} (local)`} />
@@ -207,7 +240,7 @@ export default function EvidencePackPage() {
       <Section title="Plot geometry">
         <Grid>
           <Field k="Drawn area" v={`${plot.computedAreaHa.toFixed(3)} ha`} />
-          <Field k="Claimed area" v={plot.claimedAreaHa != null ? `${plot.claimedAreaHa.toFixed(3)} ha` : "—"} />
+          <Field k="Claimed area" v={plot.claimedAreaHa != null ? `${plot.claimedAreaHa.toFixed(3)} ha` : "-"} />
           <Field k="Area basis (CRS)" v="Geodesic on WGS84 ellipsoid (EPSG:4326)" />
           <Field k="Vertices" v={String(plot.ring.length - 1)} />
         </Grid>
@@ -244,11 +277,13 @@ export default function EvidencePackPage() {
                   <img
                     src={t.url}
                     alt={`${t.role} satellite tile, ${t.acquisitionDate}`}
+                    loading="lazy"
+                    decoding="async"
                     className="aspect-square w-full rounded border border-gray-300 object-cover"
                   />
                 ) : (
                   <div className="flex aspect-square items-center justify-center rounded border border-gray-300 bg-gray-100 text-xs text-gray-400">
-                    sample imagery ({t.role}) — stub result
+                    sample imagery ({t.role}), stub result
                   </div>
                 )}
                 <figcaption className="mt-1 text-xs text-gray-600">
@@ -260,7 +295,7 @@ export default function EvidencePackPage() {
         ) : (
           <p className="text-sm text-gray-500">
             {result?.verdict === "insufficient_data"
-              ? "No renderable imagery — insufficient clear observations for this plot."
+              ? "No renderable imagery, insufficient clear observations for this plot."
               : "Imagery renders once analysis completes."}
           </p>
         )}
@@ -269,10 +304,10 @@ export default function EvidencePackPage() {
       {/* methodology */}
       <Section title="Methodology">
         <ul className="list-disc pl-5 text-sm text-gray-700">
-          <li>Model: {result?.modelVersion ?? "—"} (U-Net per-pixel forest probability).</li>
+          <li>Model: {result?.modelVersion ?? "-"} (U-Net per-pixel forest probability).</li>
           <li>
             Sources: Sentinel-2 L2A (optical, 10 m), Sentinel-1 GRD (radar), Hansen Global
-            Forest Change (baseline). Accessed {result?.dataAccessedAt?.slice(0, 10) ?? "—"} (UTC).
+            Forest Change (baseline). Accessed {result?.dataAccessedAt?.slice(0, 10) ?? "-"} (UTC).
           </li>
           <li>Assessment cut-off: {CUTOFF}. Forest definition: applicable national profile.</li>
           <li>Change detection outside the model: sustained forest-fraction drop across observations.</li>
@@ -308,7 +343,7 @@ export default function EvidencePackPage() {
           <div className="flex flex-wrap gap-4 text-sm">
             {photoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt="Plot" className="max-h-40 rounded border" />
+              <img src={photoUrl} alt="Plot" loading="lazy" decoding="async" className="max-h-40 rounded border" />
             )}
             <div>
               <Field k="Officer" v={attestation.officerName} />
@@ -341,6 +376,8 @@ export default function EvidencePackPage() {
       <footer className="mt-6 border-t border-gray-300 pt-3 text-xs text-gray-400">
         On-screen evidence pack. Downloadable PDF generation is pending final caveats sign-off.
       </footer>
+      </article>
+      </Reveal>
     </main>
   );
 }
@@ -351,21 +388,25 @@ function JobBanner({ state, error, onRetry }: { state: JobState; error: string |
   if (state === "ready") return null;
   const copy: Record<string, string> = {
     warming: "Waking the analysis service (first run can take a few seconds)…",
-    queued: "Analysis queued — waiting for the service to pick it up…",
+    queued: "Analysis queued, waiting for the service to pick it up…",
     running: "Analysing satellite imagery for this plot…",
-    slow: "Analysis is taking longer than usual — the network or service is slow.",
+    slow: "Analysis is taking longer than usual, the network or service is slow.",
     failed: error ?? "Analysis couldn't be completed.",
   };
   const bad = state === "failed" || state === "slow";
   return (
     <div
-      className={`my-3 flex items-center gap-3 rounded p-3 text-sm print:hidden ${
-        bad ? "bg-amber-50 text-amber-900" : "bg-blue-50 text-blue-900"
-      }`}
+      className="my-3 flex items-center gap-3 rounded-xl p-3 text-sm print:hidden"
+      style={
+        bad
+          ? { background: "var(--warn-soft)", color: "var(--warn)" }
+          : { background: "var(--info-soft)", color: "var(--info)" }
+      }
     >
+      {!bad && <span className="spinner" aria-hidden="true" />}
       <span>{copy[state]}</span>
       {bad && (
-        <button onClick={onRetry} className="ml-auto rounded bg-gray-800 px-3 py-1 text-white">
+        <button onClick={onRetry} className="btn btn-ghost btn-sm ml-auto">
           Retry
         </button>
       )}
@@ -393,7 +434,7 @@ function Field({ k, v }: { k: string; v: string }) {
   );
 }
 function Centered({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-h-[50vh] flex-col items-center justify-center p-8 text-center text-sm text-gray-600">{children}</div>;
+  return <div className="flex min-h-dvh flex-col items-center justify-center gap-2 p-8 text-center text-sm muted">{children}</div>;
 }
 
 function verdictSentence(v: AnalysisResult["verdict"]): string {

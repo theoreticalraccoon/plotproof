@@ -1,5 +1,5 @@
 /**
- * Public dispute/confirmation submission — no login. Stored as a labelled
+ * Public dispute/confirmation submission, no login. Stored as a labelled
  * training sample (see lib/public/types.ts), not a support ticket.
  *
  * Abuse handling for a public endpoint (rate limiting, CAPTCHA, moderation) is a

@@ -45,7 +45,7 @@ export class IntakeDB extends Dexie {
       tiles: "key, district",
       outbox: "++seq, entity, entityId, status",
     });
-    // v2: attestation layer — photos + signatures + attestation records.
+    // v2: attestation layer, photos + signatures + attestation records.
     this.version(2).stores({
       media: "id, plotId, kind, syncStatus",
       attestations: "id, plotId, officerId, syncStatus",
@@ -64,4 +64,22 @@ export function db(): IntakeDB {
   }
   if (!_db) _db = new IntakeDB();
   return _db;
+}
+
+/**
+ * Wipe all account-scoped field data (farmers, plots, attestations, media, and
+ * the sync outbox). Used to give a newly signed-in account a clean slate on a
+ * shared device. The basemap `tiles` cache is left intact, it's not account
+ * data and re-downloading it wastes the officer's bandwidth.
+ */
+export async function clearIntakeData(): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  const d = db();
+  await Promise.all([
+    d.farmers.clear(),
+    d.plots.clear(),
+    d.attestations.clear(),
+    d.media.clear(),
+    d.outbox.clear(),
+  ]);
 }

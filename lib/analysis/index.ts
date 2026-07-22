@@ -7,7 +7,7 @@ export type { AnalysisClient } from "./client";
 /**
  * Returns the analysis client the rest of the app should use.
  *
- * Uses the stub when ANALYSIS_STUB=1 or when no ANALYSIS_SERVICE_URL is set —
+ * Uses the stub when ANALYSIS_STUB=1 or when no ANALYSIS_SERVICE_URL is set -
  * so the whole app runs end-to-end with zero external dependencies until the
  * real Python service exists. Set ANALYSIS_SERVICE_URL and ANALYSIS_STUB=0 to
  * switch over; no downstream code changes.

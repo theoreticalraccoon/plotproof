@@ -1,10 +1,10 @@
 /**
- * CSV / registry import — the highest-priority intake path (PROJECT.md: "import
+ * CSV / registry import, the highest-priority intake path (PROJECT.md: "import
  * beats capture every time"). Real registries vary wildly, so we parse loosely
  * and let the officer map columns, rather than assuming a fixed schema.
  *
  * Geometry per row may arrive as GeoJSON, WKT POLYGON, or a bare coordinate
- * list. Pure functions (Papa parse works in Node too) — unit-testable.
+ * list. Pure functions (Papa parse works in Node too), unit-testable.
  */
 import Papa from "papaparse";
 import type { LngLat } from "./types";

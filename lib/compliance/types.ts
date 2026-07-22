@@ -6,7 +6,7 @@
  *
  * Design rule (like the EUDR caveats): the app NEVER invents law. Requirements
  * come from a curated, sourced catalog; every item cites its basis and says to
- * verify with the issuing authority. AI classifies/explains/translates — it does
+ * verify with the issuing authority. AI classifies/explains/translates, it does
  * not decide legal requirements.
  */
 

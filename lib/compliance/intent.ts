@@ -23,3 +23,9 @@ export function loadIntent(): SaleIntent | null {
     return null;
   }
 }
+
+/** Discard the saved sale (the "reset selling info" action). */
+export function clearIntent(): void {
+  if (typeof localStorage === "undefined") return;
+  localStorage.removeItem(KEY);
+}

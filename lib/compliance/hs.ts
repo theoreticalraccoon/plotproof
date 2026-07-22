@@ -1,10 +1,10 @@
 /**
- * HS-code classifier — the data-science front door. A farmer types what they
+ * HS-code classifier, the data-science front door. A farmer types what they
  * grow in their own words; we map it to the international HS code customs needs.
  *
  * This is a transparent keyword/token-overlap baseline with a clear ML seam:
  * swap `classify` for an embedding or LLM classifier later without changing
- * callers. Pure — products are injected so it's Node-testable.
+ * callers. Pure, products are injected so it's Node-testable.
  */
 import type { HsCandidate, Product } from "./types";
 

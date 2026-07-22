@@ -7,7 +7,7 @@
  * so a record is stable from the moment of capture, offline.
  */
 
-/** [longitude, latitude] — GeoJSON axis order. Never [lat, lng]. */
+/** [longitude, latitude], GeoJSON axis order. Never [lat, lng]. */
 export type LngLat = [number, number];
 
 /** Capture path, ranked by PROJECT.md. Drives confidence and auto-ordering. */
@@ -45,7 +45,7 @@ export interface LocalPlot {
   acknowledgedWarnings: string[];
   status: "captured" | "attested";
   syncStatus: SyncStatus;
-  capturedAt: string; // ISO UTC — when taken in the field
+  capturedAt: string; // ISO UTC, when taken in the field
   syncedAt?: string;
 }
 
@@ -64,7 +64,7 @@ export interface ValidationWarning {
 }
 
 export interface PlotValidation {
-  /** True when there are no blocking errors — the plot may be saved. */
+  /** True when there are no blocking errors, the plot may be saved. */
   canSave: boolean;
   /** Closed, correctly-ordered ring, or null if not derivable. */
   orderedRing: LngLat[] | null;
@@ -78,7 +78,7 @@ export type ConfirmationMethod = "signature" | "thumbprint";
 
 /**
  * A binary media asset (plot photo or farmer signature) held locally until it
- * syncs. The blob is dropped once uploaded (remotePath set) to reclaim space —
+ * syncs. The blob is dropped once uploaded (remotePath set) to reclaim space -
  * see storage strategy in DECISIONS.md D-009.
  */
 export interface LocalMedia {
@@ -118,6 +118,14 @@ export interface LocalAttestation {
   confirmationMethod: ConfirmationMethod;
   photoMediaId: string;
   signatureMediaId?: string;
+  /**
+   * When the farmer gave explicit, informed consent to this record being taken
+   * and stored (SCHEMA.md consent_at, DECISIONS.md D-007). Required, never
+   * optional: a thumbprint is biometric data, which under GDPR Art. 9 and Sri
+   * Lanka's PDPA needs explicit consent, not implied consent. An attestation
+   * without it is not lawful to hold, so the type does not permit one.
+   */
+  consentAt: string; // ISO UTC
   syncStatus: SyncStatus;
   createdAt: string;
 }

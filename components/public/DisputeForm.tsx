@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * Public dispute / confirmation form — no login. Captures a training-quality
+ * Public dispute / confirmation form, no login. Captures a training-quality
  * label: stance, a reason category, observed land cover, an optional geotagged
  * photo, and reporter provenance. Written for a first-time member of the public,
  * not an analyst.
  */
 import { useState } from "react";
+import ActionButton from "@/components/motion/ActionButton";
 import { processPhoto } from "@/lib/intake/image";
 import { getPosition } from "@/lib/geo/locate";
 import {
@@ -49,13 +50,10 @@ export default function DisputeForm({
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoData, setPhotoData] = useState<string | null>(null);
   const [geo, setGeo] = useState<{ lng: number; lat: number; accuracyM?: number } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError(null);
     const processed = await processPhoto(file);
     const dataUrl = await blobToDataUrl(processed.blob);
     setPhotoData(dataUrl);
@@ -66,45 +64,38 @@ export default function DisputeForm({
     else setGeo(null);
   };
 
+  // Throws on failure so the Submit button shows an error toast + shake.
   const submit = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/public/disputes", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          featureId,
-          location,
-          countryCode,
-          stance,
-          reason: stance === "dispute" ? reason : undefined,
-          landCover: landCover || undefined,
-          onSite,
-          comment,
-          reporterType,
-          reporterName: reporterName || undefined,
-          photo: photoData
-            ? {
-                dataUrl: photoData,
-                capturedAt: new Date().toISOString(),
-                lng: geo?.lng,
-                lat: geo?.lat,
-                accuracyM: geo?.accuracyM,
-              }
-            : undefined,
-        }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? `Submit failed (${res.status})`);
-      }
-      onSubmitted();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Submit failed");
-    } finally {
-      setBusy(false);
+    const res = await fetch("/api/public/disputes", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        featureId,
+        location,
+        countryCode,
+        stance,
+        reason: stance === "dispute" ? reason : undefined,
+        landCover: landCover || undefined,
+        onSite,
+        comment,
+        reporterType,
+        reporterName: reporterName || undefined,
+        photo: photoData
+          ? {
+              dataUrl: photoData,
+              capturedAt: new Date().toISOString(),
+              lng: geo?.lng,
+              lat: geo?.lat,
+              accuracyM: geo?.accuracyM,
+            }
+          : undefined,
+      }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error(j.error ?? "Could not send your report. Please try again.");
     }
+    onSubmitted();
   };
 
   return (
@@ -121,11 +112,11 @@ export default function DisputeForm({
 
       {stance === "dispute" && (
         <label>
-          What&apos;s wrong?
+          <span className="label">What&apos;s wrong?</span>
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value as DisputeReason)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           >
             {(Object.keys(REASON_LABELS) as DisputeReason[]).map((r) => (
               <option key={r} value={r}>
@@ -137,13 +128,13 @@ export default function DisputeForm({
       )}
 
       <label>
-        What&apos;s actually on the ground here?
+        <span className="label">What&apos;s actually on the ground here?</span>
         <select
           value={landCover}
           onChange={(e) => setLandCover(e.target.value as LandCover)}
-          className="mt-1 w-full rounded border px-2 py-2"
+          className="field"
         >
-          <option value="">— not sure —</option>
+          <option value="">- not sure -</option>
           {(Object.keys(LANDCOVER_LABELS) as LandCover[]).map((c) => (
             <option key={c} value={c}>
               {LANDCOVER_LABELS[c]}
@@ -153,19 +144,19 @@ export default function DisputeForm({
       </label>
 
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={onSite} onChange={(e) => setOnSite(e.target.checked)} />
+        <input type="checkbox" checked={onSite} onChange={(e) => setOnSite(e.target.checked)} className="h-5 w-5 accent-[var(--accent)]" />
         I have been to this location in person
       </label>
 
       {/* photo */}
       <div>
-        <label className="block">Photo (optional, strengthens your report)</label>
-        <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="mt-1 block" />
+        <label className="label">Photo (optional, strengthens your report)</label>
+        <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="block text-sm file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[var(--accent-soft)] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[var(--accent)]" />
         {photoUrl && (
           <div className="mt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl} alt="Report" className="max-h-36 rounded border" />
-            <p className="text-xs text-gray-500">
+            <img src={photoUrl} alt="Report" loading="lazy" decoding="async" className="max-h-36 rounded-xl border" style={{ borderColor: "var(--glass-border)" }} />
+            <p className="text-xs faint">
               {geo ? `location captured (±${Math.round(geo.accuracyM ?? 0)} m)` : "location not captured"}
             </p>
           </div>
@@ -173,23 +164,23 @@ export default function DisputeForm({
       </div>
 
       <label>
-        Comment
+        <span className="label">Comment</span>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
           placeholder="Describe what you know about this place…"
-          className="mt-1 w-full rounded border px-2 py-2"
+          className="field"
         />
       </label>
 
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         <label>
-          You are…
+          <span className="label">You are…</span>
           <select
             value={reporterType}
             onChange={(e) => setReporterType(e.target.value as ReporterType)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           >
             {(Object.keys(REPORTER_LABELS) as ReporterType[]).map((r) => (
               <option key={r} value={r}>
@@ -199,31 +190,30 @@ export default function DisputeForm({
           </select>
         </label>
         <label>
-          Name (optional)
+          <span className="label">Name (optional)</span>
           <input
             value={reporterName}
             onChange={(e) => setReporterName(e.target.value)}
-            className="mt-1 w-full rounded border px-2 py-2"
+            className="field"
           />
         </label>
       </div>
 
-      <p className="rounded bg-gray-50 p-2 text-xs text-gray-600">
+      <p className="glass p-3 text-xs muted">
         Your report may be published as open data and used to improve the detection
         model. Don&apos;t include personal information about others.
       </p>
 
-      {error && <p className="text-red-600">{error}</p>}
-
       <div className="flex gap-2">
-        <button
-          onClick={submit}
-          disabled={busy}
-          className="flex-1 rounded bg-green-600 px-4 py-3 font-medium text-white disabled:opacity-40"
+        <ActionButton
+          onAction={submit}
+          className="btn btn-primary flex-1"
+          loadingLabel="Sending"
+          successToast="Report received. Thank you."
         >
-          {busy ? "Sending…" : "Submit report"}
-        </button>
-        <button onClick={onCancel} className="rounded bg-gray-200 px-4 py-3">
+          Submit report
+        </ActionButton>
+        <button onClick={onCancel} className="btn btn-ghost">
           Cancel
         </button>
       </div>
@@ -241,12 +231,7 @@ function StanceButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`flex-1 rounded px-3 py-2 font-medium ${
-        active ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-700"
-      }`}
-    >
+    <button onClick={onClick} className={`btn flex-1 ${active ? "btn-primary" : "btn-ghost"}`}>
       {children}
     </button>
   );

@@ -1,5 +1,5 @@
 /**
- * The acoustic exhibit for a plot location — the data the PDF exhibit section
+ * The acoustic exhibit for a plot location, the data the PDF exhibit section
  * renders. Query: ?lng=&lat=&radiusKm=&days=
  *
  * "Satellite says where (the plot), the acoustic nodes say when (these
@@ -21,5 +21,7 @@ export async function GET(req: Request) {
   const days = Number(p.get("days")) || 90;
   const since = new Date(Date.now() - days * 864e5).toISOString();
 
-  return NextResponse.json(plotExhibit({ lng, lat }, { radiusKm, since }));
+  return NextResponse.json(plotExhibit({ lng, lat }, { radiusKm, since }), {
+    headers: { "cache-control": "public, s-maxage=120, stale-while-revalidate=600" },
+  });
 }

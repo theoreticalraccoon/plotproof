@@ -1,6 +1,6 @@
 /**
  * Capture-method confidence. An auditor will ask which method produced a
- * boundary — a traced polygon and a walked one are not equally trustworthy, and
+ * boundary, a traced polygon and a walked one are not equally trustworthy, and
  * (per PROJECT.md) tracing is often MORE accurate than walking because it has no
  * GPS error while consumer GPS scatters 3–5 m under canopy.
  *

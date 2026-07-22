@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CSV / registry import — highest-priority intake path. Cooperative registries,
+ * CSV / registry import, highest-priority intake path. Cooperative registries,
  * cadastre exports and prior certification schemes already hold coordinates;
  * importing beats field capture. Columns vary by source, so the officer maps
  * them. Every row runs the SAME save-gate as tracing before it becomes a plot.
@@ -23,6 +23,8 @@ import {
   savePlot,
 } from "@/lib/intake/store";
 import type { LocalFarmer, LocalPlot, PlotValidation } from "@/lib/intake/types";
+import ActionButton from "@/components/motion/ActionButton";
+import { useToast } from "@/components/shell/Toast";
 
 const DEMO_COOP = "demo-coop";
 const DEMO_COUNTRY = "LK";
@@ -64,7 +66,7 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
   const [results, setResults] = useState<RowResult[] | null>(null);
   const [existing, setExisting] = useState<ExistingPlot[]>([]);
   const [message, setMessage] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { toast } = useToast();
 
   const canValidate = Boolean(mapping.fullName && mapping.geometry);
 
@@ -102,7 +104,7 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
     try {
       const res = await fetch("/seed/plots.csv", { cache: "no-store" });
       if (!res.ok) {
-        setMessage("No bundled seed file yet — add your data at public/seed/plots.csv.");
+        setMessage("No bundled seed file yet, add your data at public/seed/plots.csv.");
         return;
       }
       await loadText(await res.text(), "bundled seed");
@@ -126,13 +128,13 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
     setResults(out);
   }
 
+  // Throws on failure so the Import button surfaces an error toast + shake.
   async function importValid() {
     if (!results) return;
-    setBusy(true);
     let imported = 0;
     // Dedupe farmers within this batch by membership no. (fallback: name).
     const farmerIds = new Map<string, string>();
-    try {
+    {
       for (const { row, validation } of results) {
         if (row.error || !validation?.canSave || !validation.orderedRing) continue;
         const key = row.membershipNo || row.fullName;
@@ -172,36 +174,37 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
         imported++;
       }
       setMessage(`Imported ${imported} plot(s). Queued for sync.`);
+      toast(`Imported ${imported} plot(s)`, "success");
       onImported?.();
-    } finally {
-      setBusy(false);
     }
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <input type="file" accept=".csv,text/csv" onChange={onFile} className="text-sm" />
-        <button onClick={loadSeed} className="rounded bg-gray-200 px-3 py-1.5 text-sm">
+      <div className="glass flex flex-wrap items-center gap-3 p-3">
+        <input type="file" accept=".csv,text/csv" onChange={onFile} className="text-sm file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[var(--accent-soft)] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[var(--accent)]" />
+        <button onClick={loadSeed} className="btn btn-ghost btn-sm">
           Load bundled seed
         </button>
-        {message && <p className="w-full text-sm text-gray-700">{message}</p>}
+        {message && <p className="w-full text-sm muted">{message}</p>}
       </div>
 
       {columns.length > 0 && (
-        <div className="grid gap-2 rounded border border-gray-200 p-3 sm:grid-cols-2">
+        <div className="glass-card grid gap-3 p-4 sm:grid-cols-2">
           {FIELDS.map((f) => (
-            <label key={f.key} className="text-sm">
-              {f.label}
-              {f.required && <span className="text-red-600"> *</span>}
+            <label key={f.key}>
+              <span className="label">
+                {f.label}
+                {f.required && <span style={{ color: "var(--danger)" }}> *</span>}
+              </span>
               <select
                 value={mapping[f.key] ?? ""}
                 onChange={(e) =>
                   setMapping((m) => ({ ...m, [f.key]: e.target.value || undefined }))
                 }
-                className="mt-1 w-full rounded border px-2 py-2"
+                className="field"
               >
-                <option value="">— none —</option>
+                <option value="">- none -</option>
                 {columns.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -211,11 +214,7 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
             </label>
           ))}
           <div className="sm:col-span-2">
-            <button
-              onClick={validateAll}
-              disabled={!canValidate}
-              className="rounded bg-gray-800 px-4 py-2 text-sm text-white disabled:opacity-40"
-            >
+            <button onClick={validateAll} disabled={!canValidate} className="btn btn-ghost">
               Preview &amp; validate
             </button>
           </div>
@@ -224,16 +223,16 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
 
       {results && summary && (
         <div className="flex flex-col gap-2">
-          <div className="text-sm">
-            <span className="text-green-700">{summary.ok} ready</span>
+          <div className="text-sm font-semibold">
+            <span style={{ color: "var(--accent)" }}>{summary.ok} ready</span>
             {" · "}
-            <span className="text-amber-700">{summary.warn} with warnings</span>
+            <span style={{ color: "var(--warn)" }}>{summary.warn} with warnings</span>
             {" · "}
-            <span className="text-red-700">{summary.bad} rejected</span>
+            <span style={{ color: "var(--danger)" }}>{summary.bad} rejected</span>
           </div>
-          <div className="max-h-72 overflow-auto rounded border border-gray-200">
+          <div className="data-wrap max-h-72">
             <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 bg-gray-100">
+              <thead>
                 <tr>
                   <th className="p-2">Farmer</th>
                   <th className="p-2">Area (ha)</th>
@@ -243,33 +242,34 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
               <tbody>
                 {results.slice(0, 300).map((r, i) => {
                   const status = r.row.error
-                    ? { text: r.row.error, cls: "text-red-700" }
+                    ? { text: r.row.error, color: "var(--danger)" }
                     : !r.validation?.canSave
                       ? {
                           text: r.validation?.errors[0]?.message ?? "invalid",
-                          cls: "text-red-700",
+                          color: "var(--danger)",
                         }
                       : r.validation.warnings.length
-                        ? { text: r.validation.warnings[0].message, cls: "text-amber-700" }
-                        : { text: "ready", cls: "text-green-700" };
+                        ? { text: r.validation.warnings[0].message, color: "var(--warn)" }
+                        : { text: "ready", color: "var(--accent)" };
                   return (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">{r.row.fullName || "—"}</td>
-                      <td className="p-2">{r.validation?.areaHa?.toFixed(3) ?? "—"}</td>
-                      <td className={`p-2 ${status.cls}`}>{status.text}</td>
+                    <tr key={i}>
+                      <td className="p-2">{r.row.fullName || "-"}</td>
+                      <td className="p-2 tabular-nums">{r.validation?.areaHa?.toFixed(3) ?? "-"}</td>
+                      <td className="p-2" style={{ color: status.color }}>{status.text}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <button
-            onClick={importValid}
-            disabled={busy || summary.ok + summary.warn === 0}
-            className="rounded bg-green-600 px-4 py-3 font-medium text-white disabled:opacity-40"
+          <ActionButton
+            onAction={importValid}
+            disabled={summary.ok + summary.warn === 0}
+            className="btn btn-primary"
+            loadingLabel="Importing"
           >
-            {busy ? "Importing…" : `Import ${summary.ok + summary.warn} valid plot(s)`}
-          </button>
+            Import {summary.ok + summary.warn} valid plot(s)
+          </ActionButton>
         </div>
       )}
     </div>

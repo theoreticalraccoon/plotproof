@@ -9,8 +9,12 @@ import { useCallback, useEffect, useState } from "react";
 import { countUnsynced } from "@/lib/intake/store";
 import { drainOutbox, isOnline, startAutoSync } from "@/lib/intake/sync";
 import { formatBytes, localMediaBytes, requestPersistence } from "@/lib/intake/storage";
+import { useToast } from "@/components/shell/Toast";
+import { t, useLang } from "@/lib/i18n";
 
 export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
+  const lang = useLang();
+  const { toast } = useToast();
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
   const [media, setMedia] = useState<{ bytes: number; count: number }>({
@@ -47,35 +51,44 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
     try {
       await drainOutbox();
       refresh();
+      toast(t(lang, "toast_synced"));
     } finally {
       setSyncing(false);
     }
   };
 
   return (
-    <div className="flex items-center gap-3 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+    <div className="glass flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 text-sm">
       <span
-        className={`inline-flex items-center gap-1 ${online ? "text-green-700" : "text-gray-500"}`}
+        className="inline-flex items-center gap-1.5 font-semibold"
+        style={{ color: online ? "var(--accent)" : "var(--fg-faint)" }}
       >
         <span
-          className={`h-2 w-2 rounded-full ${online ? "bg-green-500" : "bg-gray-400"}`}
+          className="h-2 w-2 rounded-full"
+          style={{ background: online ? "var(--accent)" : "var(--fg-faint)" }}
         />
         {online ? "Online" : "Offline"}
       </span>
-      <span className="text-gray-600">
+      <span className="muted">
         {pending === 0 ? "All synced" : `${pending} pending sync`}
       </span>
       {media.count > 0 && (
-        <span className="text-gray-500" title="Photos held on-device until uploaded, then purged">
+        <span className="faint" title="Photos held on-device until uploaded, then purged">
           {media.count} photo{media.count === 1 ? "" : "s"} · {formatBytes(media.bytes)} local
         </span>
       )}
       <button
         onClick={syncNow}
         disabled={!online || syncing || pending === 0}
-        className="ml-auto rounded bg-gray-800 px-3 py-1 text-white disabled:opacity-40"
+        className="btn btn-ghost btn-sm ml-auto"
       >
-        {syncing ? "Syncing…" : "Sync now"}
+        {syncing ? (
+          <>
+            <span className="spinner" aria-hidden="true" /> Syncing…
+          </>
+        ) : (
+          "Sync now"
+        )}
       </button>
     </div>
   );

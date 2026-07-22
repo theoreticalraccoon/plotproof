@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /**
  * The real analysis service returns tile URLs relative to ITS host
  * (`/tiles/<job>/<role>.png`). The browser can only load them if they are
- * absolute, so rewrite them against ANALYSIS_SERVICE_URL here — the one place
+ * absolute, so rewrite them against ANALYSIS_SERVICE_URL here, the one place
  * both halves are known. Stub URLs (`/stub/...`) are left as-is; the pack page
  * shows a labelled placeholder for those.
  */

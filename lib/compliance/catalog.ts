@@ -1,7 +1,7 @@
 /**
  * Curated, sourced catalog: products (with HS codes), destination markets, and
  * the document/certification registry with applicability predicates. This is the
- * "requirements as data" core — adding a product, market, or document is data,
+ * "requirements as data" core, adding a product, market, or document is data,
  * never a code change (the same principle as country profiles).
  *
  * Type-only imports so this module stays Node-loadable for tests.
@@ -67,7 +67,7 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     id: "packing_list",
     name: "Packing list",
     issuer: "self",
-    what: "A list of what's in each box or bag — weights and counts.",
+    what: "A list of what's in each box or bag, weights and counts.",
     why: "Customs and the buyer use it to check the shipment matches the invoice.",
     howToObtain: "Generate it here from your packing details.",
     source: "Standard international trade document",
@@ -121,7 +121,7 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     name: "Organic certificate",
     issuer: "authority",
     what: "Proof your produce meets the destination's organic standard.",
-    why: "Needed only if you sell and label the goods as organic — it commands a higher price.",
+    why: "Needed only if you sell and label the goods as organic, it commands a higher price.",
     howToObtain: "Get certified by an accredited body recognised by the destination market.",
     source: "EU/UK/US organic equivalence rules",
     applies: (ctx) => ctx.organicClaim,

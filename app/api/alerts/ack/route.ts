@@ -1,5 +1,5 @@
 /**
- * Acknowledge an alert. Records who acted and when — the evidence an exporter
+ * Acknowledge an alert. Records who acted and when, the evidence an exporter
  * needs to show they responded (PROJECT.md). Acknowledgement never deletes the
  * alert; it annotates it.
  */

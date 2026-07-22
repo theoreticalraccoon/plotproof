@@ -8,7 +8,7 @@
  *   3. equal-area area + warn on divergence -> computeAreaHa / areaMismatch
  *   4. detect overlap with existing plots   -> findOverlaps
  *
- * Area note: turf `area` returns geodesic area in m² — an equal-area measure
+ * Area note: turf `area` returns geodesic area in m², an equal-area measure
  * that needs no projection choice, correct in any UTM zone or hemisphere. It is
  * the right tool for the immediate on-device "does this match the claim?" check.
  * The AUTHORITATIVE figure for the legal PDF is recomputed server-side in
@@ -53,7 +53,7 @@ export function dedupeConsecutive(points: LngLat[]): LngLat[] {
  * (there the tap order is the intended boundary) or walking.
  *
  * Caveat: an angular sort yields a simple polygon for convex / star-shaped
- * plots — the overwhelming majority of smallholdings. Deeply concave shapes can
+ * plots, the overwhelming majority of smallholdings. Deeply concave shapes can
  * still come out wrong; the self-intersection check is the backstop that
  * refuses to save those. Does not handle antimeridian-spanning plots.
  */
@@ -105,7 +105,7 @@ export interface ExistingPlot {
  * Ids of existing plots whose INTERIOR overlaps the candidate. Uses the
  * intersection AREA (not mere boundary touch), so legitimately adjacent plots
  * sharing an edge don't false-positive, while containment (one plot inside
- * another) is still caught — the case `booleanOverlap` would miss.
+ * another) is still caught, the case `booleanOverlap` would miss.
  */
 export function findOverlaps(ring: LngLat[], existing: ExistingPlot[]): string[] {
   const closed = closeRing(ring);

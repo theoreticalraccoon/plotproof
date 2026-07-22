@@ -9,7 +9,7 @@
  *  - A Dispute is a LABELLED TRAINING SAMPLE, not a support ticket. Its fields
  *    tie a human label to the exact satellite claim it corrects, so it can be
  *    exported as ground truth (crowdsourced labels are the only realistic way to
- *    get local ground truth at global scale — PROJECT.md).
+ *    get local ground truth at global scale, PROJECT.md).
  */
 
 export type GeoPolygon = { type: "Polygon"; coordinates: number[][][] };
@@ -32,7 +32,7 @@ export interface PublicFeature {
 export type DisputeStance = "confirm" | "dispute";
 
 /**
- * WHY the reporter disputes — the categorical correction the model can learn
+ * WHY the reporter disputes, the categorical correction the model can learn
  * from. These map directly onto the hard confusions in ML.md (plantation vs
  * natural forest, legal harvest, pre-cutoff regrowth, mislocation, cloud).
  */
@@ -45,7 +45,7 @@ export type DisputeReason =
   | "cloud_or_artifact" // imagery artefact, not real change
   | "other";
 
-/** Ground-truth land cover the reporter observed — a direct training target. */
+/** Ground-truth land cover the reporter observed, a direct training target. */
 export type LandCover =
   | "natural_forest"
   | "mature_plantation"
@@ -57,13 +57,13 @@ export type LandCover =
   | "water"
   | "other";
 
-/** Who reported — used to weight label trust, not to gate submission. */
+/** Who reported, used to weight label trust, not to gate submission. */
 export type ReporterType = "anonymous" | "journalist" | "ngo" | "researcher" | "official";
 
 /** Curation lifecycle before a label is trusted for training. */
 export type ReviewStatus = "unverified" | "corroborated" | "rejected";
 
-/** A geotagged ground photo — the labelled image sample paired with the claim. */
+/** A geotagged ground photo, the labelled image sample paired with the claim. */
 export interface DisputePhoto {
   /** Inline data URL in the demo; a Storage path in production. */
   dataUrl?: string;

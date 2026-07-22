@@ -59,3 +59,9 @@ export function markInProgress(intent: SaleIntent, documentTypeId: string): void
   const current = getStatuses(intent)[documentTypeId];
   if (!current || current === "not_started") setStatus(intent, documentTypeId, "in_progress");
 }
+
+/** Wipe all per-document progress (part of "reset selling info"). */
+export function clearAllStatuses(): void {
+  if (typeof localStorage === "undefined") return;
+  localStorage.removeItem(KEY);
+}

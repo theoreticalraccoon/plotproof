@@ -4,7 +4,7 @@
  */
 import type { DisputeReason, LandCover, ReporterType } from "./types";
 
-/** Plain-language confidence band — the public never sees a raw 0.87. */
+/** Plain-language confidence band, the public never sees a raw 0.87. */
 export function confidenceBand(n: number): "High" | "Medium" | "Low" {
   if (n >= 0.8) return "High";
   if (n >= 0.6) return "Medium";
@@ -46,6 +46,8 @@ const COUNTRY_NAMES: Record<string, string> = {
   ID: "Indonesia",
   VN: "Vietnam",
   PH: "Philippines",
+  IN: "India",
+  KE: "Kenya",
   MY: "Malaysia",
   CI: "Côte d'Ivoire",
   GH: "Ghana",

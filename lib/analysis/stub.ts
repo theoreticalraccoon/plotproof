@@ -24,7 +24,7 @@ import type {
  *   as `running` for STUB_DELAY_MS, then `succeeded`.
  *
  * Nothing here touches real imagery or CRS math. Area is a rough planar
- * estimate only — the authoritative equal-area hectare figure is computed in
+ * estimate only, the authoritative equal-area hectare figure is computed in
  * PostGIS / the real service (see DECISIONS.md D-007 and SCHEMA.md).
  */
 
@@ -39,7 +39,7 @@ export class StubAnalysisClient implements AnalysisClient {
     const seed = hashString(
       `${req.plotId}|${req.countryCode}|${req.commodity}|${req.cutoffDate}`,
     );
-    // jobId carries everything poll() needs — no server state.
+    // jobId carries everything poll() needs, no server state.
     const jobId = [JOB_PREFIX, req.plotId, Date.now(), seed].join(JOB_SEP);
     return { jobId, plotId: req.plotId, status: "queued" };
   }
