@@ -110,11 +110,14 @@ export interface SweepSummary {
 export async function runMonitoringSweep(
   now = Date.now(),
   repo: MonitoringRepo = getMonitoringRepo(),
-  client: AnalysisClient = getAnalysisClient(),
+  client: AnalysisClient | null = getAnalysisClient(),
 ): Promise<SweepSummary> {
   const subs = await repo.listActiveSubscriptions();
   const due = subs.filter((s) => isDue(s, now));
   const summary: SweepSummary = { due: due.length, checked: 0, alerts: 0, failures: 0 };
+  // No analysis service means no checks can honestly run: report everything
+  // due as unchecked rather than pretending the sweep happened.
+  if (!client) return summary;
   for (const sub of due) {
     try {
       const alert = await checkSubscription(repo, client, sub, now);
@@ -142,8 +145,9 @@ export async function recheckPlot(
   plotId: string,
   now = Date.now(),
   repo: MonitoringRepo = getMonitoringRepo(),
-  client: AnalysisClient = getAnalysisClient(),
+  client: AnalysisClient | null = getAnalysisClient(),
 ): Promise<RecheckResult> {
+  if (!client) throw new Error("No analysis service is connected, the plot cannot be rechecked.");
   const sub = await repo.getSubscriptionByPlot(plotId);
   if (!sub) throw new Error(`No active subscription for plot ${plotId}`);
   const alert = await checkSubscription(repo, client, sub, now);

@@ -148,51 +148,6 @@ def alignment_figure(pairs: list[dict], grid: Grid, out_path) -> None:
     plt.close(fig)
 
 
-def chip_qa_grid(records: list[dict], out_path) -> None:
-    """Grid of sampled training chips: S2 true colour (top) over its label (bottom),
-    so the labelling can be eyeballed before any training. Each chip is titled with
-    its stratum, split, region and forest fraction."""
-    from matplotlib.colors import ListedColormap
-    from matplotlib.patches import Patch
-
-    from labels import CLASS_COLORS, CLASS_NAMES
-
-    cmap = ListedColormap(CLASS_COLORS)
-    n = len(records)
-    cols = 4
-    rows = int(np.ceil(n / cols))
-    fig = plt.figure(figsize=(3.1 * cols, 3.2 * rows + 1.2))
-    gs = GridSpec(rows * 2, cols, figure=fig)
-
-    for i, rec in enumerate(records):
-        rr, cc = (i // cols) * 2, i % cols
-        m = rec["meta"]
-
-        ax = fig.add_subplot(gs[rr, cc])
-        ax.imshow(np.clip(rec["rgb"] / _REFL_SCALE, 0, 1), interpolation="nearest")
-        ax.set_xticks([]); ax.set_yticks([])
-        ax.set_title(
-            f"{m['stratum']} · {m['split']}\n{m['region']}\nforest {m['forest_fraction']*100:.0f}%"
-            + (f"  loss {m['loss_fraction']*100:.0f}%" if m.get("loss_fraction") else ""),
-            fontsize=8,
-        )
-
-        ax = fig.add_subplot(gs[rr + 1, cc])
-        ax.imshow(rec["label"], cmap=cmap, vmin=0, vmax=len(CLASS_NAMES) - 1, interpolation="nearest")
-        ax.set_xticks([]); ax.set_yticks([])
-
-    handles = [Patch(color=CLASS_COLORS[i], label=CLASS_NAMES[i]) for i in range(len(CLASS_NAMES))]
-    fig.legend(handles=handles, loc="lower center", ncol=len(CLASS_NAMES), fontsize=8, frameon=False)
-    fig.suptitle(
-        "Training chips — Sentinel-2 true colour (top) / WorldCover+Hansen label (bottom). "
-        "Does the label match the image?",
-        fontsize=12,
-    )
-    fig.tight_layout(rect=(0, 0.03, 1, 0.97))
-    fig.savefig(out_path, dpi=140)
-    plt.close(fig)
-
-
 def before_after_tile(rgb, grid, acquisition_date, cloud_fraction, sensor, role, out_path) -> None:
     """One evidence-pack tile: full-bleed true colour, the plot outlined, and the
     acquisition date/role/cloud/sensor burned into the corner. Uses the SAME fixed

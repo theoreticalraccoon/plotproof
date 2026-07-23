@@ -94,6 +94,8 @@ export interface LocalMedia {
   height?: number;
   /** Server path once uploaded. Its presence means the blob may be purged. */
   remotePath?: string;
+  /** SHA-256 of the blob at capture; survives the blob being purged. */
+  sha256?: string;
   syncStatus: SyncStatus;
   createdAt: string;
 }
@@ -126,6 +128,13 @@ export interface LocalAttestation {
    * without it is not lawful to hold, so the type does not permit one.
    */
   consentAt: string; // ISO UTC
+  /**
+   * Tamper-evidence (lib/intake/integrity.ts): SHA-256 over the canonical
+   * record + media bytes + plot ring, chained to the previous attestation on
+   * this device. Optional only because records saved before the integrity
+   * layer existed have none; every new save populates it.
+   */
+  integrity?: import("./integrity").AttestationIntegrity;
   syncStatus: SyncStatus;
   createdAt: string;
 }

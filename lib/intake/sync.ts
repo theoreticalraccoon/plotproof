@@ -1,11 +1,12 @@
 /**
  * Offline → server sync. Drains the outbox when the device is online.
  *
- * The actual server write is behind the `SyncTransport` interface. The default
- * `stubTransport` just marks items done after a short delay, so the full queue
- * lifecycle (queued → syncing → synced) is demonstrable with no backend. Swap
- * in a `supabaseTransport` once the migration from SCHEMA.md is applied, no
- * caller changes. (Mirrors the analysis-client stub pattern.)
+ * The server write is behind the `SyncTransport` interface. The default is the
+ * REAL Supabase transport (lib/intake/supabaseTransport.ts, tables from
+ * migration 0002). When Supabase is not configured or nobody is signed in,
+ * drains report `unavailable: true` and leave everything queued — there is
+ * deliberately no transport that pretends to succeed: a farmer's plot marked
+ * "synced" that exists in no server is data loss wearing a green tick.
  */
 import { db, type OutboxItem } from "./db";
 
@@ -21,33 +22,32 @@ export interface SyncTransport {
 
 const MAX_ATTEMPTS = 5;
 
-/**
- * Placeholder transport: pretends to succeed. Returns NO remotePath, so media
- * blobs are kept locally (nothing was really uploaded). The real Supabase
- * transport will upload the blob to Storage and return its path, at which point
- * the blob is purged to reclaim device space (DECISIONS.md D-009).
- */
-export const stubTransport: SyncTransport = {
-  async push() {
-    await new Promise((r) => setTimeout(r, 300));
-  },
-};
-
 export function isOnline(): boolean {
   return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
 let running = false;
 
+export interface DrainResult {
+  synced: number;
+  failed: number;
+  /** True when no server sync exists (Supabase unconfigured or signed out). */
+  unavailable?: boolean;
+}
+
 /**
  * Drain the outbox. Safe to call often (e.g. on 'online', after each save, on
  * an interval), it no-ops if already running or offline. Deletes items on
  * success and flips the corresponding plot/farmer to 'synced'.
  */
-export async function drainOutbox(
-  transport: SyncTransport = stubTransport,
-): Promise<{ synced: number; failed: number }> {
+export async function drainOutbox(transport?: SyncTransport): Promise<DrainResult> {
   if (running || !isOnline()) return { synced: 0, failed: 0 };
+  if (!transport) {
+    const { getSupabaseTransport } = await import("./supabaseTransport");
+    const resolved = await getSupabaseTransport();
+    if (!resolved) return { synced: 0, failed: 0, unavailable: true };
+    transport = resolved;
+  }
   running = true;
   let synced = 0;
   let failed = 0;
@@ -112,7 +112,7 @@ async function setEntitySync(
 }
 
 /** Wire up automatic draining on reconnect. Returns a cleanup function. */
-export function startAutoSync(transport: SyncTransport = stubTransport): () => void {
+export function startAutoSync(transport?: SyncTransport): () => void {
   if (typeof window === "undefined") return () => {};
   const handler = () => void drainOutbox(transport);
   window.addEventListener("online", handler);

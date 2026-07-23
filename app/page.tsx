@@ -17,7 +17,7 @@ import {
   Languages,
   ShieldCheck,
   MapPin,
-  Bell,
+  AudioLines,
 } from "lucide-react";
 import { t, useLang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -64,6 +64,15 @@ export default function Home() {
               <h1 className="font-display mt-5 text-4xl sm:text-5xl lg:text-[3.4rem] lg:leading-[1.04]">
                 {t(lang, "landing_hero_title")}
               </h1>
+            </Reveal>
+            {/* What this is, in one sentence — Sinhala first, always. */}
+            <Reveal delay={0.08}>
+              <p className="mt-4 max-w-xl text-base font-medium sm:text-lg" lang="si">
+                {t("si", "landing_what_is")}
+              </p>
+              {lang !== "si" && (
+                <p className="mt-1.5 max-w-xl text-sm muted">{t(lang, "landing_what_is")}</p>
+              )}
             </Reveal>
             <Reveal delay={0.1}>
               <p className="mt-5 max-w-xl text-base muted sm:text-lg">{t(lang, "landing_hero_sub")}</p>
@@ -195,13 +204,13 @@ export default function Home() {
           </StaggerItem>
           <StaggerItem>
             <motion.div {...hoverLift}>
-              <Link href="/alerts" className="glass flex items-start gap-3 p-5">
+              <Link href="/acoustic" className="glass flex items-start gap-3 p-5">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
-                  <Bell size={17} />
+                  <AudioLines size={17} />
                 </span>
                 <span>
-                  <span className="block font-semibold">{t(lang, "nav_alerts")}</span>
-                  <span className="block text-sm muted">{t(lang, "landing_alerts_desc")}</span>
+                  <span className="block font-semibold">{t(lang, "footer_acoustic")}</span>
+                  <span className="block text-sm muted">{t(lang, "landing_acoustic_desc")}</span>
                 </span>
               </Link>
             </motion.div>

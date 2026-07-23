@@ -9,6 +9,7 @@ export class NetError extends Error {
   constructor(
     message: string,
     readonly kind: NetErrorKind,
+    readonly status?: number,
   ) {
     super(message);
     this.name = "NetError";
@@ -40,8 +41,9 @@ export async function fetchJson<T>(url: string, opts: FetchOpts = {}): Promise<T
       if (res.ok) return (await res.json()) as T;
 
       const kind: NetErrorKind = res.status >= 500 ? "server" : "client";
-      lastErr = new NetError(statusMessage(res.status), kind);
-      if (kind === "server" && attempt < retries) continue; // transient, retry
+      lastErr = new NetError(statusMessage(res.status), kind, res.status);
+      // 503 analysis_unavailable is a stable condition, not a transient fault.
+      if (kind === "server" && res.status !== 503 && attempt < retries) continue;
       throw lastErr;
     } catch (e) {
       clearTimeout(timer);

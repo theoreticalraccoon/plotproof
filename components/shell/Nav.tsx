@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Leaf, Menu, X, Search, Sprout, FileText, Satellite, MapPin, Bell } from "lucide-react";
+import { Leaf, Menu, X, Search, Sprout, FileText, Satellite, MapPin } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useCommandPalette } from "./CommandPalette";
 import AccountControl from "./AccountControl";
@@ -22,7 +22,6 @@ const LINKS = [
   { href: "/documents", key: "nav_documents", Icon: FileText },
   { href: "/intake", key: "nav_evidence", Icon: Satellite },
   { href: "/explore", key: "nav_explore", Icon: MapPin },
-  { href: "/alerts", key: "nav_alerts", Icon: Bell },
 ] as const;
 
 export default function Nav() {

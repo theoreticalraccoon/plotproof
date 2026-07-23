@@ -26,6 +26,10 @@ export async function GET(req: Request) {
   if (!jobId) {
     return NextResponse.json({ error: "jobId is required" }, { status: 400 });
   }
-  const poll = await getAnalysisClient().poll(jobId);
+  const client = getAnalysisClient();
+  if (!client) {
+    return NextResponse.json({ error: "analysis_unavailable" }, { status: 503 });
+  }
+  const poll = await client.poll(jobId);
   return NextResponse.json(absolutiseTiles(poll));
 }

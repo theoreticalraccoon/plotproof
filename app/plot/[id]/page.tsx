@@ -7,18 +7,19 @@
  * start, queued/running job, slow network, outright failure, or an
  * insufficient-data verdict, each degrades into a sentence the presenter can
  * read out, never a spinner or a stack trace. Print / Save-as-PDF is the pack
- * output for now (the PDFKit generator is still parked on caveats sign-off).
+ * output; there is deliberately no server-side PDF generator.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Printer } from "lucide-react";
+import { FileJson, Printer } from "lucide-react";
 import Reveal from "@/components/motion/Reveal";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import { Skeleton } from "@/components/motion/Skeleton";
 import { hoverLift } from "@/lib/motion/variants";
 import { printAs } from "@/lib/print";
-import { getAttestationForPlot, getFarmer, getPlot, mediaObjectUrl } from "@/lib/intake/store";
+import { getAttestationForPlot, getFarmer, getPlot, mediaBlob, mediaObjectUrl } from "@/lib/intake/store";
+import { verifyAttestationIntegrity, type VerifyResult } from "@/lib/intake/integrity";
 import { captureConfidence } from "@/lib/intake/confidence";
 import { fetchJson, NetError, warmup } from "@/lib/net";
 import type { AnalysisResult, JobHandle, JobPoll } from "@/lib/analysis";
@@ -37,6 +38,7 @@ type JobState =
   | "running"
   | "ready"
   | "slow" // taking longer than expected, still trying
+  | "unavailable" // no analysis service connected: no verdict exists, say so
   | "failed";
 
 export default function EvidencePackPage() {
@@ -96,6 +98,10 @@ export default function EvidencePackPage() {
         await sleep(POLL_MS);
       }
     } catch (e) {
+      if (e instanceof NetError && e.status === 503) {
+        setState("unavailable");
+        return;
+      }
       setError(e instanceof NetError ? e.message : "Analysis could not be started.");
       setState("failed");
     }
@@ -179,15 +185,22 @@ export default function EvidencePackPage() {
             { label: "EUDR evidence pack" },
           ]}
         />
-        <motion.div {...hoverLift}>
-          <button
-            onClick={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
-            disabled={state !== "ready"}
-            className="btn btn-primary btn-sm"
-          >
-            <Printer size={15} /> Download PDF
-          </button>
-        </motion.div>
+        <div className="flex items-center gap-2">
+          <motion.div {...hoverLift}>
+            <button onClick={() => downloadDds(plot, farmer)} className="btn btn-ghost btn-sm">
+              <FileJson size={15} /> DDS geolocation (GeoJSON)
+            </button>
+          </motion.div>
+          <motion.div {...hoverLift}>
+            <button
+              onClick={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
+              disabled={state !== "ready" && state !== "unavailable"}
+              className="btn btn-primary btn-sm"
+            >
+              <Printer size={15} /> Download PDF
+            </button>
+          </motion.div>
+        </div>
       </div>
 
       <Reveal>
@@ -216,7 +229,7 @@ export default function EvidencePackPage() {
       </Section>
 
       {/* verdict */}
-      <Section title="Verdict">
+      <Section title="Satellite assessment">
         {result ? (
           <div>
             <p className="text-lg font-semibold">{verdictSentence(result.verdict)}</p>
@@ -230,6 +243,18 @@ export default function EvidencePackPage() {
                 {result.clearedHectares != null && ` · ~${result.clearedHectares.toFixed(2)} ha`}
               </p>
             )}
+          </div>
+        ) : state === "unavailable" ? (
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              No satellite assessment. None has been performed for this plot.
+            </p>
+            <p className="mt-1 text-sm text-gray-600">
+              This deployment has no analysis service connected, so this pack
+              contains the plot geometry and field attestation only. Assess the
+              coordinates against the EU JRC Global Forest Cover 2020 layer and
+              Global Forest Watch before relying on them.
+            </p>
           </div>
         ) : (
           <p className="text-sm text-gray-500">Awaiting analysis result…</p>
@@ -296,22 +321,36 @@ export default function EvidencePackPage() {
           <p className="text-sm text-gray-500">
             {result?.verdict === "insufficient_data"
               ? "No renderable imagery, insufficient clear observations for this plot."
-              : "Imagery renders once analysis completes."}
+              : state === "unavailable"
+                ? "No satellite imagery, no analysis service is connected to this deployment."
+                : "Imagery renders once analysis completes."}
           </p>
         )}
       </Section>
 
       {/* methodology */}
       <Section title="Methodology">
-        <ul className="list-disc pl-5 text-sm text-gray-700">
-          <li>Model: {result?.modelVersion ?? "-"} (U-Net per-pixel forest probability).</li>
-          <li>
-            Sources: Sentinel-2 L2A (optical, 10 m), Sentinel-1 GRD (radar), Hansen Global
-            Forest Change (baseline). Accessed {result?.dataAccessedAt?.slice(0, 10) ?? "-"} (UTC).
-          </li>
-          <li>Assessment cut-off: {CUTOFF}. Forest definition: applicable national profile.</li>
-          <li>Change detection outside the model: sustained forest-fraction drop across observations.</li>
-        </ul>
+        {result ? (
+          <ul className="list-disc pl-5 text-sm text-gray-700">
+            <li>Model: {result.modelVersion}.</li>
+            <li>
+              Sources: Sentinel-2 L2A (optical, 10 m), Sentinel-1 GRD (radar), Hansen Global
+              Forest Change (baseline). Accessed {result.dataAccessedAt?.slice(0, 10) ?? "-"} (UTC).
+            </li>
+            <li>
+              Assessment cut-off: {CUTOFF}. Forest definition: national parameters,{" "}
+              <strong>not yet verified against official national sources</strong>, treat
+              the threshold values as provisional.
+            </li>
+            <li>Change detection outside the model: sustained forest-fraction drop across observations.</li>
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-700">
+            No satellite methodology applies, no analysis was performed. Plot geometry
+            is captured on-device in WGS84 (EPSG:4326); area is geodesic. The EUDR
+            cut-off date used throughout is {CUTOFF}.
+          </p>
+        )}
       </Section>
 
       {/* caveats */}
@@ -350,6 +389,7 @@ export default function EvidencePackPage() {
               <Field k="Captured" v={`${attestation.capturedAt} (UTC)`} />
               <Field k="Farmer confirmed" v={`${attestation.farmerNameSnapshot} · ${attestation.confirmationMethod}`} />
             </div>
+            <IntegritySeal attestation={attestation} plot={plot} />
           </div>
         ) : (
           <p className="text-sm text-gray-500">This plot has not been attested in the field.</p>
@@ -374,7 +414,7 @@ export default function EvidencePackPage() {
       </Section>
 
       <footer className="mt-6 border-t border-gray-300 pt-3 text-xs text-gray-400">
-        On-screen evidence pack. Downloadable PDF generation is pending final caveats sign-off.
+        On-screen evidence pack. Use Print / Save as PDF for a file copy.
       </footer>
       </article>
       </Reveal>
@@ -391,9 +431,11 @@ function JobBanner({ state, error, onRetry }: { state: JobState; error: string |
     queued: "Analysis queued, waiting for the service to pick it up…",
     running: "Analysing satellite imagery for this plot…",
     slow: "Analysis is taking longer than usual, the network or service is slow.",
+    unavailable:
+      "Satellite analysis is not connected in this deployment. This pack shows captured evidence only, no verdict is produced.",
     failed: error ?? "Analysis couldn't be completed.",
   };
-  const bad = state === "failed" || state === "slow";
+  const bad = state === "failed" || state === "slow" || state === "unavailable";
   return (
     <div
       className="my-3 flex items-center gap-3 rounded-xl p-3 text-sm print:hidden"
@@ -405,7 +447,7 @@ function JobBanner({ state, error, onRetry }: { state: JobState; error: string |
     >
       {!bad && <span className="spinner" aria-hidden="true" />}
       <span>{copy[state]}</span>
-      {bad && (
+      {bad && state !== "unavailable" && (
         <button onClick={onRetry} className="btn btn-ghost btn-sm ml-auto">
           Retry
         </button>
@@ -433,6 +475,84 @@ function Field({ k, v }: { k: string; v: string }) {
     </div>
   );
 }
+/**
+ * The attestation's tamper-evidence seal. Shows the content hash and chain
+ * position, and re-verifies every hash from the stored bytes on demand. The
+ * caveat is stated on screen: this proves the record hasn't changed since
+ * capture on the device, it does not independently prove the capture.
+ */
+function IntegritySeal({ attestation, plot }: { attestation: LocalAttestation; plot: LocalPlot | null }) {
+  const [result, setResult] = useState<VerifyResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const integrity = attestation.integrity;
+
+  if (!integrity) {
+    return (
+      <p className="w-full text-xs text-gray-500">
+        Saved before the integrity layer existed: this record carries no tamper-evidence seal.
+      </p>
+    );
+  }
+
+  const verify = async () => {
+    if (!plot) return;
+    setBusy(true);
+    try {
+      const [photoBlob, signatureBlob] = await Promise.all([
+        mediaBlob(attestation.photoMediaId),
+        attestation.signatureMediaId ? mediaBlob(attestation.signatureMediaId) : undefined,
+      ]);
+      setResult(
+        await verifyAttestationIntegrity({
+          integrity,
+          hashInput: {
+            plotId: attestation.plotId,
+            officerId: attestation.officerId,
+            officerName: attestation.officerName,
+            capturedAt: attestation.capturedAt,
+            location: attestation.location,
+            farmerNameSnapshot: attestation.farmerNameSnapshot,
+            farmerIdSnapshot: attestation.farmerIdSnapshot,
+            confirmationMethod: attestation.confirmationMethod,
+            consentAt: attestation.consentAt,
+          },
+          ring: plot.ring,
+          photoBlob,
+          signatureBlob,
+        }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="w-full border-t border-gray-200 pt-2 text-xs">
+      <Field k="Record seal (SHA-256)" v={`${integrity.contentHash.slice(0, 16)}… · chain #${integrity.chainSeq}`} />
+      <p className="mt-1 text-gray-500">
+        Photo, signature, boundary, and identity fields were hashed on the officer&apos;s device at
+        save time and chained to the previous record. This makes later edits detectable; it does not
+        by itself prove the original capture, and it is not yet anchored to an external timestamp.
+      </p>
+      <div className="mt-1.5 print:hidden">
+        <button onClick={verify} disabled={busy || !plot} className="btn btn-ghost btn-sm">
+          {busy ? "Verifying…" : "Re-verify from stored bytes"}
+        </button>
+      </div>
+      {result && (
+        <ul className="mt-1.5 space-y-0.5">
+          {result.checks.map((c) => (
+            <li key={c.label} style={{ color: c.ok ? "var(--ok, #15803d)" : "var(--warn, #b91c1c)" }}>
+              {c.ok ? "✓" : "✗"} {c.label}
+              {c.detail && <span className="text-gray-500"> — {c.detail}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function Centered({ children }: { children: React.ReactNode }) {
   return <div className="flex min-h-dvh flex-col items-center justify-center gap-2 p-8 text-center text-sm muted">{children}</div>;
 }
@@ -441,6 +561,37 @@ function verdictSentence(v: AnalysisResult["verdict"]): string {
   if (v === "clear") return "No forest-cover loss detected within this plot over the observed period.";
   if (v === "flagged") return "Possible forest-cover loss detected within this plot.";
   return "Not enough clear imagery to determine a verdict for this plot.";
+}
+
+/**
+ * TRACES-ready geolocation file. EUDR due diligence statements carry producer
+ * geolocation as GeoJSON (WGS84, EPSG:4326); this emits one Feature per plot
+ * with the property names the EU Information System expects, so an exporter or
+ * cooperative can attach it to their DDS without reformatting.
+ */
+function downloadDds(plot: LocalPlot, farmer: LocalFarmer | null): void {
+  const fc = {
+    type: "FeatureCollection" as const,
+    features: [
+      {
+        type: "Feature" as const,
+        geometry: { type: "Polygon" as const, coordinates: [plot.ring] },
+        properties: {
+          ProducerName: farmer?.fullName ?? "",
+          ProducerCountry: plot.countryCode,
+          ProductionPlace: plot.id,
+          Area: Number(plot.computedAreaHa.toFixed(4)),
+        },
+      },
+    ],
+  };
+  const blob = new Blob([JSON.stringify(fc)], { type: "application/geo+json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `dds-geolocation-${plot.id.slice(0, 8)}.geojson`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function centroid(ring: [number, number][]): { lng: number; lat: number } {

@@ -6,11 +6,14 @@
  */
 import { NextResponse } from "next/server";
 import { recheckPlot } from "@/lib/monitoring/engine";
+import { requireBearer } from "@/lib/routeAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  const denied = requireBearer(req, "CRON_SECRET");
+  if (denied) return denied;
   let plotId: string | undefined;
   try {
     ({ plotId } = await req.json());

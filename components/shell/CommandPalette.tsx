@@ -10,7 +10,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Search, CornerDownLeft, Leaf, FileText, Satellite, MapPin, Bell, AudioLines, Home, Languages } from "lucide-react";
+import { Search, CornerDownLeft, Leaf, FileText, Satellite, MapPin, AudioLines, Home, Languages } from "lucide-react";
 import { t, useLang, LANGS, setLang } from "@/lib/i18n";
 import type { LucideIcon } from "lucide-react";
 
@@ -51,7 +51,6 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       { id: "documents", label: t(lang, "nav_documents"), group: t(lang, "cmd_group_nav"), icon: FileText, run: () => router.push("/documents") },
       { id: "intake", label: t(lang, "nav_evidence"), group: t(lang, "cmd_group_nav"), icon: Satellite, run: () => router.push("/intake") },
       { id: "explore", label: t(lang, "nav_explore"), group: t(lang, "cmd_group_nav"), icon: MapPin, run: () => router.push("/explore") },
-      { id: "alerts", label: t(lang, "nav_alerts"), group: t(lang, "cmd_group_nav"), icon: Bell, run: () => router.push("/alerts") },
       { id: "acoustic", label: t(lang, "footer_acoustic"), group: t(lang, "cmd_group_nav"), icon: AudioLines, run: () => router.push("/acoustic") },
     ];
     const actions: Command[] = [

@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { countUnsynced } from "@/lib/intake/store";
 import { drainOutbox, isOnline, startAutoSync } from "@/lib/intake/sync";
 import { formatBytes, localMediaBytes, requestPersistence } from "@/lib/intake/storage";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { useToast } from "@/components/shell/Toast";
 import { t, useLang } from "@/lib/i18n";
 
@@ -49,13 +50,21 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
   const syncNow = async () => {
     setSyncing(true);
     try {
-      await drainOutbox();
+      const result = await drainOutbox();
       refresh();
-      toast(t(lang, "toast_synced"));
+      if (result.unavailable) {
+        toast("No server sync is connected — records stay on this device only.");
+      } else if (result.failed > 0) {
+        toast(`${result.synced} synced, ${result.failed} failed — will retry.`);
+      } else {
+        toast(t(lang, "toast_synced"));
+      }
     } finally {
       setSyncing(false);
     }
   };
+
+  const serverless = !isSupabaseConfigured();
 
   return (
     <div className="glass flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 text-sm">
@@ -70,7 +79,11 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
         {online ? "Online" : "Offline"}
       </span>
       <span className="muted">
-        {pending === 0 ? "All synced" : `${pending} pending sync`}
+        {serverless
+          ? `On this device only — no server sync connected${pending > 0 ? ` (${pending} queued)` : ""}`
+          : pending === 0
+            ? "All synced"
+            : `${pending} pending sync`}
       </span>
       {media.count > 0 && (
         <span className="faint" title="Photos held on-device until uploaded, then purged">

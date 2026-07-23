@@ -1,6 +1,0 @@
-# Training the forest U-Net. Kept separate from the imagery requirements because
-# training runs on a GPU / free Colab, not in the data-prep environment.
-# CPU is fine only for `python train.py --smoke` (a plumbing check, not a real fit).
-torch>=2.5
-segmentation-models-pytorch>=0.3
-# segmentation-models-pytorch pulls in timm (encoders) + huggingface-hub (weights).

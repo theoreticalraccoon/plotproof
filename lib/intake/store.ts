@@ -5,6 +5,12 @@
 import { db } from "./db";
 import type { ExistingPlot } from "./geometry";
 import type { ProcessedImage } from "./image";
+import {
+  INTEGRITY_ALGO,
+  attestationContentHash,
+  ringSha256,
+  sha256Hex,
+} from "./integrity";
 import type { OfficerIdentity } from "./officer";
 import type {
   ConfirmationMethod,
@@ -104,12 +110,32 @@ export interface AttestationInput {
  * Persist an attestation with its photo and signature, flip the plot to
  * 'attested', and queue everything for sync, all in one transaction, so a
  * crash can never leave a plot marked attested with a missing photo.
+ *
+ * Also seals the record: media bytes and the plot ring are SHA-256 hashed and
+ * the record is chained to the previous attestation on this device
+ * (lib/intake/integrity.ts), so any later edit or deletion is detectable.
  */
 export async function saveAttestation(input: AttestationInput): Promise<LocalAttestation> {
   const database = db();
   const now = nowIso();
   const photo = mediaRecord(input.plotId, "photo", input.photo, now);
   const signature = mediaRecord(input.plotId, "signature", input.signature, now);
+
+  // Hashing happens before the transaction: WebCrypto promises are not
+  // IndexedDB-transaction-safe, and a single-officer device has no writer race.
+  const plot = await database.plots.get(input.plotId);
+  if (!plot) throw new Error(`Plot ${input.plotId} not found.`);
+  const [photoSha256, signatureSha256, ringHash] = await Promise.all([
+    sha256Hex(input.photo.blob),
+    sha256Hex(input.signature.blob),
+    ringSha256(plot.ring),
+  ]);
+  photo.sha256 = photoSha256;
+  signature.sha256 = signatureSha256;
+  const chainHead = await latestSealedAttestation();
+  const prevHash = chainHead?.integrity?.contentHash ?? null;
+  const chainSeq = (chainHead?.integrity?.chainSeq ?? 0) + 1;
+
   const attestation: LocalAttestation = {
     id: newId(),
     plotId: input.plotId,
@@ -125,6 +151,29 @@ export async function saveAttestation(input: AttestationInput): Promise<LocalAtt
     consentAt: input.consentAt,
     syncStatus: "queued",
     createdAt: now,
+  };
+  attestation.integrity = {
+    algo: INTEGRITY_ALGO,
+    photoSha256,
+    signatureSha256,
+    ringSha256: ringHash,
+    prevHash,
+    chainSeq,
+    contentHash: await attestationContentHash({
+      plotId: attestation.plotId,
+      officerId: attestation.officerId,
+      officerName: attestation.officerName,
+      capturedAt: attestation.capturedAt,
+      location: attestation.location,
+      farmerNameSnapshot: attestation.farmerNameSnapshot,
+      farmerIdSnapshot: attestation.farmerIdSnapshot,
+      confirmationMethod: attestation.confirmationMethod,
+      consentAt: attestation.consentAt,
+      photoSha256,
+      signatureSha256,
+      ringSha256: ringHash,
+      prevHash,
+    }),
   };
 
   await database.transaction(
@@ -154,10 +203,24 @@ export async function getAttestationForPlot(
   return db().attestations.where("plotId").equals(plotId).first();
 }
 
+/** Head of this device's hash chain: the sealed attestation with the highest
+ *  chain sequence. Records from before the integrity layer are skipped. */
+async function latestSealedAttestation(): Promise<LocalAttestation | undefined> {
+  const all = await db().attestations.toArray();
+  return all
+    .filter((a) => a.integrity)
+    .sort((a, b) => (a.integrity!.chainSeq < b.integrity!.chainSeq ? 1 : -1))[0];
+}
+
 /** Object URL for a stored media blob, or null if already purged. Caller revokes. */
 export async function mediaObjectUrl(mediaId: string): Promise<string | null> {
   const m = await db().media.get(mediaId);
   return m?.blob ? URL.createObjectURL(m.blob) : null;
+}
+
+/** Raw stored media blob, or undefined if already purged after upload. */
+export async function mediaBlob(mediaId: string): Promise<Blob | undefined> {
+  return (await db().media.get(mediaId))?.blob;
 }
 
 function mediaRecord(

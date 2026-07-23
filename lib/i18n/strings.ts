@@ -45,6 +45,7 @@ const en: Dict = {
   footer_honesty_body: "We never invent law. Every requirement we show cites a real source and tells you to confirm it with the destination authority before you ship.",
   footer_rights: "All rights reserved.",
   footer_acoustic: "Acoustic monitoring (preview)",
+  footer_whats_real: "What is real, what is not",
   footer_privacy: "Privacy and your data",
 
   // --- landing page ------------------------------------------------------
@@ -52,6 +53,18 @@ const en: Dict = {
   landing_hero_title: "Sell abroad. Skip the middleman. Keep the margin.",
   landing_hero_sub:
     "PlotProof tells you exactly which export documents your harvest needs for the EU, UK, or US, and generates the ones we can, in minutes, from four simple questions.",
+  landing_what_is:
+    "PlotProof maps your farm plot and records signed proof that your land was not deforested — the evidence EU buyers now require.",
+  price_title: "Know your price before you negotiate",
+  price_context: "Higher than {pct}% of monthly prices over the last 5 years.",
+  price_yoy: "{dir}{yoy}% vs a year ago.",
+  price_your_qty: "Your {kg} kg at this reference price ≈ ${value}.",
+  price_forecast: "Next month ({month}): likely between ${low} and ${high} per kg.",
+  price_caveat:
+    "World reference price, not a farm-gate offer. Use it to judge the offers you receive.",
+  price_none: "No world reference price series exists for this product, so none is shown.",
+  price_stale:
+    "The reference price data in this deployment ends at {month} and is out of date, so no price is shown. It needs a refresh from the World Bank series.",
   landing_cta_primary: "Sell your harvest",
   landing_cta_secondary: "See how it works",
   landing_stat_products: "commodities covered",
@@ -80,6 +93,7 @@ const en: Dict = {
   landing_also_title: "Also in PlotProof",
   landing_explore_desc: "A free, public map of flagged deforestation, open to anyone, no login.",
   landing_alerts_desc: "Standing monitoring: get notified if a verified plot shows new clearing.",
+  landing_acoustic_desc: "A field-hardware preview: chainsaw detection over LoRa from an ESP32 sensor.",
   sell_title: "Sell your harvest abroad",
   sell_sub: "Answer four simple questions. We'll show you exactly which papers you need and make the ones we can.",
   q_product: "What do you grow?",
@@ -234,12 +248,25 @@ const si: Dict = {
   footer_honesty_body: "අපි කිසි විටෙකත් නීතිය ගොතන්නේ නැත. අප පෙන්වන සෑම අවශ්‍යතාවක්ම සැබෑ මූලාශ්‍රයක් උපුටා දක්වයි; නැව්ගත කිරීමට පෙර එය ගමනාන්තයේ බලධාරියා සමඟ තහවුරු කරගන්නැයි කියයි.",
   footer_rights: "සියලු හිමිකම් ඇවිරිණි.",
   footer_acoustic: "ශබ්ද අධීක්ෂණය (පෙරදසුන)",
+  footer_whats_real: "සැබෑ මොනවාද, නොවන මොනවාද",
   footer_privacy: "පෞද්ගලිකත්වය සහ ඔබේ දත්ත",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "කුඩා ගොවීන් සඳහා සෘජු අපනයන අනුකූලතාව",
   landing_hero_title: "විදේශයට විකුණන්න. මැදිහත්කරු මඟහරින්න. ලාභය තබාගන්න.",
   landing_hero_sub: "ඔබේ අස්වැන්නට EU, UK හෝ US සඳහා අවශ්‍ය අපනයන ලේඛන මොනවාදැයි PlotProof නිවැරදිව කියයි, සරල ප්‍රශ්න හතරකින්, විනාඩි කිහිපයකින් සෑදිය හැකි ඒවා අපි සාදමු.",
+  landing_what_is:
+    "PlotProof ඔබේ ගොවිබිම සිතියම්ගත කර, ඉඩම වනාන්තර එළි කළ එකක් නොවන බවට අත්සන් සහිත සාක්ෂි සටහන් කරයි — යුරෝපීය ගැනුම්කරුවන් දැන් ඉල්ලන සාක්ෂිය.",
+  price_title: "කේවල් කිරීමට පෙර ඔබේ මිල දැනගන්න",
+  price_context: "පසුගිය වසර 5 ක මාසික මිලවලින් {pct}% කට වඩා ඉහළයි.",
+  price_yoy: "වසරකට පෙරට සාපේක්ෂව {dir}{yoy}%.",
+  price_your_qty: "මෙම යොමු මිලට ඔබේ කි.ග්‍රෑ. {kg} ≈ ඩොලර් {value}.",
+  price_forecast: "ලබන මාසය ({month}): කි.ග්‍රෑ. එකකට ඩොලර් {low} – {high} අතර විය හැක.",
+  price_caveat:
+    "මෙය ලෝක යොමු මිලයි, ගොවිපොළ-දොරටු මිලක් නොවේ. ඔබට ලැබෙන දීමනා විනිශ්චය කිරීමට භාවිත කරන්න.",
+  price_none: "මෙම නිෂ්පාදනයට ලෝක යොමු මිල මාලාවක් නොමැති නිසා මිලක් නොපෙන්වයි.",
+  price_stale:
+    "මෙහි ඇති යොමු මිල දත්ත {month} දක්වා පමණක් වන අතර යල් පැන ගොස් ඇති නිසා මිලක් නොපෙන්වයි. ලෝක බැංකු මාලාවෙන් යාවත්කාලීන කිරීමක් අවශ්‍යයි.",
   landing_cta_primary: "ඔබේ අස්වැන්න විකුණන්න",
   landing_cta_secondary: "එය ක්‍රියා කරන ආකාරය බලන්න",
   landing_stat_products: "ආවරණය කරන භාණ්ඩ",
@@ -268,6 +295,7 @@ const si: Dict = {
   landing_also_title: "PlotProof තුළ තවත්",
   landing_explore_desc: "ලකුණු කළ වන විනාශයේ නොමිලේ, පොදු සිතියමක්, ලොග් වීමකින් තොරව ඕනෑම කෙනෙකුට.",
   landing_alerts_desc: "ස්ථාවර අධීක්ෂණය: සත්‍යාපිත ඉඩමක නව හෙළිකිරීමක් පෙන්වන්නේ නම් දැනුම්දීමක් ලබාගන්න.",
+  landing_acoustic_desc: "ක්ෂේත්‍ර උපකරණ පෙරදසුනක්: ESP32 සංවේදකයකින් LoRa හරහා කියත් හඬ හඳුනාගැනීම.",
   documents_title: "ඔබේ අපනයන ලේඛන",
   documents_empty_body: "ඔබ විකුණන දේ අපට කියන්න, අවශ්‍ය නිවැරදි ලේඛන අපි ලැයිස්තුගත කරමු.",
   offline_message: "නොබැඳි, ඔබේ කාර්යය මෙම උපකරණයේ සුරැකී ඇත, යළි සම්බන්ධ වූ විට සමමුහුර්ත වේ.",
@@ -389,12 +417,25 @@ const ta: Dict = {
   footer_honesty_body: "நாங்கள் ஒருபோதும் சட்டத்தை உருவாக்க மாட்டோம். நாங்கள் காட்டும் ஒவ்வொரு தேவையும் உண்மையான மூலத்தை மேற்கோள் காட்டுகிறது; அனுப்பும் முன் இலக்கு அதிகாரியிடம் உறுதிப்படுத்தச் சொல்கிறோம்.",
   footer_rights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
   footer_acoustic: "ஒலி கண்காணிப்பு (முன்னோட்டம்)",
+  footer_whats_real: "எது உண்மை, எது இல்லை",
   footer_privacy: "தனியுரிமையும் உங்கள் தரவும்",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "சிறு விவசாயிகளுக்கான நேரடி ஏற்றுமதி இணக்கம்",
   landing_hero_title: "வெளிநாட்டில் விற்கவும். இடைத்தரகரைத் தவிர்க்கவும். லாபத்தை வைத்திருங்கள்.",
   landing_hero_sub: "உங்கள் அறுவடைக்கு EU, UK அல்லது US சந்தைக்கு என்ன ஆவணங்கள் தேவை என்று PlotProof சரியாகச் சொல்கிறது, நான்கு எளிய கேள்விகளில், நிமிடங்களில் உருவாக்கக்கூடியவற்றை நாங்களே உருவாக்குகிறோம்.",
+  landing_what_is:
+    "PlotProof உங்கள் விவசாய நிலத்தை வரைபடமாக்கி, அது காடழிக்கப்பட்ட நிலம் அல்ல என்பதற்கான கையொப்பமிட்ட சான்றைப் பதிவு செய்கிறது — ஐரோப்பிய வாங்குபவர்கள் இப்போது கேட்கும் ஆதாரம்.",
+  price_title: "பேரம் பேசும் முன் உங்கள் விலையை அறியுங்கள்",
+  price_context: "கடந்த 5 ஆண்டுகளின் மாத விலைகளில் {pct}% ஐ விட அதிகம்.",
+  price_yoy: "ஓராண்டுக்கு முன்பை விட {dir}{yoy}%.",
+  price_your_qty: "இந்த குறிப்பு விலையில் உங்கள் {kg} கி.கி. ≈ ${value}.",
+  price_forecast: "அடுத்த மாதம் ({month}): கி.கி. ஒன்றுக்கு ${low} – ${high} இடையில் இருக்கலாம்.",
+  price_caveat:
+    "இது உலக குறிப்பு விலை, பண்ணை-வாயில் விலை அல்ல. உங்களுக்கு வரும் சலுகைகளை மதிப்பிட பயன்படுத்துங்கள்.",
+  price_none: "இந்த பொருளுக்கு உலக குறிப்பு விலைத் தொடர் இல்லை, எனவே எதுவும் காட்டப்படவில்லை.",
+  price_stale:
+    "இங்குள்ள குறிப்பு விலைத் தரவு {month} வரை மட்டுமே உள்ளது; காலாவதியானதால் விலை காட்டப்படவில்லை. உலக வங்கித் தொடரிலிருந்து புதுப்பிப்பு தேவை.",
   landing_cta_primary: "உங்கள் அறுவடையை விற்கவும்",
   landing_cta_secondary: "இது எப்படி செயல்படுகிறது எனப் பாருங்கள்",
   landing_stat_products: "உள்ளடக்கிய பொருட்கள்",
@@ -423,6 +464,7 @@ const ta: Dict = {
   landing_also_title: "PlotProof-இல் மேலும்",
   landing_explore_desc: "குறிக்கப்பட்ட காடழிப்பின் இலவச, பொது வரைபடம், உள்நுழைவு இல்லாமல் யாருக்கும்.",
   landing_alerts_desc: "நிலையான கண்காணிப்பு: சரிபார்க்கப்பட்ட நிலத்தில் புதிய அழிப்பு தென்பட்டால் அறிவிப்பு பெறுங்கள்.",
+  landing_acoustic_desc: "கள வன்பொருள் முன்னோட்டம்: ESP32 சென்சாரிலிருந்து LoRa வழியாக மரம்வெட்டும் இயந்திர ஒலி கண்டறிதல்.",
   documents_title: "உங்கள் ஏற்றுமதி ஆவணங்கள்",
   documents_empty_body: "நீங்கள் விற்பது என்ன என்று சொல்லுங்கள், சரியான ஆவணங்களை நாங்கள் பட்டியலிடுகிறோம்.",
   offline_message: "இணைப்பு இல்லை, உங்கள் பணி இந்த சாதனத்தில் சேமிக்கப்பட்டுள்ளது, மீண்டும் இணைந்தவுடன் ஒத்திசைக்கப்படும்.",

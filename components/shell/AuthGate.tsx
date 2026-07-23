@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { Skeleton } from "@/components/motion/Skeleton";
 import { t, useLang } from "@/lib/i18n";
 
-const GATED = ["/sell", "/documents", "/intake", "/alerts", "/plot"];
+const GATED = ["/sell", "/documents", "/intake", "/plot"];
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const { configured, user, loading } = useAuth();

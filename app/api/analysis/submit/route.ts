@@ -19,6 +19,13 @@ export async function POST(req: Request) {
   if (!body?.plotId || !body?.geometry) {
     return NextResponse.json({ error: "plotId and geometry are required" }, { status: 400 });
   }
-  const handle = await getAnalysisClient().submit(body);
+  const client = getAnalysisClient();
+  if (!client) {
+    return NextResponse.json(
+      { error: "analysis_unavailable", detail: "No analysis service is connected to this deployment. No verdict can be produced." },
+      { status: 503 },
+    );
+  }
+  const handle = await client.submit(body);
   return NextResponse.json(handle, { status: 202 });
 }
