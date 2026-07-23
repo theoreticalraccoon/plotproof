@@ -20,6 +20,7 @@ import { pushUserState } from "@/lib/supabase/userState";
 import { countryName } from "@/lib/public/format";
 import { t, useLang } from "@/lib/i18n";
 import DocumentChecklist from "@/components/compliance/DocumentChecklist";
+import PriceCard from "@/components/sell/PriceCard";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import { useToast } from "@/components/shell/Toast";
@@ -310,6 +311,8 @@ export default function SellPage() {
               auth: result.summary.authority,
             })}
           </div>
+
+          <PriceCard productId={product.id} quantityKg={Number(quantityKg) || undefined} />
 
           <DocumentChecklist documents={result.documents} statuses={statuses} onSetStatus={onSetStatus} />
 
