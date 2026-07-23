@@ -16,11 +16,30 @@ import type { AcousticEvent, AcousticExhibit, AcousticNode } from "@/lib/acousti
 // The Ratnapura demo plot near which the simulated clearing burst was heard.
 const DEMO_PLOT = { lng: 80.303, lat: 6.75 };
 
+/** Model card exported by ml/acoustic/PlotProof_Acoustic_ML.ipynb and committed
+ *  to public/models/. Every number in it is a measured cross-validated result;
+ *  when the file is absent the page says so instead of inventing one. */
+interface AcousticModelCard {
+  modelVersion: string;
+  trainedAt: string;
+  architecture: string;
+  dataset: { name: string; clips: number; license: string };
+  cv: {
+    protocol: string;
+    foldAccuracies: number[];
+    meanAccuracy: number;
+    stdAccuracy: number;
+    chainsaw: { averagePrecision: number; threshold: number; precision: number; recall: number };
+  };
+  caveats: string[];
+}
+
 export default function AcousticPage() {
   const lang = useLang();
   const [nodes, setNodes] = useState<AcousticNode[]>([]);
   const [events, setEvents] = useState<AcousticEvent[]>([]);
   const [exhibit, setExhibit] = useState<AcousticExhibit | null>(null);
+  const [model, setModel] = useState<AcousticModelCard | null | "none">(null);
 
   useEffect(() => {
     void fetch("/api/acoustic/events")
@@ -32,6 +51,10 @@ export default function AcousticPage() {
     void fetch(`/api/acoustic/exhibit?lng=${DEMO_PLOT.lng}&lat=${DEMO_PLOT.lat}&radiusKm=3&days=60`)
       .then((r) => r.json())
       .then(setExhibit);
+    void fetch("/models/acoustic-metrics.json")
+      .then((r) => (r.ok ? r.json() : "none"))
+      .then((d) => setModel(d as AcousticModelCard | "none"))
+      .catch(() => setModel("none"));
   }, []);
 
   return (
@@ -115,6 +138,53 @@ export default function AcousticPage() {
             <p className="mt-2 text-xs faint">
               This is the real-shaped data the PDF exhibit section renders.
             </p>
+          </div>
+        )}
+      </section>
+      </Reveal>
+
+      {/* Model card: real cross-validated metrics, or an honest absence */}
+      <Reveal delay={0.08}>
+      <section>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide faint">
+          Detection model
+        </h2>
+        {model === null && (
+          <div className="glass-card p-4" role="status" aria-label="Loading model card">
+            <Skeleton className="h-16 w-full" />
+          </div>
+        )}
+        {model === "none" && (
+          <div className="glass-card p-4 text-sm muted">
+            No trained model is published in this deployment yet. When one is trained
+            (ml/acoustic in the repo), its cross-validated metrics appear here — this page never
+            shows a number that wasn&apos;t measured.
+          </div>
+        )}
+        {model !== null && model !== "none" && (
+          <div className="glass-card p-4">
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+              <Stat label="CV accuracy" value={`${(model.cv.meanAccuracy * 100).toFixed(1)}%`} />
+              <Stat
+                label="chainsaw precision"
+                value={`${(model.cv.chainsaw.precision * 100).toFixed(0)}%`}
+              />
+              <Stat
+                label="chainsaw recall"
+                value={`${(model.cv.chainsaw.recall * 100).toFixed(0)}%`}
+              />
+              <Stat label="threshold" value={model.cv.chainsaw.threshold.toFixed(2)} />
+            </div>
+            <p className="mt-2 text-xs muted">
+              {model.modelVersion} · {model.architecture} · trained{" "}
+              {model.trainedAt.slice(0, 10)} on {model.dataset.name} ({model.dataset.clips} clips)
+              · {model.cv.protocol}
+            </p>
+            <ul className="mt-2 space-y-1 text-xs faint">
+              {model.caveats.map((c) => (
+                <li key={c}>· {c}</li>
+              ))}
+            </ul>
           </div>
         )}
       </section>
