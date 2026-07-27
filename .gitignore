@@ -42,3 +42,4 @@ __pycache__/
 /supabase/.temp
 
 .vercel
+graphify-out/
