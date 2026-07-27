@@ -64,6 +64,14 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
     .eq("id", id)
     .maybeSingle<LotRow>();
 
+  if (error) {
+    // The public message is identical for "no such lot" and "query failed" so
+    // the page never leaks schema details. Operators need the difference, so
+    // the real cause goes to the server log (e.g. a missing lot_verification
+    // view means migration 0003 was never applied).
+    console.error("[verify] lot_verification query failed:", error.message);
+  }
+
   if (error || !data) {
     return (
       <Shell>
