@@ -8,6 +8,13 @@
  */
 import type { DocumentType, Market, Product } from "./types";
 
+/**
+ * When the requirements data below was last checked against its sources.
+ * Rendered on the checklist with a stale warning past 6 months — a legal
+ * checklist that silently rots is worse than none.
+ */
+export const CATALOG_VERIFIED_AT = "2026-07-27";
+
 export const PRODUCTS: Product[] = [
   { id: "coffee_green", name: "Green coffee beans", synonyms: ["coffee", "arabica", "robusta", "green coffee", "coffee beans"], category: "coffee", hsCode: "0901.11", perishability: "durable", eudrCovered: true, phytoTypical: true },
   { id: "black_tea", name: "Black tea", synonyms: ["tea", "ceylon tea", "black tea", "orthodox tea"], category: "tea", hsCode: "0902.30", perishability: "durable", eudrCovered: false, phytoTypical: false },

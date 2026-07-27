@@ -49,12 +49,21 @@ const en: Dict = {
   footer_privacy: "Privacy and your data",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "Direct-export compliance, made for smallholders",
-  landing_hero_title: "Sell abroad. Skip the middleman. Keep the margin.",
+  landing_eyebrow: "Export-readiness for smallholders and their cooperatives",
+  landing_hero_title: "Get export-ready. Prove your plot. Know your price.",
   landing_hero_sub:
     "PlotProof tells you exactly which export documents your harvest needs for the EU, UK, or US, and generates the ones we can, in minutes, from four simple questions.",
   landing_what_is:
-    "PlotProof maps your farm plot and records signed proof that your land was not deforested — the evidence EU buyers now require.",
+    "PlotProof maps your farm plot, records signed proof of where your crop grows, and shows you the world price — so you and your cooperative negotiate from strength.",
+  results_next_title: "What happens next",
+  results_next_body:
+    "You do not ship a container alone — a 0.4 ha plot yields a few hundred kilos and a container holds ~19 tonnes. Your cooperative or an exporter aggregates lots, and under EU rules the importer files the due diligence statement. What YOU bring to that table: this checklist, your attested plot proof, and the reference price. That is bargaining power.",
+  results_eudr_covered:
+    "EUDR applies to this product (importers must file due diligence from Dec 2026). Your attested plot geolocation is exactly the evidence their filing needs.",
+  results_eudr_not_covered:
+    "EUDR does not apply to this product. For the EU the real gate is food-safety testing (e.g. contaminant and residue limits) through an accredited laboratory — the checklist points the way.",
+  catalog_verified_note: "Requirements last verified {date}. Rules change; confirm with your customs broker before shipping.",
+  catalog_stale_warning: "These requirements were last verified {date} — more than 6 months ago. Treat them as a starting point, not current law.",
   price_title: "Know your price before you negotiate",
   price_context: "Higher than {pct}% of monthly prices over the last 5 years.",
   price_yoy: "{dir}{yoy}% vs a year ago.",
@@ -252,11 +261,20 @@ const si: Dict = {
   footer_privacy: "පෞද්ගලිකත්වය සහ ඔබේ දත්ත",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "කුඩා ගොවීන් සඳහා සෘජු අපනයන අනුකූලතාව",
-  landing_hero_title: "විදේශයට විකුණන්න. මැදිහත්කරු මඟහරින්න. ලාභය තබාගන්න.",
+  landing_eyebrow: "කුඩා ගොවීන්ට සහ ඔවුන්ගේ සමුපකාරවලට අපනයන සූදානම",
+  landing_hero_title: "අපනයනයට සූදානම් වන්න. ඔබේ ඉඩම ඔප්පු කරන්න. ඔබේ මිල දැනගන්න.",
   landing_hero_sub: "ඔබේ අස්වැන්නට EU, UK හෝ US සඳහා අවශ්‍ය අපනයන ලේඛන මොනවාදැයි PlotProof නිවැරදිව කියයි, සරල ප්‍රශ්න හතරකින්, විනාඩි කිහිපයකින් සෑදිය හැකි ඒවා අපි සාදමු.",
   landing_what_is:
-    "PlotProof ඔබේ ගොවිබිම සිතියම්ගත කර, ඉඩම වනාන්තර එළි කළ එකක් නොවන බවට අත්සන් සහිත සාක්ෂි සටහන් කරයි — යුරෝපීය ගැනුම්කරුවන් දැන් ඉල්ලන සාක්ෂිය.",
+    "PlotProof ඔබේ ගොවිබිම සිතියම්ගත කර, අස්වැන්න වැවෙන ස්ථානය පිළිබඳ අත්සන් සහිත සාක්ෂි සටහන් කර, ලෝක මිලද පෙන්වයි — ඔබ සහ ඔබේ සමුපකාරය ශක්තියෙන් කේවල් කිරීමට.",
+  results_next_title: "ඊළඟට සිදුවන්නේ කුමක්ද",
+  results_next_body:
+    "ඔබ තනිවම කන්ටේනරයක් නොයවයි — හෙක්. 0.4 ක ඉඩමකින් ලැබෙන්නේ කිලෝ සිය ගණනක් වන අතර කන්ටේනරයක් ~ටොන් 19 කි. ඔබේ සමුපකාරය හෝ අපනයනකරු තොග එකතු කරන අතර EU නීති යටතේ ආනයනකරු නිසි විමර්ශන ප්‍රකාශය ගොනු කරයි. ඔබ එම මේසයට ගෙන එන දේ: මෙම ලැයිස්තුව, ඔබේ සහතික කළ ඉඩම් සාක්ෂිය සහ යොමු මිල. එයයි කේවල් බලය.",
+  results_eudr_covered:
+    "මෙම නිෂ්පාදනයට EUDR අදාළ වේ (2026 දෙසැම්බර් සිට ආනයනකරුවන් නිසි විමර්ශන ගොනු කළ යුතුය). ඔබේ සහතික කළ ඉඩම් පිහිටීම ඔවුන්ගේ ගොනුවට අවශ්‍ය සාක්ෂියයි.",
+  results_eudr_not_covered:
+    "මෙම නිෂ්පාදනයට EUDR අදාළ නොවේ. EU සඳහා සැබෑ දොරටුව ප්‍රතීතන රසායනාගාරයක් හරහා ආහාර-ආරක්ෂණ පරීක්ෂණයි — ලැයිස්තුව මඟ පෙන්වයි.",
+  catalog_verified_note: "අවශ්‍යතා අවසන් වරට {date} දින සත්‍යාපනය කරන ලදී. නීති වෙනස් වේ; නැව්ගත කිරීමට පෙර ඔබේ රේගු තැරැව්කරුගෙන් තහවුරු කරගන්න.",
+  catalog_stale_warning: "මෙම අවශ්‍යතා අවසන් වරට සත්‍යාපනය කළේ {date} — මාස 6 කට වඩා පෙරය. මේවා ආරම්භක ලක්ෂ්‍යයක් ලෙස සලකන්න, වත්මන් නීතිය ලෙස නොවේ.",
   price_title: "කේවල් කිරීමට පෙර ඔබේ මිල දැනගන්න",
   price_context: "පසුගිය වසර 5 ක මාසික මිලවලින් {pct}% කට වඩා ඉහළයි.",
   price_yoy: "වසරකට පෙරට සාපේක්ෂව {dir}{yoy}%.",
@@ -421,11 +439,20 @@ const ta: Dict = {
   footer_privacy: "தனியுரிமையும் உங்கள் தரவும்",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "சிறு விவசாயிகளுக்கான நேரடி ஏற்றுமதி இணக்கம்",
-  landing_hero_title: "வெளிநாட்டில் விற்கவும். இடைத்தரகரைத் தவிர்க்கவும். லாபத்தை வைத்திருங்கள்.",
+  landing_eyebrow: "சிறு விவசாயிகளுக்கும் அவர்களின் கூட்டுறவுகளுக்கும் ஏற்றுமதி தயார்நிலை",
+  landing_hero_title: "ஏற்றுமதிக்குத் தயாராகுங்கள். உங்கள் நிலத்தை நிரூபியுங்கள். உங்கள் விலையை அறியுங்கள்.",
   landing_hero_sub: "உங்கள் அறுவடைக்கு EU, UK அல்லது US சந்தைக்கு என்ன ஆவணங்கள் தேவை என்று PlotProof சரியாகச் சொல்கிறது, நான்கு எளிய கேள்விகளில், நிமிடங்களில் உருவாக்கக்கூடியவற்றை நாங்களே உருவாக்குகிறோம்.",
   landing_what_is:
-    "PlotProof உங்கள் விவசாய நிலத்தை வரைபடமாக்கி, அது காடழிக்கப்பட்ட நிலம் அல்ல என்பதற்கான கையொப்பமிட்ட சான்றைப் பதிவு செய்கிறது — ஐரோப்பிய வாங்குபவர்கள் இப்போது கேட்கும் ஆதாரம்.",
+    "PlotProof உங்கள் நிலத்தை வரைபடமாக்கி, பயிர் விளையும் இடத்தின் கையொப்பமிட்ட சான்றைப் பதிவு செய்து, உலக விலையையும் காட்டுகிறது — நீங்களும் உங்கள் கூட்டுறவும் வலிமையுடன் பேரம் பேச.",
+  results_next_title: "அடுத்து என்ன நடக்கும்",
+  results_next_body:
+    "நீங்கள் தனியாக கன்டெய்னர் அனுப்புவதில்லை — 0.4 ஹெக்டேர் நிலம் சில நூறு கிலோதான் தரும்; கன்டெய்னர் ~19 டன். உங்கள் கூட்டுறவு அல்லது ஏற்றுமதியாளர் தொகுப்பார்; EU விதிகளின்படி இறக்குமதியாளர் உரிய விசாரணை அறிக்கையை தாக்கல் செய்வார். நீங்கள் கொண்டு வருவது: இந்தச் சரிபார்ப்புப் பட்டியல், உங்கள் சான்றளிக்கப்பட்ட நிலச் சான்று, குறிப்பு விலை. அதுவே பேர வலிமை.",
+  results_eudr_covered:
+    "இந்த பொருளுக்கு EUDR பொருந்தும் (டிசம்பர் 2026 முதல் இறக்குமதியாளர்கள் உரிய விசாரணை தாக்கல் செய்ய வேண்டும்). உங்கள் சான்றளிக்கப்பட்ட நில இருப்பிடம் அவர்களின் தாக்கலுக்குத் தேவையான சான்று.",
+  results_eudr_not_covered:
+    "இந்த பொருளுக்கு EUDR பொருந்தாது. EU-க்கு உண்மையான வாயில் அங்கீகரிக்கப்பட்ட ஆய்வகம் வழியான உணவு-பாதுகாப்பு சோதனை — பட்டியல் வழிகாட்டும்.",
+  catalog_verified_note: "தேவைகள் கடைசியாக {date} அன்று சரிபார்க்கப்பட்டன. விதிகள் மாறும்; அனுப்பும் முன் உங்கள் சுங்க முகவரிடம் உறுதிப்படுத்தவும்.",
+  catalog_stale_warning: "இந்தத் தேவைகள் கடைசியாக {date} அன்று சரிபார்க்கப்பட்டவை — 6 மாதங்களுக்கு மேல் ஆகிவிட்டது. இவற்றை தொடக்கப் புள்ளியாகக் கருதுங்கள், தற்போதைய சட்டமாக அல்ல.",
   price_title: "பேரம் பேசும் முன் உங்கள் விலையை அறியுங்கள்",
   price_context: "கடந்த 5 ஆண்டுகளின் மாத விலைகளில் {pct}% ஐ விட அதிகம்.",
   price_yoy: "ஓராண்டுக்கு முன்பை விட {dir}{yoy}%.",

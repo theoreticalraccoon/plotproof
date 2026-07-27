@@ -69,11 +69,15 @@ export default function AcousticPage() {
             <AudioLines size={17} />
           </span>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Acoustic ground truth</h1>
+            <h1 className="text-xl font-semibold tracking-tight">
+              Acoustic ground truth{" "}
+              <span className="tag tag-muted align-middle text-xs">research · paused</span>
+            </h1>
             <p className="text-sm muted">
-              ESP32 nodes classify chainsaw / heavy-vehicle sounds on-device and send
-              event flags over LoRa → gateway → this ingest. Satellite says where; the
-              nodes say when.
+              A research track, paused until field sensors exist: ESP32 nodes would classify
+              chainsaw / heavy-vehicle sounds on-device and send event flags over LoRa to this
+              ingest. The classifier below is real ML with measured metrics; the sensor network
+              is not deployed, and nothing here pretends otherwise.
             </p>
           </div>
         </header>

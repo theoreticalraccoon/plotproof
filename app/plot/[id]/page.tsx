@@ -192,6 +192,27 @@ export default function EvidencePackPage() {
             </button>
           </motion.div>
           <motion.div {...hoverLift}>
+            {/* Independent cross-check: the authoritative public deforestation map
+                at this plot's location. Their data, their verdict, not ours. */}
+            <a
+              href={`https://www.globalforestwatch.org/map/?map=${encodeURIComponent(
+                JSON.stringify({ center: { lat: centroid(plot.ring).lat, lng: centroid(plot.ring).lng }, zoom: 14 }),
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost btn-sm"
+            >
+              Check on Global Forest Watch
+            </a>
+          </motion.div>
+          <motion.div {...hoverLift}>
+            {/* The shareable artifact: public, de-identified, honest about its
+                own limits. Works once the plot has synced to the server. */}
+            <a href={`/verify/${plot.id}`} target="_blank" rel="noopener" className="btn btn-ghost btn-sm">
+              Public verification page
+            </a>
+          </motion.div>
+          <motion.div {...hoverLift}>
             <button
               onClick={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
               disabled={state !== "ready" && state !== "unavailable"}
@@ -346,9 +367,11 @@ export default function EvidencePackPage() {
           </ul>
         ) : (
           <p className="text-sm text-gray-700">
-            No satellite methodology applies, no analysis was performed. Plot geometry
-            is captured on-device in WGS84 (EPSG:4326); area is geodesic. The EUDR
-            cut-off date used throughout is {CUTOFF}.
+            No in-house satellite analysis is performed — deliberately. For deforestation
+            context, consult the authoritative public datasets for these coordinates: JRC
+            Tropical Moist Forest and Global Forest Watch (Hansen Global Forest Change).
+            Plot geometry is captured on-device in WGS84 (EPSG:4326); area is geodesic.
+            The EUDR cut-off date used throughout is {CUTOFF}.
           </p>
         )}
       </Section>

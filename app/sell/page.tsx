@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Sparkles, Pencil, RotateCcw } from "lucide-react";
-import { DOCUMENT_TYPES, MARKETS, PRODUCTS, getProduct } from "@/lib/compliance/catalog";
+import { CATALOG_VERIFIED_AT, DOCUMENT_TYPES, MARKETS, PRODUCTS, getProduct } from "@/lib/compliance/catalog";
 import { classify } from "@/lib/compliance/hs";
 import { resolveRequirements } from "@/lib/compliance/resolver";
 import { suggestShipping } from "@/lib/compliance/shipping";
@@ -314,7 +314,27 @@ export default function SellPage() {
 
           <PriceCard productId={product.id} quantityKg={Number(quantityKg) || undefined} />
 
+          {/* EUDR applies to only 3 of the 8 catalog products; say which lane
+              this sale is in rather than implying one law covers everything. */}
+          <p
+            className="glass rounded-xl p-3 text-sm"
+            style={{ borderLeft: "3px solid var(--accent)" }}
+          >
+            {t(lang, product.eudrCovered ? "results_eudr_covered" : "results_eudr_not_covered")}
+          </p>
+
           <DocumentChecklist documents={result.documents} statuses={statuses} onSetStatus={onSetStatus} />
+
+          <CatalogFreshness lang={lang} />
+
+          {/* The honest ending: who ships, who files, and what the farmer's
+              leverage actually is — instead of a checklist that dead-ends. */}
+          <section className="glass-card p-4">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide faint">
+              {t(lang, "results_next_title")}
+            </h2>
+            <p className="text-sm muted">{t(lang, "results_next_body")}</p>
+          </section>
 
           <section>
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide faint">{t(lang, "shipping_title")}</h2>
@@ -406,5 +426,23 @@ function Back({ onClick }: { onClick: () => void }) {
       <ArrowLeft size={15} />
       {t(lang, "back")}
     </button>
+  );
+}
+
+/** "Requirements last verified {date}" with a loud warning once it's stale.
+ *  Mirrors the price staleness gate: legal claims carry their freshness. */
+function CatalogFreshness({ lang }: { lang: import("@/lib/i18n/strings").Lang }) {
+  const ageMonths =
+    (Date.now() - new Date(CATALOG_VERIFIED_AT).getTime()) / (30.44 * 24 * 3600 * 1000);
+  const stale = ageMonths > 6;
+  return (
+    <p
+      className="text-xs"
+      style={stale ? { color: "var(--warn)" } : { color: "var(--fg-faint)" }}
+    >
+      {t(lang, stale ? "catalog_stale_warning" : "catalog_verified_note", {
+        date: CATALOG_VERIFIED_AT,
+      })}
+    </p>
   );
 }

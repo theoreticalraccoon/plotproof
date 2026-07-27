@@ -64,6 +64,13 @@ export default function WhatsRealPage() {
             diligence statement.
           </li>
           <li>
+            <strong>Public lot verification.</strong> Every attested, synced plot has a
+            de-identified public page (/verify/&lt;id&gt;) stating exactly what is proven
+            (tamper-evidence, officer countersignature, recorded consent), what is self-reported
+            (the traced boundary), and where to check independently (Global Forest Watch at the
+            plot&apos;s coordinates). It is the page a cooperative sends an exporter.
+          </li>
+          <li>
             <strong>Price intelligence.</strong> World reference prices (World Bank Pink Sheet,
             monthly, CC BY) for tea, coffee, rubber, cocoa, and coconut, shown in the sell flow with
             honest backtested forecasts — the chosen model&apos;s error is displayed next to the
@@ -77,18 +84,17 @@ export default function WhatsRealPage() {
       <Section title="Not real yet — and never faked on screen">
         <ul className="ml-4 list-disc space-y-1.5">
           <li>
-            <strong>Satellite deforestation verdicts.</strong> The analysis service (Sentinel-2 /
-            Sentinel-1 / Hansen baseline) exists as code but is not deployed. This deployment shows
-            &ldquo;analysis unavailable&rdquo; — it never invents a verdict. The national
-            forest-definition thresholds in that code are unverified placeholders and are labelled
-            as such wherever they would appear.
+            <strong>Satellite deforestation verdicts.</strong> We deliberately do not run our own
+            deforestation model. An earlier in-house analysis service was removed after review: it
+            could not be trained or validated honestly by one developer. For deforestation context,
+            plots link to the authoritative public datasets instead — JRC Tropical Moist Forest and
+            Global Forest Watch (Hansen) — so any verdict-shaped claim is theirs, not ours.
           </li>
           <li>
-            <strong>Acoustic monitoring.</strong> A hardware preview (ESP32 + LoRa chainsaw
-            detection). The ingest endpoint is real, and the chainsaw classifier is real ML —
-            trained on the public ESC-50 benchmark with cross-validated metrics published on the
-            acoustic page (research-licensed data, unvalidated on field audio). No production
-            sensor network exists.
+            <strong>Acoustic monitoring.</strong> Research, currently paused — it needs field
+            sensors (ESP32 + LoRa) that do not exist yet. The chainsaw classifier is real ML
+            (ESC-50 benchmark, cross-validated metrics on the acoustic page; research-licensed
+            data, unvalidated on field audio), but nothing here implies an operational network.
           </li>
           <li>
             <strong>Real plots.</strong> No real farmer plot has been captured yet. Any plot you see
@@ -106,9 +112,11 @@ export default function WhatsRealPage() {
             therefore built to be consumed by the cooperative or exporter who does file.
           </li>
           <li>
-            <strong>Timing.</strong> EUDR obligations began for large operators on 30 December 2025
-            and for micro and small enterprises on 30 June 2026 — weeks ago, as of this writing.
-            The demand for smallholder-side evidence is no longer hypothetical.
+            <strong>Timing.</strong> Regulation (EU) 2025/2650 (OJ, 23 December 2025) postponed
+            EUDR application to 30 December 2026 for medium and large operators and 30 June 2027
+            for micro and small enterprises. The window before those dates is exactly when supply
+            chains must assemble smallholder evidence — which is what this tool captures. (An
+            earlier version of this page misstated these dates; corrected against the regulation.)
           </li>
           <li>
             <strong>Plots under 4 hectares.</strong> EUDR&apos;s geolocation rule allows a single

@@ -1,6 +1,0 @@
-.venv
-.cache
-output
-chips
-__pycache__
-*.pt
