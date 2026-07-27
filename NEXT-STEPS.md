@@ -1,49 +1,92 @@
 # Next steps that only a human can do
 
-The code is ready for all four. Each unblocks something already built.
+Infrastructure is live. What remains cannot be coded — it needs a person in a
+field, a conversation, and a careful read.
 
-## 1. Apply the database migrations (~15 min)
+---
 
-Supabase Dashboard → your project → SQL Editor → New query. Paste and run, in
-order:
+## ✅ Done — infrastructure (2026-07-27)
 
-1. `supabase/migrations/0001_user_state.sql`
-2. `supabase/migrations/0002_field_data.sql`
-3. `supabase/migrations/0003_lot_verification.sql`
+- **Database migrations applied.** All six objects exist in Supabase:
+  `user_state`, `farmers`, `plots`, `attestations`, `media`, `lot_verification`.
+- **Secrets set in Vercel.** `CRON_SECRET` and `ACOUSTIC_INGEST_TOKEN` are
+  configured and enforcing — both guarded routes return `401` without a token
+  and `200` with one (verified against production, not assumed).
+- **Supabase connected** to the deployment; sync and `/verify/<id>` are wired
+  to a real database.
+- **Live at** https://plot-proof.vercel.app
 
-Then Vercel → Project → Settings → Environment Variables, add:
+Consequence: a plot captured on a phone now syncs to the server under row-level
+security, and its verification page becomes a real, shareable URL. Nothing in
+the persistence chain is simulated any more.
 
-- `CRON_SECRET` — any long random string (`openssl rand -hex 32`)
-- `ACOUSTIC_INGEST_TOKEN` — same idea
+---
 
-Redeploy. Until this is done: sync says "on this device only", and
-`/verify/<id>` says "verification unavailable" — both honestly.
+## 1. Capture one real plot (half a day) — the highest-value remaining action
 
-## 2. Capture one real plot (half a day)
+Zero real plots exist. Every feature is still a hypothesis until one farmer and
+one officer have touched it.
 
-Take a phone to a real farm (Matale or Ratnapura). Sign in → Intake → trace the
-boundary walking it → attest with the farmer (photo, signature, read the
-consent aloud). Watch where they hesitate — that hesitation is the finding.
-When back online it syncs, and `/verify/<plot-id>` goes live as a shareable
-page.
+Take a phone to a real farm (Matale or Ratnapura):
 
-## 3. One exporter/co-op conversation (1 hour)
+1. Sign in at https://plot-proof.vercel.app → **Intake**
+2. Trace the boundary — ideally by *walking* it, which is the highest-confidence
+   capture method and the one never yet tested outdoors
+3. Attest with the farmer: plot photo, read the consent statement aloud, capture
+   signature or thumbprint
+4. Back online, confirm the sync bar clears, then open
+   `https://plot-proof.vercel.app/verify/<plot-id>` — that page is now a real
+   artifact you can send to anyone
+
+**Watch for, and write down:** where the officer hesitates, whether the map is
+readable in direct sunlight, how long attestation takes, what the farmer asks.
+That list is worth more than any feature currently in the backlog.
+
+If arranging this proves impossible, *that* is the finding — record why.
+
+## 2. One exporter or cooperative conversation (1 hour)
+
+The entire repositioning rests on an untested assumption: that someone
+downstream wants farmer-side plot evidence. Ask one person who would know.
 
 Five questions, verbatim:
-1. When EUDR filing starts (Dec 2026), where will your smallholder plot
-   geolocation come from?
-2. Would an attested boundary + officer countersign + tamper-evident record
-   from the farmer's side be usable evidence for you?
-3. What would it need before you'd trust it? (title? satellite check? whose
-   signature?)
-4. Would you pay for it — or pay more for crop that carries it?
-5. Who else already offers you this? (listen for Koltiva/Meridia/Farmforce)
 
-Answers to Q3 redesign the trust ladder; answer to Q5 is the competitive map.
+1. When EUDR filing starts (Dec 2026 for medium/large operators), where will
+   your smallholder plot geolocation come from?
+2. Would an attested boundary — officer countersignature, recorded farmer
+   consent, tamper-evident record — be usable evidence for your filing?
+3. What would it need before you'd trust it? (Land title? Independent satellite
+   check? A specific person's signature?)
+4. Would you pay for it, or pay more for crop that carries it?
+5. Who already offers you this? (Listen for Koltiva, Meridia, Farmforce, TraceX.)
 
-## 4. Read the competition rubric against /whats-real (30 min)
+Q3's answer redesigns the trust ladder on `/verify`. Q5's answer is the
+competitive map. Both change what gets built next.
 
-Quality/Content 18% and Stability 12% are the biggest attributes — the honesty
-overhaul and the fail-closed states are your evidence for both. Uniqueness
-argues from: price intelligence with published backtests, hash-chained
-attestation, the de-identified verification page, DDS GeoJSON interop.
+## 3. Read the competition rubric against the product (30 min)
+
+Score-weighted attributes, and where the evidence already sits:
+
+| Attribute | Weight | Your strongest evidence |
+|---|---|---|
+| Content & Standards | 18% | `/whats-real`, cited EUDR dates (Reg 2025/2650), catalog verification dates, published model backtests |
+| Product Stability & Reliability | 12% | Fail-closed auth, staleness gates, honest "unavailable" states, 45 passing tests |
+| User Requirements | 10% | Trilingual Sinhala-first, offline-first capture, four-question sell flow |
+| Compatibility & Interoperability | 10% | DDS GeoJSON (TRACES-shaped), CSV import, public verification URL, GFW deep link |
+| Application of Technologies | 7.5% | Hash-chained attestation, backtested price pipeline, YAMNet classifier |
+| Innovation | 7.5% | Farmer-owned verification record; honesty-as-a-feature |
+| Understanding of Problem | 7.5% | Two-lane positioning (EUDR crops vs spice food-safety), "what happens next" |
+| Understanding of Business Environment | 7.5% | Who legally files the DDS, container-scale reality, `PARKED.md` competitor map |
+
+The honesty overhaul is the differentiator to argue from — most submissions
+cannot show a page documenting their own limits.
+
+---
+
+## Blocked on a decision from you
+
+- **Sinhala LLM assistant** (explain any checklist field, translate buyer
+  emails). Ready to build; needs an API key and a per-query cost decision.
+- **Sri Lanka EDB / Colombo auction spice prices** — would fill the
+  cinnamon/pepper/cardamom gap the World Bank data can't. Sources are PDF
+  bulletins, so this needs a real digitisation pass, not a scrape hack.
