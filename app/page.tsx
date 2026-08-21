@@ -7,8 +7,11 @@
  * live catalog/markets/i18n data, not invented), and there is no fabricated
  * social proof (testimonials, client logos), the honesty section carries the
  * trust signal instead, matching the product's own "never invent" rule.
+ *
+ * Every route-changing control is a <PendingLink>: the front door is the one
+ * place a first-time visitor has no patience for an unacknowledged tap, and
+ * these targets (/sell, /documents, /login) each pull a sizeable bundle.
  */
-import Link from "next/link";
 import {
   ArrowRight,
   FileText,
@@ -29,6 +32,7 @@ import Counter from "@/components/motion/Counter";
 import ScrollReveal from "@/components/motion/ScrollReveal";
 import Magnetic from "@/components/motion/Magnetic";
 import PlotScan from "@/components/motion/PlotScan";
+import PendingLink from "@/components/motion/PendingLink";
 import { hoverLift } from "@/lib/motion/variants";
 import { motion } from "framer-motion";
 
@@ -42,49 +46,74 @@ export default function Home() {
   // signed-in one picks up where they left off. When auth isn't configured the
   // app stays open, so fall back to the sell flow.
   const authed = configured && !!user;
-  const primaryHref = !configured ? "/sell" : authed ? "/documents" : "/login?mode=signup";
+  const primaryHref = !configured ? "/sell" : authed ? "/documents" : "/signup";
   const primaryLabel = !configured
     ? t(lang, "landing_cta_primary")
     : authed
       ? t(lang, "cta_continue")
       : t(lang, "cta_create_account");
 
+  const stats = [
+    { value: PRODUCTS.length, label: t(lang, "landing_stat_products") },
+    { value: MARKETS.length, label: t(lang, "landing_stat_markets") },
+    { value: 3, label: t(lang, "landing_stat_countries") },
+    { value: LANGS.length, label: t(lang, "landing_stat_languages") },
+  ];
+
   return (
     <>
       {/* ---------- hero ---------- */}
-      <section className="mx-auto max-w-6xl px-5 pt-14 pb-8 sm:px-8 sm:pt-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8 sm:pt-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
           <div>
             <Reveal>
               <span className="eyebrow">
-                <Satellite size={13} /> {t(lang, "landing_eyebrow")}
+                <Satellite size={13} aria-hidden="true" /> {t(lang, "landing_eyebrow")}
               </span>
             </Reveal>
             <Reveal delay={0.05}>
-              <h1 className="font-display mt-5 text-4xl sm:text-5xl lg:text-[3.4rem] lg:leading-[1.04]">
+              <h1 className="font-display mt-5 text-[2.45rem] leading-[1.06] sm:text-5xl lg:text-[3.4rem] lg:leading-[1.04]">
                 {t(lang, "landing_hero_title")}
               </h1>
             </Reveal>
-            {/* What this is, in one sentence — Sinhala first, always. */}
+            {/*
+              What this is, in one sentence, Sinhala first, always. The accent
+              rule marks it as the definition rather than as one more paragraph:
+              a reader who takes in nothing else on this page should take in
+              this line, in the language most of our users read fastest.
+            */}
             <Reveal delay={0.08}>
-              <p className="mt-4 max-w-xl text-base font-medium sm:text-lg" lang="si">
-                {t("si", "landing_what_is")}
+              <div
+                className="mt-7 max-w-xl border-l-2 pl-4 sm:pl-5"
+                style={{ borderColor: "var(--accent-ring)" }}
+              >
+                <p className="text-lg font-medium leading-[1.5] sm:text-xl" lang="si">
+                  {t("si", "landing_what_is")}
+                </p>
+                {lang !== "si" && (
+                  <p className="mt-2 text-sm muted" lang={lang}>
+                    {t(lang, "landing_what_is")}
+                  </p>
+                )}
+              </div>
+            </Reveal>
+            <Reveal delay={0.11}>
+              <p className="mt-6 max-w-xl text-base muted sm:text-lg">
+                {t(lang, "landing_hero_sub")}
               </p>
-              {lang !== "si" && (
-                <p className="mt-1.5 max-w-xl text-sm muted">{t(lang, "landing_what_is")}</p>
-              )}
             </Reveal>
-            <Reveal delay={0.1}>
-              <p className="mt-5 max-w-xl text-base muted sm:text-lg">{t(lang, "landing_hero_sub")}</p>
-            </Reveal>
-            <Reveal delay={0.15}>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Reveal delay={0.16}>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Magnetic>
-                  <Link href={primaryHref} className="btn btn-primary btn-lg">
-                    {primaryLabel}
-                    <ArrowRight size={17} />
-                  </Link>
+                  <PendingLink href={primaryHref} className="btn btn-primary btn-lg">
+                    <span className="inline-flex items-center gap-2">
+                      {primaryLabel}
+                      <ArrowRight size={17} aria-hidden="true" />
+                    </span>
+                  </PendingLink>
                 </Magnetic>
+                {/* In-page scroll, not a navigation: no spinner, the press
+                    scale on .btn is the whole acknowledgement it needs. */}
                 <a href="#how" className="btn btn-ghost btn-lg">
                   {t(lang, "landing_cta_secondary")}
                 </a>
@@ -98,49 +127,76 @@ export default function Home() {
           </Reveal>
         </div>
 
-        {/* stats strip, real numbers only */}
+        {/* stats strip, real numbers only, read off the live catalog */}
         <Reveal delay={0.1}>
-          <div className="glass mt-14 grid grid-cols-2 gap-6 p-6 sm:grid-cols-4 sm:p-8">
-            <Stat value={PRODUCTS.length} label={t(lang, "landing_stat_products")} />
-            <Stat value={MARKETS.length} label={t(lang, "landing_stat_markets")} />
-            <Stat value={3} label={t(lang, "landing_stat_countries")} />
-            <Stat value={LANGS.length} label={t(lang, "landing_stat_languages")} />
-          </div>
+          <dl className="glass mt-16 grid grid-cols-2 sm:mt-20 sm:grid-cols-4">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={[
+                  "px-6 py-6 sm:px-7 sm:py-7",
+                  i % 2 === 1 ? "border-l" : "",
+                  i > 0 ? "sm:border-l" : "",
+                  i >= 2 ? "border-t sm:border-t-0" : "",
+                ].join(" ")}
+                style={{ borderColor: "var(--glass-hairline)" }}
+              >
+                <dd
+                  className="text-[2rem] font-semibold tracking-tight tabular-nums sm:text-[2.6rem]"
+                  style={{ color: "var(--accent)" }}
+                >
+                  <Counter to={s.value} />
+                </dd>
+                <dt className="mt-1.5 text-[0.78rem] leading-snug muted">{s.label}</dt>
+              </div>
+            ))}
+          </dl>
         </Reveal>
       </section>
 
       {/* ---------- how it works ---------- */}
-      <section id="how" className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+      {/* scroll-mt clears the sticky nav, so the heading is not parked under it. */}
+      <section id="how" className="mx-auto max-w-6xl scroll-mt-28 px-5 py-20 sm:px-8 sm:py-28">
         <Reveal>
-          <h2 className="font-display text-2xl sm:text-[2rem]">{t(lang, "landing_how_title")}</h2>
-          <p className="mt-2 max-w-xl muted">{t(lang, "landing_how_sub")}</p>
+          <h2 className="font-display max-w-lg text-2xl sm:text-[2rem]">
+            {t(lang, "landing_how_title")}
+          </h2>
+          <p className="mt-3 max-w-xl muted">{t(lang, "landing_how_sub")}</p>
         </Reveal>
 
         <StaggerGroup className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {WIZARD_STEPS.map((key, i) => (
-            <StaggerItem key={key}>
-              <div className="glass-card h-full p-5">
+            <StaggerItem key={key} className="h-full">
+              <div className="glass-card flex h-full flex-col p-5 sm:p-6">
                 <span
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold"
-                  style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold tabular-nums"
+                  style={{
+                    background: "var(--accent-soft)",
+                    color: "var(--accent)",
+                    boxShadow: "inset 0 0 0 1px var(--accent-ring)",
+                  }}
+                  aria-hidden="true"
                 >
                   {i + 1}
                 </span>
-                <p className="mt-3.5 font-semibold">{t(lang, key)}</p>
+                <p className="mt-4 font-semibold leading-snug">{t(lang, key)}</p>
               </div>
             </StaggerItem>
           ))}
         </StaggerGroup>
 
         <Reveal delay={0.1}>
-          <div className="glass-card glass-glow mt-6 flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="glass-card glass-glow mt-5 flex flex-col items-start gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
             <div>
               <p className="font-semibold">{t(lang, "landing_how_result_title")}</p>
-              <p className="mt-1 max-w-lg text-sm muted">{t(lang, "landing_how_result_body")}</p>
+              <p className="mt-1.5 max-w-lg text-sm muted">{t(lang, "landing_how_result_body")}</p>
             </div>
-            <Link href={primaryHref} className="btn btn-primary shrink-0">
-              {primaryLabel} <ArrowRight size={16} />
-            </Link>
+            <PendingLink href={primaryHref} className="btn btn-primary shrink-0">
+              <span className="inline-flex items-center gap-2">
+                {primaryLabel}
+                <ArrowRight size={16} aria-hidden="true" />
+              </span>
+            </PendingLink>
           </div>
         </Reveal>
       </section>
@@ -154,10 +210,12 @@ export default function Home() {
       </section>
 
       {/* ---------- features ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <Reveal>
           <span className="eyebrow">{t(lang, "landing_features_eyebrow")}</span>
-          <h2 className="font-display mt-4 text-2xl sm:text-[2rem]">{t(lang, "landing_features_title")}</h2>
+          <h2 className="font-display mt-5 max-w-2xl text-2xl sm:text-[2rem]">
+            {t(lang, "landing_features_title")}
+          </h2>
         </Reveal>
 
         <StaggerGroup className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" stagger={0.08}>
@@ -169,13 +227,19 @@ export default function Home() {
       </section>
 
       {/* ---------- honesty ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <Reveal>
-          <div className="glass-card glass-glow overflow-hidden p-8 sm:p-12" style={{ borderColor: "var(--gold-ring)" }}>
-            <span className="eyebrow" style={{ background: "var(--gold-soft)", color: "var(--gold)", borderColor: "var(--gold-ring)" }}>
-              <ShieldCheck size={13} /> {t(lang, "landing_honesty_eyebrow")}
+          <div
+            className="glass-card glass-glow overflow-hidden p-8 sm:p-12"
+            style={{ borderColor: "var(--gold-ring)" }}
+          >
+            <span
+              className="eyebrow"
+              style={{ background: "var(--gold-soft)", color: "var(--gold)", borderColor: "var(--gold-ring)" }}
+            >
+              <ShieldCheck size={13} aria-hidden="true" /> {t(lang, "landing_honesty_eyebrow")}
             </span>
-            <h2 className="font-display mt-4 max-w-2xl text-2xl sm:text-[2rem]">
+            <h2 className="font-display mt-5 max-w-2xl text-2xl sm:text-[2rem]">
               {t(lang, "landing_honesty_title")}
             </h2>
             <p className="mt-4 max-w-2xl text-base muted">{t(lang, "landing_honesty_body")}</p>
@@ -184,52 +248,50 @@ export default function Home() {
       </section>
 
       {/* ---------- also in plotproof ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-4 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 sm:px-8">
         <Reveal>
-          <h2 className="text-xs font-semibold uppercase tracking-wide faint">{t(lang, "landing_also_title")}</h2>
+          <hr className="hairline" />
+          <h2 className="mt-6 text-xs font-semibold uppercase tracking-wide faint">
+            {t(lang, "landing_also_title")}
+          </h2>
         </Reveal>
         <StaggerGroup className="mt-4 grid gap-4 sm:grid-cols-2">
-          <StaggerItem>
-            <motion.div {...hoverLift}>
-              <Link href="/explore" className="glass flex items-start gap-3 p-5">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
-                  <MapPin size={17} />
-                </span>
-                <span>
-                  <span className="block font-semibold">{t(lang, "nav_explore")}</span>
-                  <span className="block text-sm muted">{t(lang, "landing_explore_desc")}</span>
-                </span>
-              </Link>
-            </motion.div>
+          <StaggerItem className="h-full">
+            <SecondaryLink
+              href="/explore"
+              icon={<MapPin size={17} />}
+              title={t(lang, "nav_explore")}
+              body={t(lang, "landing_explore_desc")}
+            />
           </StaggerItem>
-          <StaggerItem>
-            <motion.div {...hoverLift}>
-              <Link href="/acoustic" className="glass flex items-start gap-3 p-5">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
-                  <AudioLines size={17} />
-                </span>
-                <span>
-                  <span className="block font-semibold">{t(lang, "footer_acoustic")}</span>
-                  <span className="block text-sm muted">{t(lang, "landing_acoustic_desc")}</span>
-                </span>
-              </Link>
-            </motion.div>
+          <StaggerItem className="h-full">
+            <SecondaryLink
+              href="/acoustic"
+              icon={<AudioLines size={17} />}
+              title={t(lang, "footer_acoustic")}
+              body={t(lang, "landing_acoustic_desc")}
+            />
           </StaggerItem>
         </StaggerGroup>
       </section>
 
       {/* ---------- final cta ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <Reveal>
-          <div className="glass-card glass-glow flex flex-col items-start gap-5 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-12">
+          <div className="glass-card glass-glow flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-12">
             <div>
-              <h2 className="font-display text-2xl sm:text-[2rem]">{t(lang, "landing_final_cta_title")}</h2>
-              <p className="mt-2 muted">{t(lang, "landing_final_cta_sub")}</p>
+              <h2 className="font-display max-w-lg text-2xl sm:text-[2rem]">
+                {t(lang, "landing_final_cta_title")}
+              </h2>
+              <p className="mt-3 muted">{t(lang, "landing_final_cta_sub")}</p>
             </div>
             <Magnetic>
-              <Link href={primaryHref} className="btn btn-primary btn-lg">
-                {primaryLabel} <ArrowRight size={17} />
-              </Link>
+              <PendingLink href={primaryHref} className="btn btn-primary btn-lg">
+                <span className="inline-flex items-center gap-2">
+                  {primaryLabel}
+                  <ArrowRight size={17} aria-hidden="true" />
+                </span>
+              </PendingLink>
             </Magnetic>
           </div>
         </Reveal>
@@ -238,28 +300,56 @@ export default function Home() {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div>
-      <div className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--accent)" }}>
-        <Counter to={value} />
-      </div>
-      <div className="mt-1 text-sm muted">{label}</div>
-    </div>
-  );
-}
-
 function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
-    <motion.div {...hoverLift} className="glass-card h-full p-5">
+    <motion.div {...hoverLift} className="glass-card h-full p-5 sm:p-6">
       <span
         className="flex h-10 w-10 items-center justify-center rounded-xl"
         style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
+        aria-hidden="true"
       >
         {icon}
       </span>
-      <p className="mt-4 font-semibold">{title}</p>
-      <p className="mt-1.5 text-sm muted">{body}</p>
+      <p className="mt-4 font-semibold leading-snug">{title}</p>
+      <p className="mt-2 text-sm leading-relaxed muted">{body}</p>
+    </motion.div>
+  );
+}
+
+/**
+ * A whole-card navigation target. The anchor is `block` rather than `flex` so
+ * PendingLink's inner wrapper (and with it the reserved spinner slot) sits on
+ * the card's own baseline instead of competing with the icon/text row for
+ * alignment.
+ */
+function SecondaryLink({
+  href,
+  icon,
+  title,
+  body,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <motion.div {...hoverLift} className="h-full">
+      <PendingLink href={href} className="glass block h-full p-5">
+        <span className="flex flex-1 items-start gap-3 text-left">
+          <span
+            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+            style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
+            aria-hidden="true"
+          >
+            {icon}
+          </span>
+          <span className="block">
+            <span className="block font-semibold">{title}</span>
+            <span className="mt-0.5 block text-sm muted">{body}</span>
+          </span>
+        </span>
+      </PendingLink>
     </motion.div>
   );
 }

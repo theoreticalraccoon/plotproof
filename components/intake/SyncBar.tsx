@@ -4,29 +4,46 @@
  * Connectivity + sync backlog indicator. Auto-drains the outbox on reconnect;
  * "Sync now" forces a drain. Reflects the offline-first reality: work happens
  * offline, sync catches up later.
+ *
+ * The one thing this bar must never do is imply a record left the device when
+ * it did not. So the counts render as "unknown" until the local reads actually
+ * resolve, and when no server sync exists the button is disabled and says so
+ * rather than spinning through a drain that can only ever be a no-op.
  */
 import { useCallback, useEffect, useState } from "react";
+import { CloudOff, RefreshCw } from "lucide-react";
 import { countUnsynced } from "@/lib/intake/store";
 import { drainOutbox, isOnline, startAutoSync } from "@/lib/intake/sync";
 import { formatBytes, localMediaBytes, requestPersistence } from "@/lib/intake/storage";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
+import ActionButton from "@/components/motion/ActionButton";
+import { Skeleton } from "@/components/motion/Skeleton";
 import { useToast } from "@/components/shell/Toast";
 import { t, useLang } from "@/lib/i18n";
+
+interface MediaUsage {
+  bytes: number;
+  count: number;
+}
 
 export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
   const lang = useLang();
   const { toast } = useToast();
   const [online, setOnline] = useState(true);
-  const [pending, setPending] = useState(0);
-  const [media, setMedia] = useState<{ bytes: number; count: number }>({
-    bytes: 0,
-    count: 0,
-  });
-  const [syncing, setSyncing] = useState(false);
+  // null = not read yet. Distinguishing "no backlog" from "don't know yet"
+  // is the whole point: 0 rendered too early reads as "all safe".
+  const [pending, setPending] = useState<number | null>(null);
+  const [media, setMedia] = useState<MediaUsage | null>(null);
+  const [readFailed, setReadFailed] = useState(false);
 
   const refresh = useCallback(() => {
-    void countUnsynced().then(setPending);
-    void localMediaBytes().then(setMedia);
+    void Promise.all([countUnsynced(), localMediaBytes()])
+      .then(([count, usage]) => {
+        setPending(count);
+        setMedia(usage);
+        setReadFailed(false);
+      })
+      .catch(() => setReadFailed(true));
   }, []);
 
   useEffect(() => {
@@ -47,62 +64,97 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
 
   useEffect(refresh, [refresh, refreshSignal]);
 
-  const syncNow = async () => {
-    setSyncing(true);
-    try {
-      const result = await drainOutbox();
-      refresh();
-      if (result.unavailable) {
-        toast("No server sync is connected — records stay on this device only.");
-      } else if (result.failed > 0) {
-        toast(`${result.synced} synced, ${result.failed} failed — will retry.`);
-      } else {
-        toast(t(lang, "toast_synced"));
-      }
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const serverless = !isSupabaseConfigured();
 
+  // Anything short of "everything left the device" throws, so the button lands
+  // on its error state instead of flashing a checkmark over a failed drain.
+  const syncNow = async () => {
+    const result = await drainOutbox();
+    refresh();
+    if (result.unavailable) {
+      throw new Error("No server sync is connected — records stay on this device only.");
+    }
+    if (result.failed > 0) {
+      throw new Error(`${result.synced} synced, ${result.failed} failed — will retry.`);
+    }
+    toast(t(lang, "toast_synced"), "success");
+  };
+
+  const blockedReason = serverless
+    ? "No server sync is connected, so there is nothing to send to."
+    : !online
+      ? "You are offline. Sync resumes on its own when the connection returns."
+      : pending === null
+        ? "Still reading the local queue."
+        : pending === 0
+          ? "Nothing is waiting to be sent."
+          : null;
+
   return (
-    <div className="glass flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 text-sm">
+    <div className="glass flex flex-wrap items-center gap-x-4 gap-y-2 px-3.5 py-2.5">
       <span
-        className="inline-flex items-center gap-1.5 font-semibold"
+        className="inline-flex items-center gap-2 text-sm font-semibold"
         style={{ color: online ? "var(--accent)" : "var(--fg-faint)" }}
       >
         <span
-          className="h-2 w-2 rounded-full"
+          className="h-2.5 w-2.5 rounded-full"
           style={{ background: online ? "var(--accent)" : "var(--fg-faint)" }}
+          aria-hidden="true"
         />
         {online ? "Online" : "Offline"}
       </span>
-      <span className="muted">
-        {serverless
-          ? `On this device only — no server sync connected${pending > 0 ? ` (${pending} queued)` : ""}`
-          : pending === 0
-            ? "All synced"
-            : `${pending} pending sync`}
+
+      <span
+        className="inline-flex min-w-0 flex-1 items-center gap-2 text-[0.95rem]"
+        role="status"
+        aria-live="polite"
+        aria-busy={pending === null && !readFailed}
+      >
+        {readFailed ? (
+          <span className="font-medium" style={{ color: "var(--warn)" }}>
+            Couldn&apos;t read the local queue
+          </span>
+        ) : pending === null ? (
+          <Skeleton className="skeleton-sm h-4 w-44" />
+        ) : serverless ? (
+          <>
+            <CloudOff size={15} className="shrink-0" style={{ color: "var(--fg-faint)" }} aria-hidden="true" />
+            <span className="font-semibold">On this device only</span>
+            <span className="muted">— no server sync connected</span>
+            {pending > 0 && <span className="tag tag-muted shrink-0 tabular-nums">{pending} queued</span>}
+          </>
+        ) : pending === 0 ? (
+          <span className="muted">All synced</span>
+        ) : (
+          <>
+            <span className="tag tag-warn shrink-0 tabular-nums">{pending}</span>
+            <span className="font-medium">pending sync</span>
+          </>
+        )}
       </span>
-      {media.count > 0 && (
-        <span className="faint" title="Photos held on-device until uploaded, then purged">
-          {media.count} photo{media.count === 1 ? "" : "s"} · {formatBytes(media.bytes)} local
+
+      {/* The title sits on the wrapper because a disabled button does not emit
+          hover events of its own in every browser. */}
+      <span className="ml-auto" title={blockedReason ?? "Send everything queued on this device now"}>
+        <ActionButton
+          onAction={syncNow}
+          disabled={blockedReason != null}
+          className="btn btn-ghost"
+          loadingLabel="Syncing"
+          successLabel="Synced"
+        >
+          <RefreshCw size={14} aria-hidden="true" /> Sync now
+        </ActionButton>
+      </span>
+
+      {media != null && media.count > 0 && (
+        <span
+          className="w-full text-xs faint tabular-nums"
+          title="Photos held on-device until uploaded, then purged"
+        >
+          {media.count} photo{media.count === 1 ? "" : "s"} · {formatBytes(media.bytes)} held on this device
         </span>
       )}
-      <button
-        onClick={syncNow}
-        disabled={!online || syncing || pending === 0}
-        className="btn btn-ghost btn-sm ml-auto"
-      >
-        {syncing ? (
-          <>
-            <span className="spinner" aria-hidden="true" /> Syncing…
-          </>
-        ) : (
-          "Sync now"
-        )}
-      </button>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import Nav from "./Nav";
+import NavProgress from "./NavProgress";
 import Footer from "./Footer";
 import PageTransition from "./PageTransition";
 import AmbientBackground from "./AmbientBackground";
@@ -36,6 +37,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <SmoothScroll />
           <ScrollProgress />
           <AmbientBackground />
+          <NavProgress />
           <Nav />
           <main id="main" className="flex flex-1 flex-col">
             <PageTransition>

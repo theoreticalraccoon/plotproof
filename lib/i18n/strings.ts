@@ -190,6 +190,18 @@ const en: Dict = {
   auth_error: "That did not work. Check your details and try again.",
   auth_signout: "Sign out",
   auth_not_configured: "Sign-in is not set up yet.",
+  auth_not_configured_detail:
+    "This deployment has no account service connected, so no account can be created or opened here. Everything else works, and your work stays on this device.",
+  auth_unconfirmed:
+    "This account exists but its email has not been confirmed yet. Open the confirmation link we emailed you, then sign in.",
+  auth_need_email: "Enter your email address first.",
+  auth_or: "or",
+  auth_no_account: "New to PlotProof?",
+  auth_have_account: "Already have an account?",
+  auth_password_hint: "Pick a password",
+  auth_password_rule: "At least 6 characters.",
+  auth_show_password: "Show password",
+  auth_hide_password: "Hide password",
   auth_working: "Please wait",
   auth_saved_note: "Your progress now saves to your account.",
   gate_title: "Create a free account to continue",
@@ -198,6 +210,13 @@ const en: Dict = {
   gate_have: "I already have an account",
   cta_create_account: "Create your free account",
   cta_continue: "Continue where you left off",
+
+  // --- async feedback (spinners, pending links, skeleton regions) -------
+  loading: "Loading",
+  saving: "Saving",
+  opening: "Opening",
+  please_wait: "Please wait",
+  retry_label: "Try again",
 };
 
 const si: Dict = {
@@ -368,6 +387,18 @@ const si: Dict = {
   auth_error: "එය සාර්ථක නොවීය. විස්තර පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
   auth_signout: "පිටවෙන්න",
   auth_not_configured: "පිවිසීම තවම සකසා නැත.",
+  auth_not_configured_detail:
+    "මෙම යෙදවුමට ගිණුම් සේවාවක් සම්බන්ධ කර නොමැති නිසා මෙහි ගිණුමක් සෑදීමට හෝ විවෘත කිරීමට නොහැක. අනෙක් සියල්ල ක්‍රියා කරයි, ඔබේ වැඩ මෙම උපාංගයේම රැඳේ.",
+  auth_unconfirmed:
+    "මෙම ගිණුම තිබේ, නමුත් එහි ඊමේල් තවම තහවුරු කර නැත. අප එවූ තහවුරු කිරීමේ සබැඳිය විවෘත කර පසුව පිවිසෙන්න.",
+  auth_need_email: "පළමුව ඔබේ ඊමේල් ලිපිනය ඇතුළත් කරන්න.",
+  auth_or: "නැතහොත්",
+  auth_no_account: "PlotProof වෙත අලුත්ද?",
+  auth_have_account: "දැනටමත් ගිණුමක් තිබේද?",
+  auth_password_hint: "මුරපදයක් තෝරන්න",
+  auth_password_rule: "අවම වශයෙන් අකුරු 6 ක්.",
+  auth_show_password: "මුරපදය පෙන්වන්න",
+  auth_hide_password: "මුරපදය සඟවන්න",
   auth_working: "රැඳී සිටින්න",
   auth_saved_note: "ඔබේ ප්‍රගතිය දැන් ඔබේ ගිණුමට සුරැකේ.",
   gate_title: "ඉදිරියට යාමට නොමිලේ ගිණුමක් සාදන්න",
@@ -376,6 +407,13 @@ const si: Dict = {
   gate_have: "මට දැනටමත් ගිණුමක් තිබේ",
   cta_create_account: "ඔබේ නොමිලේ ගිණුම සාදන්න",
   cta_continue: "ඔබ නැවතුණු තැනින් ඉදිරියට",
+
+  // --- async feedback ---------------------------------------------------
+  loading: "පූරණය වෙමින්",
+  saving: "සුරකිමින්",
+  opening: "විවෘත වෙමින්",
+  please_wait: "මොහොතක් රැඳී සිටින්න",
+  retry_label: "නැවත උත්සාහ කරන්න",
 };
 
 const ta: Dict = {
@@ -546,6 +584,18 @@ const ta: Dict = {
   auth_error: "அது வேலை செய்யவில்லை. விவரங்களைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
   auth_signout: "வெளியேறு",
   auth_not_configured: "உள்நுழைவு இன்னும் அமைக்கப்படவில்லை.",
+  auth_not_configured_detail:
+    "இந்தப் பயன்பாட்டில் கணக்கு சேவை இணைக்கப்படவில்லை, எனவே இங்கு கணக்கை உருவாக்கவோ திறக்கவோ முடியாது. மற்ற அனைத்தும் வேலை செய்கிறது, உங்கள் பணி இந்தச் சாதனத்திலேயே இருக்கும்.",
+  auth_unconfirmed:
+    "இந்தக் கணக்கு உள்ளது, ஆனால் அதன் மின்னஞ்சல் இன்னும் உறுதிப்படுத்தப்படவில்லை. நாங்கள் அனுப்பிய உறுதிப்படுத்தல் இணைப்பைத் திறந்து பிறகு உள்நுழையவும்.",
+  auth_need_email: "முதலில் உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்.",
+  auth_or: "அல்லது",
+  auth_no_account: "PlotProof-க்கு புதியவரா?",
+  auth_have_account: "ஏற்கனவே கணக்கு உள்ளதா?",
+  auth_password_hint: "கடவுச்சொல்லைத் தேர்வுசெய்க",
+  auth_password_rule: "குறைந்தது 6 எழுத்துகள்.",
+  auth_show_password: "கடவுச்சொல்லைக் காட்டு",
+  auth_hide_password: "கடவுச்சொல்லை மறை",
   auth_working: "காத்திருக்கவும்",
   auth_saved_note: "உங்கள் முன்னேற்றம் இப்போது உங்கள் கணக்கில் சேமிக்கப்படுகிறது.",
   gate_title: "தொடர இலவச கணக்கை உருவாக்குங்கள்",
@@ -554,6 +604,13 @@ const ta: Dict = {
   gate_have: "என்னிடம் ஏற்கனவே கணக்கு உள்ளது",
   cta_create_account: "உங்கள் இலவச கணக்கை உருவாக்குங்கள்",
   cta_continue: "நிறுத்திய இடத்திலிருந்து தொடரவும்",
+
+  // --- async feedback ---------------------------------------------------
+  loading: "ஏற்றுகிறது",
+  saving: "சேமிக்கிறது",
+  opening: "திறக்கிறது",
+  please_wait: "சற்று காத்திருக்கவும்",
+  retry_label: "மீண்டும் முயற்சிக்கவும்",
 };
 
 const DICTS: Record<Lang, Dict> = { en, si, ta };

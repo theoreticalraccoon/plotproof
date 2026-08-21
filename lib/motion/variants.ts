@@ -105,3 +105,33 @@ export const backdropFade: Variants = {
   show: { opacity: 1, transition: { duration: durations.base } },
   exit: { opacity: 0, transition: { duration: durations.base } },
 };
+
+/** An element whose value is awaiting an async result. A slow opacity breath,
+ *  NOT a progress indicator: it says "still working" without implying how far
+ *  along the work is, which is the only honest thing to say when we do not
+ *  know. Pair with the .is-pending utility for the cursor/dim treatment. */
+export const pendingPulse: Variants = {
+  idle: { opacity: 1, transition: { duration: durations.base, ease: EASE_OUT_1 } },
+  pending: {
+    opacity: [1, 0.55, 1],
+    transition: { duration: 1.4, ease: EASE_IN_OUT, repeat: Infinity },
+  },
+};
+
+/** Skeleton → content handoff. The skeleton leaves faster than the content
+ *  arrives, so the two overlap and the reader never sees a bare gap where the
+ *  placeholder used to be. Use as `exit` on the skeleton and `show` on the
+ *  content inside one <AnimatePresence mode="popLayout">. */
+export const skeletonFade: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: durations.base, ease: EASE_OUT_1 } },
+  exit: { opacity: 0, transition: { duration: durations.fast, ease: EASE_OUT_1 } },
+};
+
+/** An inline spinner or status glyph appearing beside a label. Scales in from
+ *  slightly small so it reads as arriving rather than blinking on. */
+export const inlineStatusIn: Variants = {
+  hidden: { opacity: 0, scale: 0.7 },
+  show: { opacity: 1, scale: 1, transition: { duration: durations.fast, ease: EASE_OUT_2 } },
+  exit: { opacity: 0, scale: 0.7, transition: { duration: durations.fast, ease: EASE_OUT_1 } },
+};

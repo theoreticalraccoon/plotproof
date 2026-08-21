@@ -43,3 +43,6 @@ __pycache__/
 
 .vercel
 graphify-out/
+
+.vercel
+.env*

@@ -8,7 +8,7 @@
  * isn't configured the gate is inert, so the app still runs as a prototype.
  */
 import { usePathname } from "next/navigation";
-import Link from "next/link";
+import PendingLink from "@/components/motion/PendingLink";
 import { motion } from "framer-motion";
 import { Lock, UserPlus, LogIn } from "lucide-react";
 import type { ReactNode } from "react";
@@ -54,12 +54,12 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         <h1 className="font-display mt-4 text-2xl">{t(lang, "gate_title")}</h1>
         <p className="mt-2 text-sm muted">{t(lang, "gate_body")}</p>
         <div className="mt-6 flex flex-col gap-2">
-          <Link href={`/login?mode=signup&next=${next}`} className="btn btn-primary">
-            <UserPlus size={16} /> {t(lang, "gate_create")}
-          </Link>
-          <Link href={`/login?next=${next}`} className="btn btn-ghost">
-            <LogIn size={16} /> {t(lang, "gate_have")}
-          </Link>
+          <PendingLink href={`/signup?next=${next}`} className="btn btn-primary">
+            <UserPlus size={16} aria-hidden="true" /> {t(lang, "gate_create")}
+          </PendingLink>
+          <PendingLink href={`/login?next=${next}`} className="btn btn-ghost">
+            <LogIn size={16} aria-hidden="true" /> {t(lang, "gate_have")}
+          </PendingLink>
         </div>
       </motion.div>
     </main>
