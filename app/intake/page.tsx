@@ -1,22 +1,26 @@
 "use client";
 
 /**
- * Plot intake hub. One screen for the officer: sync status, the two live
- * capture paths (import + tracing), and the running list of captured plots.
- * Corner-capture and boundary-walk come next, behind the same save-gate.
+ * Plot intake hub. One screen for the officer: sync status, the capture surface
+ * (import or on-map capture), and the running list of captured plots.
+ *
+ * Field register, deliberately different from the marketing pages: this screen
+ * is read outdoors, in sunlight, on a cheap Android. Blur and translucency are
+ * a liability there, so the surfaces are solid fills and hairline rules, the
+ * type runs larger, and every control clears a 44px target. Nothing on this
+ * page is decorative.
  *
  * TraceMap is loaded with ssr:false because Leaflet touches `window`.
  */
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { Upload, Satellite, Trash2 } from "lucide-react";
 import ImportPanel from "@/components/intake/ImportPanel";
 import PlotList from "@/components/intake/PlotList";
 import SyncBar from "@/components/intake/SyncBar";
 import ActionButton from "@/components/motion/ActionButton";
-import Reveal from "@/components/motion/Reveal";
+import { SkeletonMap } from "@/components/motion/Skeleton";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import { stepTransition } from "@/lib/motion/variants";
 import { clearIntakeData } from "@/lib/intake/db";
@@ -26,11 +30,9 @@ import { warmup } from "@/lib/net";
 
 const TraceMap = dynamic(() => import("@/components/intake/TraceMap"), {
   ssr: false,
-  loading: () => (
-    <p className="flex items-center gap-2 text-sm faint">
-      <span className="spinner" aria-hidden="true" /> Loading map…
-    </p>
-  ),
+  // Shaped like the map it becomes: a blank rectangle where a map belongs is
+  // indistinguishable from a map that failed to load.
+  loading: () => <SkeletonMap className="h-[58vh]" label="Loading map" />,
 });
 
 type Tab = "import" | "trace";
@@ -38,6 +40,7 @@ type Tab = "import" | "trace";
 export default function IntakePage() {
   const lang = useLang();
   const { user, loading } = useAuth();
+  const reduce = useReducedMotion();
   const [tab, setTab] = useState<Tab>("import");
   const [refresh, setRefresh] = useState(0);
   const bump = () => setRefresh((n) => n + 1);
@@ -61,36 +64,74 @@ export default function IntakePage() {
   }, [user, loading]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-4 px-5 py-6 sm:px-8">
-      <Reveal>
-        <Breadcrumb items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_evidence") }]} />
-        <header className="mt-3">
-          <h1 className="text-xl font-semibold tracking-tight">Plot intake</h1>
-          <p className="text-sm muted">
-            Import beats capture. Everything persists offline and syncs later.
-          </p>
-        </header>
-      </Reveal>
+    <main className="mx-auto w-full max-w-4xl px-4 pb-20 pt-4 sm:px-6">
+      <Breadcrumb items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_evidence") }]} />
 
-      <SyncBar refreshSignal={refresh} />
+      <header className="mt-4">
+        <h1 className="text-[1.9rem] font-semibold leading-[1.05] tracking-[-0.025em] sm:text-[2.25rem]">
+          Plot intake
+        </h1>
+        <p className="mt-2 max-w-[62ch] text-[0.98rem] leading-relaxed muted">
+          Import beats capture. Everything persists offline and syncs later.
+        </p>
+      </header>
 
-      <div className="glass inline-flex gap-1 self-start p-1">
-        <TabButton active={tab === "import"} onClick={() => setTab("import")}>
-          <Upload size={14} /> Import (CSV / registry)
-        </TabButton>
-        <TabButton active={tab === "trace"} onClick={() => setTab("trace")}>
-          <Satellite size={14} /> Trace on satellite
-        </TabButton>
+      <div className="mt-6">
+        <SyncBar refreshSignal={refresh} />
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div key={tab} variants={stepTransition} initial="initial" animate="enter" exit="exit">
-          {tab === "import" ? <ImportPanel onImported={bump} /> : <TraceMap onSaved={bump} />}
-        </motion.div>
-      </AnimatePresence>
+      {/* The capture surface is the one thing on this screen. Its path selector
+          sits directly above it as part of the same object, not in a card. */}
+      <section className="mt-10">
+        <h2 className="text-[0.72rem] font-semibold uppercase tracking-[0.1em] faint">
+          Add plots
+        </h2>
+        <div
+          role="group"
+          aria-label="Capture path"
+          className="mt-2.5 grid grid-cols-2 gap-px overflow-hidden"
+          style={{
+            background: "var(--glass-hairline)",
+            border: "1px solid var(--glass-hairline)",
+            borderRadius: "var(--radius-sm)",
+          }}
+        >
+          <PathButton
+            active={tab === "import"}
+            onClick={() => setTab("import")}
+            label="Import"
+            hint="CSV / registry"
+          />
+          <PathButton
+            active={tab === "trace"}
+            onClick={() => setTab("trace")}
+            label="Capture on map"
+            hint="Trace, corners or walk"
+          />
+        </div>
 
-      <section className="mt-2">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide faint">Captured plots</h2>
+        <div className="mt-5">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={tab}
+              variants={reduce ? undefined : stepTransition}
+              initial={reduce ? false : "initial"}
+              animate={reduce ? undefined : "enter"}
+              exit={reduce ? undefined : "exit"}
+            >
+              {tab === "import" ? <ImportPanel onImported={bump} /> : <TraceMap onSaved={bump} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <h2
+          className="pb-2 text-[1.3rem] font-semibold tracking-[-0.02em]"
+          style={{ borderBottom: "2px solid var(--fg)" }}
+        >
+          Captured plots
+        </h2>
         <PlotList refreshSignal={refresh} />
       </section>
 
@@ -102,68 +143,92 @@ export default function IntakePage() {
 /**
  * The farmer's right to have their record deleted has to be exercisable by the
  * person holding the device, without contacting anyone. Two taps, no recovery.
+ *
+ * Kept quiet and last: a permanently red panel halfway up the screen trains an
+ * officer to stop seeing red.
  */
 function DangerZone({ onCleared }: { onCleared: () => void }) {
   const [armed, setArmed] = useState(false);
 
   return (
-    <section className="mt-4 flex flex-col gap-2 rounded-xl p-4 text-sm" style={{ border: "1px solid var(--danger)", background: "var(--danger-soft)" }}>
-      <h2 className="flex items-center gap-2 font-semibold" style={{ color: "var(--danger)" }}>
-        <Trash2 size={15} /> Delete field data on this device
+    <section className="mt-16 pt-6" style={{ borderTop: "1px solid var(--glass-hairline)" }}>
+      <h2
+        className="text-[0.72rem] font-semibold uppercase tracking-[0.1em]"
+        style={{ color: "var(--danger)" }}
+      >
+        Delete field data on this device
       </h2>
-      <p className="muted">
+      <p className="mt-2 max-w-[68ch] text-sm leading-relaxed muted">
         Erases every farmer, plot, attestation, photo and signature stored here.
         This cannot be undone, and nothing is backed up to a server yet. See the{" "}
         <Link href="/privacy" className="underline underline-offset-2">privacy notice</Link>.
       </p>
-      {armed ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <ActionButton
-            onAction={async () => {
-              await clearIntakeData();
-              setArmed(false);
-              onCleared();
-            }}
-            className="btn btn-sm"
-            style={{ background: "var(--danger)", color: "#fff" }}
-            loadingLabel="Deleting"
-            successToast="Field data deleted from this device"
-          >
-            Yes, delete everything
-          </ActionButton>
-          <button onClick={() => setArmed(false)} className="btn btn-ghost btn-sm">
-            Cancel
+      <div className="mt-3.5">
+        {armed ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <ActionButton
+              onAction={async () => {
+                await clearIntakeData();
+                setArmed(false);
+                onCleared();
+              }}
+              className="btn"
+              style={{ background: "var(--danger)", color: "#fff" }}
+              loadingLabel="Deleting"
+              successToast="Field data deleted from this device"
+            >
+              Yes, delete everything
+            </ActionButton>
+            <button onClick={() => setArmed(false)} className="btn btn-ghost">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={() => setArmed(true)} className="btn btn-danger">
+            Delete field data
           </button>
-        </div>
-      ) : (
-        <button onClick={() => setArmed(true)} className="btn btn-ghost btn-sm self-start">
-          Delete field data
-        </button>
-      )}
+        )}
+      </div>
     </section>
   );
 }
 
-function TabButton({
+/**
+ * Segmented path selector. Choosing a path is synchronous, so the fill flip IS
+ * the acknowledgement; a spinner here would be a lie.
+ */
+function PathButton({
   active,
   onClick,
-  children,
+  label,
+  hint,
 }: {
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  label: string;
+  hint: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-sm font-semibold transition-colors"
-      style={
-        active
-          ? { background: "var(--accent)", color: "var(--accent-fg)" }
-          : { color: "var(--fg-muted)" }
-      }
+      aria-pressed={active}
+      className="flex min-h-[58px] flex-col items-start justify-center gap-0.5 px-4 py-2.5 text-left"
+      style={{
+        background: active ? "var(--accent)" : "var(--bg-1)",
+        color: active ? "var(--accent-fg)" : "var(--fg-muted)",
+        transition: "background-color var(--dur-fast) ease, color var(--dur-fast) ease",
+      }}
     >
-      {children}
+      <span className="text-[0.98rem] font-semibold leading-tight">{label}</span>
+      {/* 0.85 is the lowest opacity that keeps the hint above 4.5:1 on the
+          accent fill in both themes. */}
+      <span
+        className="text-[0.74rem] font-medium leading-tight"
+        style={{ opacity: active ? 0.85 : 1 }}
+      >
+        {hint}
+      </span>
     </button>
   );
 }

@@ -1,45 +1,74 @@
 "use client";
 
 /**
- * Marketing landing page, the actual front door. Previously `/` was just the
- * sell-CTA card with a links list; this is a real hero → how-it-works →
- * features → honesty → CTA page. Every number here is real (pulled from the
- * live catalog/markets/i18n data, not invented), and there is no fabricated
- * social proof (testimonials, client logos), the honesty section carries the
- * trust signal instead, matching the product's own "never invent" rule.
+ * Marketing landing page, the actual front door. Every number here is real
+ * (pulled from the live catalog/markets/i18n data, not invented), and there is
+ * no fabricated social proof (testimonials, client logos), the honesty section
+ * carries the trust signal instead, matching the product's own "never invent"
+ * rule.
+ *
+ * TYPE SCALE, set here and echoed by the rest of the app. The jumps are large
+ * on purpose; there is deliberately nothing between `section` and `lede`:
+ *   display   clamp(2.55rem, 6.2vw, 4.25rem)   .font-display, ONE per page (the hero)
+ *   section   clamp(1.85rem, 3.4vw, 2.5rem)    .font-display, ONE per section
+ *   lede      1.0625rem / 1.6, muted, capped ~60ch
+ *   body      0.95rem
+ *   small     0.85rem
+ *   overline  0.7rem, 0.16em tracking, uppercase (Latin only, see overline())
+ *
+ * COMPOSITION RULES this page sets: one dominant element per viewport; a single
+ * 12-column axis with asymmetric splits (7/5, 5/7) rather than centred stacks;
+ * hairlines carry the structure so almost nothing needs a card; the accent
+ * colour appears only on the primary action, the step numerals and two rules.
+ * The lone glass surface here is the hero graphic, which is the only thing on
+ * the page genuinely elevated above the paper.
  *
  * Every route-changing control is a <PendingLink>: the front door is the one
  * place a first-time visitor has no patience for an unacknowledged tap, and
- * these targets (/sell, /documents, /login) each pull a sizeable bundle.
+ * these targets (/sell, /documents, /signup) each pull a sizeable bundle.
  */
-import {
-  ArrowRight,
-  FileText,
-  Satellite,
-  Ship,
-  Languages,
-  ShieldCheck,
-  MapPin,
-  AudioLines,
-} from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { t, useLang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PRODUCTS, MARKETS } from "@/lib/compliance/catalog";
 import { LANGS } from "@/lib/i18n/strings";
 import Reveal from "@/components/motion/Reveal";
-import { StaggerGroup, StaggerItem } from "@/components/motion/Stagger";
 import Counter from "@/components/motion/Counter";
 import ScrollReveal from "@/components/motion/ScrollReveal";
 import Magnetic from "@/components/motion/Magnetic";
 import PlotScan from "@/components/motion/PlotScan";
 import PendingLink from "@/components/motion/PendingLink";
-import { hoverLift } from "@/lib/motion/variants";
-import { motion } from "framer-motion";
+import { staggerContainer, staggerItem } from "@/lib/motion/variants";
 
 const WIZARD_STEPS = ["q_product", "q_origin", "q_market", "q_details"] as const;
 
+const SECONDARY_FEATURES = [
+  ["landing_feature_eudr_title", "landing_feature_eudr_body"],
+  ["landing_feature_shipping_title", "landing_feature_shipping_body"],
+  ["landing_feature_lang_title", "landing_feature_lang_body"],
+] as const;
+
+const HAIRLINE: CSSProperties = { borderColor: "var(--glass-hairline)" };
+
+/**
+ * Sinhala and Tamil are unicameral and their conjuncts come apart under wide
+ * tracking, so the small-caps overline treatment is applied only where it is
+ * legible. Same reason the display leading opens up off English: Fraunces is
+ * Latin-only, so those scripts fall back to a system serif whose ascenders and
+ * descenders will not survive a 1.0 line-height.
+ */
+function overline(en: boolean, color = "var(--fg-faint)"): CSSProperties {
+  return en
+    ? { textTransform: "uppercase", letterSpacing: "0.16em", color }
+    : { letterSpacing: "0.01em", color };
+}
+
 export default function Home() {
   const lang = useLang();
+  const en = lang === "en";
+  const reduce = useReducedMotion();
   const { configured, user } = useAuth();
 
   // Account-first: a signed-out visitor is prompted to create an account; a
@@ -60,50 +89,63 @@ export default function Home() {
     { value: LANGS.length, label: t(lang, "landing_stat_languages") },
   ];
 
+  const sectionHeading: CSSProperties = {
+    fontSize: "clamp(1.85rem, 3.4vw, 2.5rem)",
+    lineHeight: en ? 1.04 : 1.24,
+    letterSpacing: "-0.025em",
+  };
+
   return (
     <>
       {/* ---------- hero ---------- */}
-      <section className="mx-auto max-w-6xl px-5 pt-14 pb-10 sm:px-8 sm:pt-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
-          <div>
+      <section className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 sm:pt-20 lg:pt-24">
+        <div className="grid gap-y-16 lg:grid-cols-12 lg:items-center lg:gap-x-12">
+          <div className="lg:col-span-7">
             <Reveal>
-              <span className="eyebrow">
-                <Satellite size={13} aria-hidden="true" /> {t(lang, "landing_eyebrow")}
-              </span>
+              <p className="flex items-center gap-3 text-[0.7rem] font-semibold" style={overline(en)}>
+                <span aria-hidden="true" className="h-px w-7 shrink-0" style={{ background: "var(--accent)" }} />
+                {t(lang, "landing_eyebrow")}
+              </p>
             </Reveal>
+
             <Reveal delay={0.05}>
-              <h1 className="font-display mt-5 text-[2.45rem] leading-[1.06] sm:text-5xl lg:text-[3.4rem] lg:leading-[1.04]">
+              <h1
+                className="font-display mt-6 text-balance"
+                style={{
+                  fontSize: "clamp(2.55rem, 6.2vw, 4.25rem)",
+                  lineHeight: en ? 1.0 : 1.22,
+                  letterSpacing: "-0.032em",
+                }}
+              >
                 {t(lang, "landing_hero_title")}
               </h1>
             </Reveal>
+
             {/*
               What this is, in one sentence, Sinhala first, always. The accent
               rule marks it as the definition rather than as one more paragraph:
               a reader who takes in nothing else on this page should take in
               this line, in the language most of our users read fastest.
             */}
-            <Reveal delay={0.08}>
-              <div
-                className="mt-7 max-w-xl border-l-2 pl-4 sm:pl-5"
-                style={{ borderColor: "var(--accent-ring)" }}
-              >
-                <p className="text-lg font-medium leading-[1.5] sm:text-xl" lang="si">
+            <Reveal delay={0.09}>
+              <div className="mt-9 border-l-2 pl-5 sm:pl-6" style={{ borderColor: "var(--accent)" }}>
+                <p
+                  className="max-w-[38ch] font-medium"
+                  lang="si"
+                  style={{ fontSize: "clamp(1.15rem, 2vw, 1.4rem)", lineHeight: 1.52 }}
+                >
                   {t("si", "landing_what_is")}
                 </p>
                 {lang !== "si" && (
-                  <p className="mt-2 text-sm muted" lang={lang}>
+                  <p className="mt-2.5 max-w-[62ch] text-[0.9rem] leading-relaxed muted" lang={lang}>
                     {t(lang, "landing_what_is")}
                   </p>
                 )}
               </div>
             </Reveal>
-            <Reveal delay={0.11}>
-              <p className="mt-6 max-w-xl text-base muted sm:text-lg">
-                {t(lang, "landing_hero_sub")}
-              </p>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
+
+            <Reveal delay={0.14}>
+              <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Magnetic>
                   <PendingLink href={primaryHref} className="btn btn-primary btn-lg">
                     <span className="inline-flex items-center gap-2">
@@ -112,187 +154,222 @@ export default function Home() {
                     </span>
                   </PendingLink>
                 </Magnetic>
-                {/* In-page scroll, not a navigation: no spinner, the press
-                    scale on .btn is the whole acknowledgement it needs. */}
-                <a href="#how" className="btn btn-ghost btn-lg">
+                {/* Demoted from a second button to a text link, so the hero has
+                    exactly one primary action. In-page scroll, not a
+                    navigation: no spinner, the press state is the whole
+                    acknowledgement it needs. */}
+                <a
+                  href="#how"
+                  className="inline-flex min-h-[44px] items-center text-[0.95rem] font-medium underline decoration-[color:var(--glass-hairline)] decoration-1 underline-offset-[6px] transition-transform duration-150 hover:decoration-[color:var(--accent)] active:scale-[0.97]"
+                  style={{ color: "var(--fg-muted)" }}
+                >
                   {t(lang, "landing_cta_secondary")}
                 </a>
               </div>
             </Reveal>
           </div>
 
-          {/* cinematic hero graphic: satellite plot-scan (self-contained SVG) */}
-          <Reveal variant="fade" delay={0.2}>
+          {/* The one genuinely elevated surface on this page: a satellite
+              plot-scan (self-contained SVG, a stylised illustration, never a
+              claim about a real plot). */}
+          <Reveal variant="fade" delay={0.2} className="lg:col-span-5">
             <PlotScan />
           </Reveal>
         </div>
 
-        {/* stats strip, real numbers only, read off the live catalog */}
+        {/* Stats demoted from a four-up glass box to a quiet inline row under a
+            single rule. Numbers are read off the live catalog, never invented. */}
         <Reveal delay={0.1}>
-          <dl className="glass mt-16 grid grid-cols-2 sm:mt-20 sm:grid-cols-4">
-            {stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={[
-                  "px-6 py-6 sm:px-7 sm:py-7",
-                  i % 2 === 1 ? "border-l" : "",
-                  i > 0 ? "sm:border-l" : "",
-                  i >= 2 ? "border-t sm:border-t-0" : "",
-                ].join(" ")}
-                style={{ borderColor: "var(--glass-hairline)" }}
-              >
-                <dd
-                  className="text-[2rem] font-semibold tracking-tight tabular-nums sm:text-[2.6rem]"
-                  style={{ color: "var(--accent)" }}
-                >
+          <ul className="mt-16 flex flex-wrap gap-x-10 gap-y-3 border-t pt-6 sm:mt-20 sm:gap-x-14" style={HAIRLINE}>
+            {stats.map((s) => (
+              <li key={s.label} className="flex items-baseline gap-2">
+                <span className="text-[1.3rem] font-semibold tabular-nums" style={{ letterSpacing: "-0.02em" }}>
                   <Counter to={s.value} />
-                </dd>
-                <dt className="mt-1.5 text-[0.78rem] leading-snug muted">{s.label}</dt>
+                </span>
+                <span className="text-[0.85rem] muted">{s.label}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </section>
+
+      {/* ---------- how it works ---------- */}
+      {/* scroll-mt clears the sticky nav, so the heading is not parked under it. */}
+      <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32">
+        <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
+          <div className="lg:col-span-5">
+            <Reveal>
+              <h2 className="font-display max-w-[16ch] text-balance" style={sectionHeading}>
+                {t(lang, "landing_how_title")}
+              </h2>
+              <p className="mt-6 max-w-[52ch] text-[1.0625rem] leading-relaxed muted">
+                {t(lang, "landing_hero_sub")}
+              </p>
+              <p className="mt-4 max-w-[52ch] text-[0.9rem] leading-relaxed faint">
+                {t(lang, "landing_how_sub")}
+              </p>
+            </Reveal>
+          </div>
+
+          <div className="lg:col-span-7">
+            {/* A numbered list, not four identical cards: these steps are
+                ordered, and a uniform grid actively hides the order. */}
+            <motion.ol
+              initial={reduce ? undefined : "hidden"}
+              whileInView={reduce ? undefined : "show"}
+              viewport={{ once: true, margin: "-60px" }}
+              variants={reduce ? undefined : staggerContainer(0.06)}
+            >
+              {WIZARD_STEPS.map((key, i) => (
+                <motion.li
+                  key={key}
+                  variants={reduce ? undefined : staggerItem}
+                  className="grid grid-cols-[2.5rem_1fr] items-baseline gap-x-5 border-t py-5 sm:py-6"
+                  style={HAIRLINE}
+                >
+                  <span
+                    className="text-[0.8rem] font-semibold tabular-nums"
+                    style={{ color: "var(--accent)", letterSpacing: "0.08em" }}
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-medium" style={{ fontSize: "clamp(1.05rem, 1.6vw, 1.2rem)", lineHeight: 1.4 }}>
+                    {t(lang, key)}
+                  </span>
+                </motion.li>
+              ))}
+            </motion.ol>
+
+            {/* The payoff keeps the list's rhythm rather than becoming another
+                card: same rule, same gutter, an arrow where a numeral would be. */}
+            <Reveal delay={0.05}>
+              <div className="grid grid-cols-[2.5rem_1fr] gap-x-5 border-t py-6" style={HAIRLINE}>
+                <ArrowRight size={19} className="mt-1" style={{ color: "var(--accent)" }} aria-hidden="true" />
+                <div>
+                  <p className="text-[1.05rem] font-semibold">{t(lang, "landing_how_result_title")}</p>
+                  <p className="mt-2.5 max-w-[58ch] text-[0.95rem] leading-relaxed muted">
+                    {t(lang, "landing_how_result_body")}
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- manifesto (scroll-driven word reveal) ---------- */}
+      {/* No aria-label: the section's whole content is one sentence, so naming
+          the region would just make a screen reader read it twice. */}
+      <section>
+        <ScrollReveal text={t(lang, "landing_manifesto")} accentWords={["four", "simple", "questions", "documents"]} />
+      </section>
+
+      {/* ---------- features ---------- */}
+      <section className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-32">
+        <Reveal>
+          <p className="text-[0.7rem] font-semibold" style={overline(en)}>
+            {t(lang, "landing_features_eyebrow")}
+          </p>
+          <h2 className="font-display mt-5 max-w-[19ch] text-balance" style={sectionHeading}>
+            {t(lang, "landing_features_title")}
+          </h2>
+        </Reveal>
+
+        {/* One feature leads at roughly double the weight of the other three,
+            which sit as a plain three-up split by vertical hairlines. No cards,
+            no icon tiles: the type does the ranking. */}
+        <Reveal delay={0.06}>
+          <div className="mt-14 grid gap-x-12 gap-y-4 border-t pt-8 sm:pt-10 lg:grid-cols-12" style={HAIRLINE}>
+            <h3
+              className="lg:col-span-5"
+              style={{
+                fontSize: "clamp(1.35rem, 2.2vw, 1.7rem)",
+                lineHeight: en ? 1.15 : 1.35,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {t(lang, "landing_feature_docs_title")}
+            </h3>
+            <p className="max-w-[58ch] text-[1.0625rem] leading-relaxed muted lg:col-span-6 lg:col-start-7">
+              {t(lang, "landing_feature_docs_body")}
+            </p>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <dl className="mt-12 grid border-t sm:grid-cols-3" style={HAIRLINE}>
+            {SECONDARY_FEATURES.map(([titleKey, bodyKey], i) => (
+              <div
+                key={titleKey}
+                className={[
+                  "py-7 sm:py-8 sm:pr-8",
+                  i > 0 ? "border-t sm:border-t-0 sm:border-l sm:pl-8" : "",
+                ].join(" ")}
+                style={HAIRLINE}
+              >
+                <dt className="text-[1rem] font-semibold leading-snug">{t(lang, titleKey)}</dt>
+                <dd className="mt-2.5 max-w-[42ch] text-[0.9rem] leading-relaxed muted">{t(lang, bodyKey)}</dd>
               </div>
             ))}
           </dl>
         </Reveal>
       </section>
 
-      {/* ---------- how it works ---------- */}
-      {/* scroll-mt clears the sticky nav, so the heading is not parked under it. */}
-      <section id="how" className="mx-auto max-w-6xl scroll-mt-28 px-5 py-20 sm:px-8 sm:py-28">
-        <Reveal>
-          <h2 className="font-display max-w-lg text-2xl sm:text-[2rem]">
-            {t(lang, "landing_how_title")}
-          </h2>
-          <p className="mt-3 max-w-xl muted">{t(lang, "landing_how_sub")}</p>
-        </Reveal>
-
-        <StaggerGroup className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {WIZARD_STEPS.map((key, i) => (
-            <StaggerItem key={key} className="h-full">
-              <div className="glass-card flex h-full flex-col p-5 sm:p-6">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold tabular-nums"
-                  style={{
-                    background: "var(--accent-soft)",
-                    color: "var(--accent)",
-                    boxShadow: "inset 0 0 0 1px var(--accent-ring)",
-                  }}
-                  aria-hidden="true"
-                >
-                  {i + 1}
-                </span>
-                <p className="mt-4 font-semibold leading-snug">{t(lang, key)}</p>
-              </div>
-            </StaggerItem>
-          ))}
-        </StaggerGroup>
-
-        <Reveal delay={0.1}>
-          <div className="glass-card glass-glow mt-5 flex flex-col items-start gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
-            <div>
-              <p className="font-semibold">{t(lang, "landing_how_result_title")}</p>
-              <p className="mt-1.5 max-w-lg text-sm muted">{t(lang, "landing_how_result_body")}</p>
-            </div>
-            <PendingLink href={primaryHref} className="btn btn-primary shrink-0">
-              <span className="inline-flex items-center gap-2">
-                {primaryLabel}
-                <ArrowRight size={16} aria-hidden="true" />
-              </span>
-            </PendingLink>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ---------- manifesto (scroll-driven word reveal) ---------- */}
-      <section aria-label="What PlotProof does">
-        <ScrollReveal
-          text={t(lang, "landing_manifesto")}
-          accentWords={["four", "simple", "questions", "documents"]}
-        />
-      </section>
-
-      {/* ---------- features ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-        <Reveal>
-          <span className="eyebrow">{t(lang, "landing_features_eyebrow")}</span>
-          <h2 className="font-display mt-5 max-w-2xl text-2xl sm:text-[2rem]">
-            {t(lang, "landing_features_title")}
-          </h2>
-        </Reveal>
-
-        <StaggerGroup className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" stagger={0.08}>
-          <FeatureCard icon={<FileText size={19} />} title={t(lang, "landing_feature_docs_title")} body={t(lang, "landing_feature_docs_body")} />
-          <FeatureCard icon={<Satellite size={19} />} title={t(lang, "landing_feature_eudr_title")} body={t(lang, "landing_feature_eudr_body")} />
-          <FeatureCard icon={<Ship size={19} />} title={t(lang, "landing_feature_shipping_title")} body={t(lang, "landing_feature_shipping_body")} />
-          <FeatureCard icon={<Languages size={19} />} title={t(lang, "landing_feature_lang_title")} body={t(lang, "landing_feature_lang_body")} />
-        </StaggerGroup>
-      </section>
-
       {/* ---------- honesty ---------- */}
-      <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
-        <Reveal>
-          <div
-            className="glass-card glass-glow overflow-hidden p-8 sm:p-12"
-            style={{ borderColor: "var(--gold-ring)" }}
-          >
-            <span
-              className="eyebrow"
-              style={{ background: "var(--gold-soft)", color: "var(--gold)", borderColor: "var(--gold-ring)" }}
-            >
-              <ShieldCheck size={13} aria-hidden="true" /> {t(lang, "landing_honesty_eyebrow")}
-            </span>
-            <h2 className="font-display mt-5 max-w-2xl text-2xl sm:text-[2rem]">
-              {t(lang, "landing_honesty_title")}
-            </h2>
-            <p className="mt-4 max-w-2xl text-base muted">{t(lang, "landing_honesty_body")}</p>
+      {/* A full-bleed band rather than a card. It is the page's trust anchor, so
+          it gets its own ground and the only use of the secondary accent. */}
+      <section className="border-y" style={{ ...HAIRLINE, background: "var(--bg-1)" }}>
+        <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-28">
+          <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-12">
+            <Reveal className="lg:col-span-5">
+              <p className="text-[0.7rem] font-semibold" style={overline(en, "var(--gold)")}>
+                {t(lang, "landing_honesty_eyebrow")}
+              </p>
+              <h2 className="font-display mt-5 max-w-[14ch] text-balance" style={sectionHeading}>
+                {t(lang, "landing_honesty_title")}
+              </h2>
+            </Reveal>
+            <Reveal delay={0.06} className="lg:col-span-6 lg:col-start-7 lg:pt-2">
+              <p className="max-w-[64ch] text-[1.0625rem] leading-relaxed muted">
+                {t(lang, "landing_honesty_body")}
+              </p>
+            </Reveal>
           </div>
-        </Reveal>
+        </div>
       </section>
 
       {/* ---------- also in plotproof ---------- */}
-      <section className="mx-auto max-w-6xl px-5 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 pt-20 sm:px-8 sm:pt-24">
         <Reveal>
-          <hr className="hairline" />
-          <h2 className="mt-6 text-xs font-semibold uppercase tracking-wide faint">
+          <h2 className="text-[0.7rem] font-semibold" style={overline(en)}>
             {t(lang, "landing_also_title")}
           </h2>
         </Reveal>
-        <StaggerGroup className="mt-4 grid gap-4 sm:grid-cols-2">
-          <StaggerItem className="h-full">
-            <SecondaryLink
-              href="/explore"
-              icon={<MapPin size={17} />}
-              title={t(lang, "nav_explore")}
-              body={t(lang, "landing_explore_desc")}
-            />
-          </StaggerItem>
-          <StaggerItem className="h-full">
-            <SecondaryLink
-              href="/acoustic"
-              icon={<AudioLines size={17} />}
-              title={t(lang, "footer_acoustic")}
-              body={t(lang, "landing_acoustic_desc")}
-            />
-          </StaggerItem>
-        </StaggerGroup>
+        <ul className="mt-6">
+          <SecondaryRow href="/explore" title={t(lang, "nav_explore")} body={t(lang, "landing_explore_desc")} />
+          <SecondaryRow href="/acoustic" title={t(lang, "footer_acoustic")} body={t(lang, "landing_acoustic_desc")} />
+        </ul>
       </section>
 
       {/* ---------- final cta ---------- */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
+      <section className="mx-auto max-w-6xl px-5 py-24 sm:px-8 sm:py-32">
         <Reveal>
-          <div className="glass-card glass-glow flex flex-col items-start gap-6 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-12">
-            <div>
-              <h2 className="font-display max-w-lg text-2xl sm:text-[2rem]">
+          <div className="grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-12">
+            <div className="lg:col-span-7">
+              <h2 className="font-display max-w-[18ch] text-balance" style={sectionHeading}>
                 {t(lang, "landing_final_cta_title")}
               </h2>
-              <p className="mt-3 muted">{t(lang, "landing_final_cta_sub")}</p>
+              <p className="mt-4 max-w-[48ch] text-[0.95rem] muted">{t(lang, "landing_final_cta_sub")}</p>
             </div>
-            <Magnetic>
+            <div className="lg:col-span-5 lg:justify-self-end">
               <PendingLink href={primaryHref} className="btn btn-primary btn-lg">
                 <span className="inline-flex items-center gap-2">
                   {primaryLabel}
                   <ArrowRight size={17} aria-hidden="true" />
                 </span>
               </PendingLink>
-            </Magnetic>
+            </div>
           </div>
         </Reveal>
       </section>
@@ -300,56 +377,32 @@ export default function Home() {
   );
 }
 
-function FeatureCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
-  return (
-    <motion.div {...hoverLift} className="glass-card h-full p-5 sm:p-6">
-      <span
-        className="flex h-10 w-10 items-center justify-center rounded-xl"
-        style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
-        aria-hidden="true"
-      >
-        {icon}
-      </span>
-      <p className="mt-4 font-semibold leading-snug">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed muted">{body}</p>
-    </motion.div>
-  );
-}
-
 /**
- * A whole-card navigation target. The anchor is `block` rather than `flex` so
- * PendingLink's inner wrapper (and with it the reserved spinner slot) sits on
- * the card's own baseline instead of competing with the icon/text row for
- * alignment.
+ * A quiet full-width navigation row. The anchor stays `block` so the whole row
+ * is the hit area even though PendingLink wraps its children in a shrink-to-fit
+ * inline-flex span, which is also why the arrow sits inline after the title
+ * rather than being pushed out to the far right.
  */
-function SecondaryLink({
-  href,
-  icon,
-  title,
-  body,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function SecondaryRow({ href, title, body }: { href: string; title: string; body: string }) {
   return (
-    <motion.div {...hoverLift} className="h-full">
-      <PendingLink href={href} className="glass block h-full p-5">
-        <span className="flex flex-1 items-start gap-3 text-left">
-          <span
-            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
-            aria-hidden="true"
-          >
-            {icon}
+    <li className="border-t" style={HAIRLINE}>
+      <PendingLink
+        href={href}
+        className="group -mx-3 block rounded-[var(--radius-sm)] px-3 py-5 transition-colors duration-150 hover:bg-[var(--accent-soft)] active:bg-[var(--glass-hairline)]"
+      >
+        <span className="block">
+          <span className="flex items-center gap-2 font-semibold">
+            {title}
+            <ArrowUpRight
+              size={16}
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              style={{ color: "var(--accent)" }}
+            />
           </span>
-          <span className="block">
-            <span className="block font-semibold">{title}</span>
-            <span className="mt-0.5 block text-sm muted">{body}</span>
-          </span>
+          <span className="mt-1 block max-w-[62ch] text-[0.9rem] leading-relaxed muted">{body}</span>
         </span>
       </PendingLink>
-    </motion.div>
+    </li>
   );
 }

@@ -3,12 +3,16 @@
 /**
  * Persistent app navigation. Present on every route (wired in AppShell) so no
  * workflow, including the document generators, which used to strand a farmer
- * mid-print with no way back, can trap a user. Desktop: horizontal links with
- * an active-route indicator. Mobile: a full-height animated drawer.
+ * mid-print with no way back, can trap a user. Desktop: horizontal text links
+ * with an active-route rule. Mobile: a full-height animated drawer.
  *
  * Every link here is a PendingLink: this is the one component every route
  * change in the app passes through, so a tap that is waiting on a route bundle
  * has to say so inline rather than leaving the user to tap again.
+ *
+ * The desktop links are deliberately text-only. Four icons plus four labels in
+ * a 68px bar is four decorations, not four affordances; the drawer keeps its
+ * icons because a 52px touch row genuinely reads faster with a leading mark.
  */
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -32,24 +36,24 @@ const LINKS = [
 /**
  * Local, deliberately faster than the shared `drawerSlide` (450ms in): a menu
  * is a direct answer to a tap, so any travel long enough to notice reads as the
- * tap having missed. 200ms in / 150ms out is under the threshold where a panel
- * stops feeling attached to the finger. Kept here rather than edited in
- * lib/motion/variants.ts because the slower curve is right for content panels.
+ * tap having missed. 160ms in / 120ms out keeps the panel attached to the
+ * finger. Kept here rather than edited in lib/motion/variants.ts because the
+ * slower curve is right for content panels.
  */
 const drawerSlideFast: Variants = {
   hidden: { x: "100%" },
-  show: { x: 0, transition: { duration: 0.2, ease: EASE_OUT_2 } },
-  exit: { x: "100%", transition: { duration: 0.15, ease: EASE_IN_OUT } },
+  show: { x: 0, transition: { duration: 0.16, ease: EASE_OUT_2 } },
+  exit: { x: "100%", transition: { duration: 0.12, ease: EASE_IN_OUT } },
 };
 const drawerFade: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.15 } },
-  exit: { opacity: 0, transition: { duration: 0.12 } },
+  show: { opacity: 1, transition: { duration: 0.12 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
 };
 const backdropFast: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.15 } },
-  exit: { opacity: 0, transition: { duration: 0.12 } },
+  show: { opacity: 1, transition: { duration: 0.12 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
 };
 
 const FOCUSABLE = 'a[href],button:not(:disabled),[tabindex]:not([tabindex="-1"])';
@@ -62,6 +66,16 @@ export default function Nav() {
   const { open: openCmd } = useCommandPalette();
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+
+  // The palette binds BOTH ⌘K and Ctrl-K, so the keycap is a label, not a
+  // contract, but printing ⌘ to a Windows farmer is still a small lie. Resolved
+  // after mount (the platform is not knowable during SSR) into a slot of fixed
+  // width, so settling on the real label cannot shift the bar.
+  const [shortcutLabel, setShortcutLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    setShortcutLabel(/Mac|iPhone|iPad|iPod/.test(ua) ? "⌘K" : "Ctrl K");
+  }, []);
 
   // Close the drawer automatically on route change.
   useEffect(() => setOpen(false), [pathname]);
@@ -118,46 +132,48 @@ export default function Nav() {
 
   return (
     <header className="glass-nav sticky top-0 z-40 print:hidden">
-      <div className="mx-auto flex h-[var(--nav-h)] max-w-6xl items-center gap-4 px-5 sm:px-8">
+      <div className="mx-auto flex h-[var(--nav-h)] max-w-6xl items-center gap-5 px-5 sm:px-8">
         {/* No `gap` on the anchor: PendingLink wraps its children in a single
             flex span, so the badge carries its own spacing. */}
         <PendingLink
           href="/"
-          className="flex items-center font-semibold tracking-tight transition-transform active:scale-95"
+          className="flex items-center text-[0.98rem] font-semibold transition-transform duration-150 active:scale-95"
+          style={{ letterSpacing: "-0.02em" }}
         >
           <span
-            className="mr-2 flex h-8 w-8 items-center justify-center rounded-xl"
+            className="mr-2.5 flex h-7 w-7 items-center justify-center rounded-lg"
             style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
           >
-            <Leaf size={17} strokeWidth={2.25} />
+            <Leaf size={15} strokeWidth={2.25} aria-hidden="true" />
           </span>
           <span>PlotProof</span>
         </PendingLink>
 
-        <nav className="ml-1 hidden items-center gap-0.5 md:flex" aria-label="Primary">
+        <nav className="hidden items-center md:flex" aria-label="Primary">
           {LINKS.map((l) => {
             const active = isActive(l.href);
             return (
               <PendingLink
                 key={l.href}
                 href={l.href}
-                className="relative inline-flex items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:text-[var(--fg)]"
-                style={{ color: active ? "var(--accent)" : "var(--fg-muted)" }}
+                className="relative inline-flex items-center rounded-lg px-2.5 py-2 text-[0.875rem] transition-colors duration-150 hover:text-[var(--fg)]"
+                style={{
+                  color: active ? "var(--fg)" : "var(--fg-muted)",
+                  fontWeight: active ? 600 : 500,
+                }}
               >
-                <span className="flex items-center gap-1.5" aria-current={active ? "page" : undefined}>
-                  <l.Icon size={15} aria-hidden="true" />
-                  {t(lang, l.key)}
-                </span>
+                <span aria-current={active ? "page" : undefined}>{t(lang, l.key)}</span>
                 {active && (
                   <motion.span
                     layoutId={reduce ? undefined : "nav-active"}
                     aria-hidden="true"
-                    // right-8 = the link's own px-2.5 plus the 1.5rem spinner
-                    // slot PendingLink always reserves, so the rule tracks the
-                    // label rather than the label plus dead space.
-                    className="absolute bottom-[-1px] left-2.5 right-8 h-0.5 rounded-full"
+                    // 2.125rem = the link's own px-2.5 (0.625rem) plus the
+                    // 1.5rem spinner slot PendingLink always reserves, so the
+                    // rule tracks the label rather than the label plus dead
+                    // space.
+                    className="absolute bottom-[-1px] left-2.5 right-[2.125rem] h-[2px] rounded-full"
                     style={{ background: "var(--accent)" }}
-                    transition={{ duration: 0.25, ease: EASE_OUT_2 }}
+                    transition={{ duration: 0.22, ease: EASE_OUT_2 }}
                   />
                 )}
               </PendingLink>
@@ -170,16 +186,23 @@ export default function Nav() {
             type="button"
             onClick={openCmd}
             aria-label={t(lang, "cmd_open")}
-            className="inline-flex min-h-[38px] items-center gap-2 rounded-lg border py-1.5 pl-2.5 pr-2 text-sm faint transition-[color,border-color,transform] duration-150 hover:text-[var(--fg)] hover:border-[var(--accent-ring)] active:scale-[0.97]"
-            style={{ borderColor: "var(--glass-border)", background: "var(--glass)" }}
+            aria-keyshortcuts="Meta+K Control+K"
+            className="inline-flex min-h-[38px] items-center gap-2 rounded-lg border py-1.5 pl-2.5 pr-2 text-[0.85rem] transition-[color,border-color,transform] duration-150 hover:text-[var(--fg)] hover:border-[var(--accent-ring)] active:scale-[0.97]"
+            style={{ borderColor: "var(--glass-border)", background: "var(--glass)", color: "var(--fg-faint)" }}
           >
             <Search size={15} aria-hidden="true" />
             <span>{t(lang, "cmd_open")}</span>
             <kbd
-              className="rounded px-1.5 py-0.5 text-[0.68rem] font-semibold"
-              style={{ background: "var(--glass-hairline)", color: "var(--fg-faint)" }}
+              aria-hidden="true"
+              className="inline-flex min-w-[2.9rem] justify-center rounded px-1.5 py-0.5 text-[0.66rem] font-semibold"
+              style={{
+                background: "var(--glass-hairline)",
+                color: "var(--fg-faint)",
+                opacity: shortcutLabel ? 1 : 0,
+                transition: "opacity var(--dur-fast) ease",
+              }}
             >
-              ⌘K
+              {shortcutLabel ?? " "}
             </kbd>
           </button>
           <LanguageSwitcher />
@@ -226,7 +249,7 @@ export default function Nav() {
               role="dialog"
               aria-modal="true"
               aria-label={t(lang, "nav_menu")}
-              className="glass-card fixed inset-y-0 right-0 z-50 flex w-[82%] max-w-xs flex-col gap-1 p-5 pt-[calc(var(--nav-h)+0.5rem)] md:hidden"
+              className="glass-card fixed inset-y-0 right-0 z-50 flex w-[84%] max-w-xs flex-col gap-0.5 p-4 pt-[calc(var(--nav-h)+0.5rem)] md:hidden"
               style={{ borderRadius: 0 }}
               initial="hidden"
               animate="show"
@@ -241,27 +264,31 @@ export default function Nav() {
                   <PendingLink
                     key={l.href}
                     href={l.href}
-                    className="relative flex min-h-[52px] items-center rounded-xl px-4 py-3 text-base font-medium transition-transform duration-150 active:scale-[0.985]"
+                    className="relative flex min-h-[52px] items-center rounded-xl px-4 py-3 text-[1rem] transition-transform duration-150 active:scale-[0.985]"
                     style={{
-                      color: active ? "var(--accent)" : "var(--fg)",
+                      color: active ? "var(--fg)" : "var(--fg-muted)",
+                      fontWeight: active ? 600 : 500,
                       background: active ? "var(--accent-soft)" : "transparent",
                     }}
                   >
                     {active && (
                       <span
                         aria-hidden="true"
-                        className="absolute inset-y-2.5 left-0 w-0.5 rounded-full"
+                        className="absolute inset-y-3 left-0 w-[2px] rounded-full"
                         style={{ background: "var(--accent)" }}
                       />
                     )}
                     <span className="flex items-center gap-3" aria-current={active ? "page" : undefined}>
-                      <l.Icon size={18} aria-hidden="true" />
+                      <l.Icon size={17} aria-hidden="true" style={{ color: active ? "var(--accent)" : "var(--fg-faint)" }} />
                       {t(lang, l.key)}
                     </span>
                   </PendingLink>
                 );
               })}
-              <div className="mt-5 flex flex-col gap-3 border-t pt-5" style={{ borderColor: "var(--glass-hairline)" }}>
+              <div
+                className="mt-auto flex flex-col gap-3 border-t pt-5"
+                style={{ borderColor: "var(--glass-hairline)" }}
+              >
                 <LanguageSwitcher full />
                 <AccountControl full />
               </div>

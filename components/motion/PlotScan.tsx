@@ -30,10 +30,14 @@ export default function PlotScan() {
   const reduce = useReducedMotion();
 
   return (
-    <div className="glass-card glass-glow relative aspect-[4/5] w-full overflow-hidden">
-      {/* caption overline */}
-      <div className="absolute left-4 top-4 z-20 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-wide faint">
-        <Satellite size={13} style={{ color: "var(--accent)" }} />
+    <div className="glass-card glass-glow relative aspect-square w-full overflow-hidden">
+      {/* Caption overline. The satellite glyph is the label's own mark, not
+          decoration, so it is the only icon left inside the frame. */}
+      <div
+        className="absolute left-5 top-5 z-20 flex items-center gap-2 text-[0.68rem] font-semibold"
+        style={{ color: "var(--fg-faint)", textTransform: lang === "en" ? "uppercase" : "none", letterSpacing: lang === "en" ? "0.14em" : "0.01em" }}
+      >
+        <Satellite size={13} aria-hidden="true" style={{ color: "var(--accent)" }} />
         {t(lang, "hero_scan_caption")}
       </div>
 
@@ -124,19 +128,10 @@ export default function PlotScan() {
         ))}
       </svg>
 
-      {/* satellite + downward beam, top-right */}
-      <div className="absolute right-4 top-9 z-20 flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "var(--glass)", border: "1px solid var(--glass-border)", color: "var(--accent)" }}>
-        <Satellite size={16} />
-        {!reduce && (
-          <motion.span
-            className="absolute inset-0 rounded-xl"
-            style={{ border: "1px solid var(--accent-ring)" }}
-            initial={{ scale: 1, opacity: 0 }}
-            animate={{ scale: [1, 1.7], opacity: [0.5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-          />
-        )}
-      </div>
+      {/* The floating satellite chip that used to sit top-right was a third
+          overlay competing with the caption and the badge, and it was an icon
+          in a box carrying no information the caption did not already give.
+          The sweeping beam is the scan; it does not need a source drawn in. */}
 
       {/* scanning beam sweeping top -> bottom (transform-only, GPU friendly) */}
       {!reduce && (
@@ -155,7 +150,7 @@ export default function PlotScan() {
 
       {/* verified badge, resolves after the scan */}
       <motion.div
-        className="glass absolute bottom-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
+        className="glass absolute bottom-5 left-5 z-20 flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
         style={{ color: "var(--accent)" }}
         initial={reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
