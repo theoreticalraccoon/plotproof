@@ -128,6 +128,78 @@ const en: Dict = {
   risk_caveats_title: "What this cannot tell you",
   risk_no_spray_advice: "We do not name a pesticide or a dose. Confirm treatment with your TRI extension officer.",
 
+
+  // --- leaf diagnosis (tea CNN) ------------------------------------------
+  // Same translation rule as the rest of the grow lane: short labels are
+  // translated, advisory SENTENCES stay English and fall back, because an
+  // unreviewed machine translation of a disease instruction can mislead.
+  nav_diagnose: "Check a leaf",
+  tea_title: "Check a leaf",
+  tea_lede: "Photograph one leaf. The result is a suggestion from an image, not a laboratory test.",
+  tea_take_photo: "Take or choose a photo",
+  tea_formats: "JPEG, PNG or WebP, from your camera or gallery.",
+  tea_analyse: "Check this leaf",
+  tea_retake: "Choose a different photo",
+  tea_analysing: "Looking at the leaf…",
+  tea_preview_alt: "The leaf photo you selected",
+  tea_preview_note: "The model sees a square centre crop of this photo.",
+
+  tea_state_confident: "What the photo suggests",
+  tea_state_uncertain: "Uncertain — retake the photo",
+  tea_state_error: "The leaf checker could not run",
+  tea_confidence: "{pct}% confidence",
+  tea_confidence_caveat: "Confidence is how sure the model is, not the chance it is right. It can be confidently wrong on a farm unlike the ones it learned from.",
+  tea_model_version: "Model {version}",
+  tea_not_cross_validated: "This condition could not be checked against any independent dataset. Treat it as a lead, not a finding.",
+  tea_other_possibilities: "Other possibilities",
+
+  tea_uncertain_body: "The model is not confident enough to name a condition, so it will not guess. A wrong name is worse than no name.",
+  tea_photo_tips_title: "For a better photo",
+  tea_tip_light: "Use good natural light — not direct midday glare, not deep shade.",
+  tea_tip_one_leaf: "Photograph one representative leaf, filling most of the frame.",
+  tea_tip_focus: "Keep the leaf in focus and hold still.",
+  tea_tip_shadow: "Avoid hard shadows, reflections and anything covering the leaf.",
+  tea_tip_retake: "Retake rather than resubmitting the same photo — the result will not change.",
+
+  tea_error_no_artifact: "The model has not been published to this app yet.",
+  tea_error_load_failed: "The model could not be downloaded. Check your connection and try again.",
+  tea_error_bad_image: "That file could not be read as an image. Try a JPEG or PNG.",
+  tea_error_inference_failed: "Something went wrong while checking the leaf.",
+  tea_error_still_useful: "Weather and watering advice on this plot are unaffected.",
+  tea_try_again: "Try again",
+
+  // Evidence layer — each line names where it came from.
+  tea_evidence_title: "The evidence",
+  tea_src_image: "Photo",
+  tea_src_environment: "Conditions",
+  tea_src_sensor: "Measured",
+  tea_src_weather: "Weather model",
+  tea_ev_image_confident: "The photo looks like {disease} ({pct}% confidence).",
+  tea_ev_image_uncertain: "The photo was not clear enough to name a condition.",
+  tea_ev_image_unavailable: "No photo result — the leaf checker did not run.",
+  tea_ev_env_supports: "Recent weather also favoured {disease}: {band} pressure, {days} of {window} days favourable.",
+  tea_ev_env_low: "Recent weather did NOT particularly favour {disease} ({band} pressure). That does not rule it out; the photo is the direct evidence.",
+  tea_ev_env_conflict: "Conditions currently favour {favoured} ({band} pressure) rather than {seen}. We report this disagreement rather than overruling the photo — check the leaf for both.",
+  tea_ev_env_no_model_pest: "{disease} is a pest, not a fungal disease. We have no weather model for it, so conditions say nothing either way.",
+  tea_ev_env_no_model: "We have no weather model for {disease}, so conditions say nothing either way.",
+  tea_ev_env_healthy_but_pressure: "The leaf looks healthy, but conditions have favoured {disease} ({band} pressure). Keep checking over the coming days.",
+  tea_ev_env_healthy_calm: "Conditions have not strongly favoured any of the diseases we model.",
+  tea_ev_env_standalone: "Conditions favoured {disease}: {band} pressure, {days} of {window} days favourable.",
+  tea_ev_weather_provenance: "Weather is from a model grid near your plot, observed through {date} — not a station on your farm.",
+  tea_ev_soil_measured: "Your soil sensor measured the root zone directly. Watering advice: {verdict}.",
+  tea_ev_soil_modelled: "Soil water is a satellite-informed model estimate, not a measurement. Watering advice: {verdict}.",
+  tea_ev_soil_balance: "Soil water is estimated from rainfall and evaporation only. Watering advice: {verdict}.",
+
+  tea_action_title: "What to do next",
+  tea_action_confirm: "Treat this as a lead. Check more leaves across the plot, and confirm {disease} with your TRI extension officer before treating.",
+  tea_action_conflict: "The photo and the weather disagree. Inspect several leaves yourself and take the question to your extension officer rather than treating for {disease} now.",
+  tea_action_retake: "Take another photo following the guidance above.",
+  tea_action_healthy: "Nothing to act on from this leaf. Keep an eye on the plot.",
+  tea_action_healthy_watch: "This leaf looks fine, but conditions have favoured disease. Check other leaves over the next few days.",
+  tea_action_error: "Try again when you have a connection. Watering and disease-pressure advice still work.",
+  tea_no_pesticide: "We never name a pesticide or a dose. Confirm any treatment with your TRI extension officer.",
+  tea_limitations_title: "What this checker cannot do",
+
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "Export-readiness for smallholders and their cooperatives",
   landing_hero_title: "Get export-ready. Prove your plot. Know your price.",
@@ -379,6 +451,23 @@ const si: Dict = {
   risk_band_high: "ඉහළ",
   risk_why: "ඇයි",
 
+
+  // --- leaf diagnosis (short labels only; sentences fall back to English) --
+  nav_diagnose: "කොළයක් පරීක්ෂා කරන්න",
+  tea_title: "කොළයක් පරීක්ෂා කරන්න",
+  tea_take_photo: "ඡායාරූපයක් ගන්න",
+  tea_analyse: "මෙම කොළය පරීක්ෂා කරන්න",
+  tea_retake: "වෙනත් ඡායාරූපයක්",
+  tea_analysing: "කොළය බලමින්…",
+  tea_state_uncertain: "අවිනිශ්චිතයි — නැවත ඡායාරූපයක් ගන්න",
+  tea_src_image: "ඡායාරූපය",
+  tea_src_environment: "තත්ත්ව",
+  tea_src_sensor: "මැනූ",
+  tea_src_weather: "කාලගුණ ආකෘතිය",
+  tea_evidence_title: "සාක්ෂි",
+  tea_action_title: "මීළඟට කළ යුත්තේ",
+  tea_try_again: "නැවත උත්සාහ කරන්න",
+
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "කුඩා ගොවීන්ට සහ ඔවුන්ගේ සමුපකාරවලට අපනයන සූදානම",
   landing_hero_title: "අපනයනයට සූදානම් වන්න. ඔබේ ඉඩම ඔප්පු කරන්න. ඔබේ මිල දැනගන්න.",
@@ -595,6 +684,23 @@ const ta: Dict = {
   risk_band_moderate: "நடுத்தரம்",
   risk_band_high: "அதிகம்",
   risk_why: "ஏன்",
+
+
+  // --- leaf diagnosis (short labels only; sentences fall back to English) --
+  nav_diagnose: "இலையைச் சரிபார்க்கவும்",
+  tea_title: "இலையைச் சரிபார்க்கவும்",
+  tea_take_photo: "புகைப்படம் எடுக்கவும்",
+  tea_analyse: "இந்த இலையைச் சரிபார்",
+  tea_retake: "வேறு புகைப்படம்",
+  tea_analysing: "இலையைப் பார்க்கிறது…",
+  tea_state_uncertain: "உறுதியற்றது — மீண்டும் படம் எடுக்கவும்",
+  tea_src_image: "புகைப்படம்",
+  tea_src_environment: "நிலைமைகள்",
+  tea_src_sensor: "அளவிடப்பட்டது",
+  tea_src_weather: "வானிலை மாதிரி",
+  tea_evidence_title: "சான்று",
+  tea_action_title: "அடுத்து என்ன செய்வது",
+  tea_try_again: "மீண்டும் முயற்சிக்கவும்",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "சிறு விவசாயிகளுக்கும் அவர்களின் கூட்டுறவுகளுக்கும் ஏற்றுமதி தயார்நிலை",

@@ -219,6 +219,13 @@ export default function GrowPage() {
                         {t(lang, "risk_not_diagnosis")}
                       </p>
 
+                      {/* The bridge from "conditions favour this" to "look at an
+                          actual leaf". Weather pressure is not a diagnosis, and
+                          this is the only thing on the page that looks at one. */}
+                      <PendingLink href="/grow/diagnose" className="btn btn-primary mt-4">
+                        {t(lang, "risk_check_leaves")}
+                      </PendingLink>
+
                       <details className="mt-4">
                         <summary className="cursor-pointer text-[0.85rem] font-medium muted">
                           {t(lang, "risk_caveats_title")}

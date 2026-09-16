@@ -87,6 +87,12 @@ export default function WhatsRealPage() {
                 with the measured conditions that produced the score. This is infection pressure,
                 not a diagnosis — weather favouring a disease is not the same as having it.
               </Entry>
+              <Entry term="Leaf disease diagnosis from a photo.">
+                Photograph a leaf and a small neural network runs in your browser — the image never
+                leaves the phone. It declines to answer when it is not confident enough, which on
+                photographs from farms it has never seen means it declines roughly two times in
+                three. That is the intended behaviour, not a fault.
+              </Entry>
               <Entry term="Offline plot capture.">
                 Trace on a map, walk the boundary, mark corners, or import a file. Geometry is
                 validated (self-intersection, area sanity, overlap against other plots) and stored
@@ -166,10 +172,7 @@ export default function WhatsRealPage() {
                 datasets instead — JRC Tropical Moist Forest and Global Forest Watch (Hansen) — so
                 any verdict-shaped claim is theirs, not ours.
               </Entry>
-              <Entry term="Leaf disease diagnosis from a photo.">
-                The classifier is trained, evaluated and published, but nothing in the app uses it
-                yet — there is no camera screen. When it lands it will carry the caveat below.
-              </Entry>
+
               <Entry term="Tea disease detection outside its training domain.">
                 The model scores 99.8% on held-out data from the set it was trained on, and about
                 70% on photographs from farms it has never seen. That gap is the honest number.
