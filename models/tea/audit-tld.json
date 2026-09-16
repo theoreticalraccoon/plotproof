@@ -1,0 +1,139 @@
+{
+  "stride_assumed": 1500,
+  "tld_bd": {
+    "total_images": 2008,
+    "classes": {
+      "algal_leaf": {
+        "images": 301,
+        "dimensions": {
+          "640x480": 214,
+          "480x640": 85,
+          "471x640": 1,
+          "477x640": 1
+        },
+        "modes": {
+          "RGB": 301
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "IMG_1966.JPG",
+          "IMG_1967.JPG",
+          "IMG_1968.JPG",
+          "IMG_1969.JPG"
+        ]
+      },
+      "gray_blight": {
+        "images": 302,
+        "dimensions": {
+          "640x480": 302
+        },
+        "modes": {
+          "RGB": 302
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "IMG_2218.JPG",
+          "IMG_2219 (1).JPG",
+          "IMG_2219.JPG",
+          "IMG_2220.JPG"
+        ]
+      },
+      "healthy": {
+        "images": 436,
+        "dimensions": {
+          "640x480": 291,
+          "480x640": 143,
+          "4000x3000": 1,
+          "438x640": 1
+        },
+        "modes": {
+          "RGB": 436
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "20230820_140729.jpg",
+          "20230820_141033.jpg",
+          "20230820_141050.jpg",
+          "20230820_141110.jpg"
+        ]
+      },
+      "helopeltis": {
+        "images": 321,
+        "dimensions": {
+          "640x480": 293,
+          "480x640": 28
+        },
+        "modes": {
+          "RGB": 321
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "20230820_142824.jpg",
+          "20230820_142825.jpg",
+          "20230820_142826.jpg",
+          "20230820_142837.jpg"
+        ]
+      },
+      "looper_infested": {
+        "images": 332,
+        "dimensions": {
+          "640x480": 326,
+          "480x640": 6
+        },
+        "modes": {
+          "RGB": 332
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "20230820_155626.jpg",
+          "20230820_155627.jpg",
+          "20230820_155631.jpg",
+          "20230820_155635.jpg"
+        ]
+      },
+      "red_spider": {
+        "images": 316,
+        "dimensions": {
+          "640x480": 315,
+          "480x640": 1
+        },
+        "modes": {
+          "RGB": 316
+        },
+        "unreadable": [],
+        "example_filenames": [
+          "IMG_2575.JPG",
+          "IMG_2576.JPG",
+          "IMG_2577.JPG",
+          "IMG_2578.JPG"
+        ]
+      }
+    },
+    "class_imbalance_ratio": 1.45,
+    "exif": {
+      "sampled": 400,
+      "with_gps": 0,
+      "pct_with_gps": 0.0,
+      "with_datetime": 399,
+      "pct_with_datetime": 99.8,
+      "distinct_gps_values": 0,
+      "gps_value_counts": {},
+      "devices": {
+        "Apple iPhone 7": 327,
+        "samsung SM-A217F": 72
+      },
+      "datetime_range": [
+        "2023:08:20 12:09:32",
+        "2023:08:21 11:37:36"
+      ],
+      "estate_split_possible": false
+    },
+    "near_duplicates": {
+      "sampled": 2008,
+      "mean_nn_similarity": 0.9706,
+      "pct_nn_above_0_999": 6.8,
+      "pct_nn_above_0_99": 32.8,
+      "pct_nn_same_class": 94.1
+    }
+  }
+}

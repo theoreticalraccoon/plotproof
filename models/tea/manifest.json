@@ -10,13 +10,11 @@
     "publisher's own split does not respect that. Splitting on images rather than",
     "groups is the single mistake that would make every downstream number a lie."
   ],
-
-  "manifest_version": 1,
+  "manifest_version": 2,
   "audited_on": "2026-09-16",
   "taxonomy_version": 1,
   "raw_data_committed": false,
   "raw_data_note": "Images are NOT committed to this repository — not required by CC BY 4.0 and it would add ~1 GB. Fetch from the pinned DOIs in provenance.json; CS-D's archive is verified by SHA-256 below.",
-
   "datasets": [
     {
       "id": "cs_d",
@@ -40,12 +38,49 @@
         "format": "JPEG",
         "unreadable_files": 0,
         "per_class": {
-          "Blister_Blight": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
-          "Brown_Blight": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
-          "Leaf_Red_Rust": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
-          "Red_Spider_Mite": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
-          "Tea_Mosquito_Bug": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
-          "Healthy": { "images": 12829, "groups": 1500, "group_sizes": { "8": 671, "9": 829 } }
+          "Blister_Blight": {
+            "images": 13500,
+            "groups": 1500,
+            "group_sizes": {
+              "9": 1500
+            }
+          },
+          "Brown_Blight": {
+            "images": 13500,
+            "groups": 1500,
+            "group_sizes": {
+              "9": 1500
+            }
+          },
+          "Leaf_Red_Rust": {
+            "images": 13500,
+            "groups": 1500,
+            "group_sizes": {
+              "9": 1500
+            }
+          },
+          "Red_Spider_Mite": {
+            "images": 13500,
+            "groups": 1500,
+            "group_sizes": {
+              "9": 1500
+            }
+          },
+          "Tea_Mosquito_Bug": {
+            "images": 13500,
+            "groups": 1500,
+            "group_sizes": {
+              "9": 1500
+            }
+          },
+          "Healthy": {
+            "images": 12829,
+            "groups": 1500,
+            "group_sizes": {
+              "8": 671,
+              "9": 829
+            }
+          }
         }
       },
       "groupBy": {
@@ -60,12 +95,14 @@
         "Images are pre-resized to 256x256 and median-filtered by the publisher, so the model cannot be trained at higher resolution and inherits their preprocessing."
       ]
     },
-
     {
       "id": "ewu",
       "role": "cross_dataset_test",
       "doi": "10.17632/mz598gxfw9.1",
-      "archive": { "filename": "Tea Leaf Diseases.zip", "bytes": 107706468 },
+      "archive": {
+        "filename": "Tea Leaf Diseases.zip",
+        "bytes": 107706468
+      },
       "format": "Roboflow YOLOv8 export (object detection), converted to single-label classification",
       "measured": {
         "total_images": 5180,
@@ -89,7 +126,11 @@
         "consequence": "Augmented copies share a stem and must stay together."
       },
       "shipped_split_is_leaky": {
-        "sizes": { "train": 4322, "valid": 430, "test": 428 },
+        "sizes": {
+          "train": 4322,
+          "valid": 430,
+          "test": 428
+        },
         "source_stems_spanning_multiple_splits": 101,
         "pct_of_stems": 3.3,
         "affected_images": 295,
@@ -102,9 +143,12 @@
         "Filenames fall into three distinct families (2,424 camera-timestamp, 2,336 generic image_N_N, ~330 UNADJUSTEDNONRAW_thumb), suggesting three different sub-collections merged into one dataset with different capture conditions.",
         "79 images carry no bounding box at all and therefore have no usable label."
       ],
-      "usable_overlap_with_cs_d": ["healthy", "brown_blight", "helopeltis"]
+      "usable_overlap_with_cs_d": [
+        "healthy",
+        "brown_blight",
+        "helopeltis"
+      ]
     },
-
     {
       "id": "tealeafbd",
       "role": "UNAVAILABLE",
@@ -127,41 +171,138 @@
       "decision": "DROPPED as the cross-dataset partner. The counts above are transcribed from the readme for the record and are NOT verified against pixels, because there are no pixels to verify.",
       "note": "A Kaggle mirror exists, but taking images from a mirror would break the provenance chain: the CC BY 4.0 grant we verified attaches to the Mendeley record, and a mirror's contents and licence would need independent verification. Not worth it when licence-clean alternatives exist."
     },
-
     {
       "id": "tld_bd",
-      "role": "candidate_field_condition_test",
+      "role": "cross_dataset_test_secondary (TEST ONLY - never training, never model selection)",
       "doi": "10.17632/d2xybhfw59.2",
       "licence": "CC BY 4.0",
-      "status": "IDENTIFIED, NOT YET DOWNLOADED",
+      "status": "DOWNLOADED AND AUDITED",
       "total_images": 2007,
       "dimensions": "480x640 JPG",
-      "classes": ["Algal Leaf", "Grey Blight", "Healthy Leaf", "Helopeltis", "Looper Infested", "Red Spider"],
-      "why_valuable": "Real in-field conditions from two named Sreemangal estates WITH GPS coordinates (M.R. Khan 24.27257,91.75938 and Finlay 24.30334,91.74249), collected over eight days in December 2024. The only candidate carrying estate-level metadata, which makes a genuine estate-held-out split possible.",
-      "blister_blight": false
+      "classes": [
+        "Algal Leaf",
+        "Grey Blight",
+        "Healthy Leaf",
+        "Helopeltis",
+        "Looper Infested",
+        "Red Spider"
+      ],
+      "archive": {
+        "filename": "Tea Leaf Dataset.zip",
+        "bytes": 3074000000,
+        "sha256": "52744d5a040640dae7a96790c260b14eda649b78bcf8499fca3a868ee166ec00",
+        "note": "v1 and v2 are byte-identical (same sha256); the version bump changed metadata only.",
+        "structure": "Two top-level sets the record does not mention: 'Tea Compressed Data' (2,008 usable images) and 'Tea Original Data' (4032x3024 originals, the bulk of the 2.9 GB)."
+      },
+      "measured": {
+        "total_images": 2008,
+        "published_claim": 2007,
+        "unreadable_files": 0,
+        "class_imbalance_ratio": 1.45,
+        "per_class": {
+          "healthy": 436,
+          "looper_infested": 332,
+          "helopeltis": 321,
+          "red_spider": 316,
+          "gray_blight": 302,
+          "algal_leaf": 301
+        },
+        "dimensions": "Dominant 640x480 LANDSCAPE, not the 480x640 the record states. Both orientations present, plus 471x640/477x640/438x640 and one 4000x3000 in the compressed healthy folder.",
+        "exif": {
+          "gps_present": "0 of 400 sampled",
+          "datetime_present": "99.8%",
+          "devices": {
+            "Apple iPhone 7": 327,
+            "samsung SM-A217F": 72
+          },
+          "capture_dates": [
+            "2023-08-20 (1518 images)",
+            "2023-08-21 (485 images)"
+          ],
+          "record_claims_dates": "9-16 December 2024 (eight days)",
+          "date_discrepancy": "EXIF is 16 months earlier and spans two days, not eight. EXIF is written by the camera at capture and is trusted over the record."
+        }
+      },
+      "estate_split_possible": false,
+      "estate_split_finding": "NO. Zero GPS in any sampled image. Not a re-encoding artifact: DateTimeOriginal, Make and Model all survived the publisher's compression, so EXIF was preserved and GPS was simply never recorded. Images are foldered by CLASS; there is no estate directory, manifest, or filename token. The two named estates exist only in the record's prose.",
+      "device_class_confound": {
+        "finding": "Device is strongly confounded with class.",
+        "per_class_iphone7_pct": {
+          "gray_blight": 100,
+          "red_spider": 100,
+          "algal_leaf": 99,
+          "healthy": 81,
+          "helopeltis": 70,
+          "looper_infested": 48
+        },
+        "impact": "Three classes are effectively single-device, so a model could key on sensor noise, colour science or JPEG quantisation rather than the lesion. Also rules out device or capture date as a split axis, since either would remove whole classes from one side.",
+        "decision": "TEST ONLY. As a test set the confound makes the test harder, not dishonest. As training data it would teach the camera."
+      },
+      "groupBy": {
+        "unit": "shutter_run",
+        "rule": "Consecutive IMG_#### camera shutter numbers form a burst of the same leaf. iOS 'IMG_E####' is the EDITED copy of 'IMG_####' and belongs to the same group.",
+        "measured": "483 runs across 2,008 images, mean 4.2 images per run. 38 edited/original pairs within the same class.",
+        "near_duplicates": "Mean nearest-neighbour similarity 0.9706 (CS-D: 0.9988); 6.8% above 0.999. Genuinely diverse by comparison."
+      },
+      "label_mapping": {
+        "note": "All six folder names already resolve through teaClassFromSourceLabel with NO taxonomy change required.",
+        "healthy": "healthy (0, ACTIVE)",
+        "helopeltis": "helopeltis (5, ACTIVE)",
+        "red_spider": "red_spider_mite (4, ACTIVE)",
+        "gray_blight": "grey_blight (6, inactive)",
+        "algal_leaf": "algal_leaf_spot (7, inactive)",
+        "looper_infested": "looper (10, inactive)"
+      },
+      "overlap_with_active_v1": {
+        "classes": [
+          "healthy",
+          "helopeltis",
+          "red_spider_mite"
+        ],
+        "images": 1073,
+        "value_added": "red_spider_mite is NOT in the EWU overlap, so TLD-BD lifts cross-dataset coverage from 3 of 6 active classes to 4 of 6, using genuine in-field imagery rather than EWU's detached leaves."
+      },
+      "classes_NOT_activated": "grey_blight, algal_leaf_spot and looper stay inactive. None appears in CS-D, so none can be trained; presence in a test set is not a reason to activate a class."
     },
-
     {
       "id": "tealeafdiseasebd",
       "role": "rejected_for_v1",
       "doi": "10.17632/jcvxm4gh7d.3",
       "licence": "CC BY 4.0",
       "total_images": 13085,
-      "classes": ["Healthy", "Red Spider", "Brown Blight", "Gray Blight", "Helopeltis", "Algal Leaf Spot", "Red Rust"],
+      "classes": [
+        "Healthy",
+        "Red Spider",
+        "Brown Blight",
+        "Gray Blight",
+        "Helopeltis",
+        "Algal Leaf Spot",
+        "Red Rust"
+      ],
       "rejected_because": "Every leaf is photographed against a BLACK BACKGROUND. As a held-out set it would measure background shift rather than generalisation, and as training data it would teach the background. 7 GB for a domain we do not serve.",
       "useful_finding": "This team also ships 'Algal Leaf Spot' and 'Red Rust' as SEPARATE classes — independent corroboration for keeping them unmerged in the taxonomy."
     }
   ],
-
   "blister_blight_availability": {
-    "datasets_examined": ["cs_d", "ewu", "tealeafbd", "tld_bd", "tealeafdiseasebd"],
-    "datasets_containing_blister_blight": ["cs_d"],
+    "datasets_examined": [
+      "cs_d",
+      "ewu",
+      "tealeafbd",
+      "tld_bd",
+      "tealeafdiseasebd"
+    ],
+    "datasets_containing_blister_blight": [
+      "cs_d"
+    ],
     "implication": "The flagship Sri Lankan tea disease, and the one lib/grow/risk.ts is built around, exists in exactly one dataset. It cannot be cross-dataset validated by any source found. This is the single most important caveat attached to the model."
   },
-
   "split": {
     "unit": "source_group",
-    "ratios": { "train": 70, "val": 15, "test": 15 },
+    "ratios": {
+      "train": 70,
+      "val": 15,
+      "test": 15
+    },
     "method": "sha256(datasetId|className|groupId) → first 4 bytes as uint32 → mod 100 → <70 train, <85 val, else test",
     "implementation": "assign_split() in scripts/audit_tea_datasets.py",
     "properties": [
@@ -170,13 +311,32 @@
       "Whole groups move together, so an augmented sibling can never straddle a boundary.",
       "Keyed by dataset id too, so CS-D group 7 and EWU group 7 are unrelated."
     ],
-    "cs_d_group_preview": { "train": 6270, "val": 1347, "test": 1383 },
+    "cs_d_group_preview": {
+      "train": 6270,
+      "val": 1347,
+      "test": 1383
+    },
     "cs_d_group_preview_note": "Groups, not images. Close enough to 70/15/15 without forcing exact ratios, which would require a global sort and break the stability-under-growth property.",
     "evaluation_plan": [
-      "Primary: in-distribution test split above, reported per class. Expect a high number and do not present it as generalisation.",
-      "Secondary: cross-dataset on EWU, restricted to healthy / brown_blight / helopeltis — the only three classes with confident correspondence. This is the honest generalisation estimate.",
-      "Blister blight: in-distribution ONLY. No cross-dataset number exists or can be manufactured.",
-      "Report expected calibration error and a reliability diagram alongside accuracy, not accuracy alone."
-    ]
+      "TIER 1 - Internal group-held-out test (CS-D). Whole source groups held out via the sha256 group hash. Reported per class. This is an IN-DISTRIBUTION number; it must never be presented as generalisation.",
+      "TIER 2 - Cross-dataset test (EWU), re-split by Roboflow source stem. Classes: healthy, brown_blight, helopeltis. Detached-leaf domain.",
+      "TIER 3 - Cross-dataset test (TLD-BD), test-only. Classes: healthy, helopeltis, red_spider_mite. Real in-field domain, two Bangladesh estates, different devices.",
+      "Tiers 2+3 together cover 4 of 6 active classes: healthy, brown_blight, helopeltis, red_spider_mite.",
+      "NO cross-dataset number exists for blister_blight or red_rust. Blister blight appears in no other dataset examined; red_rust appears only in TeaLeafDiseaseBD, which was rejected for its black studio background.",
+      "Model selection uses the CS-D validation split ONLY. Tiers 1-3 test sets are touched once, after training is frozen.",
+      "Report expected calibration error and a reliability diagram alongside accuracy, per class, never a single headline number."
+    ],
+    "final_composition": {
+      "training": "CS-D only. 6,270 source groups (~55,900 images) across 6 classes.",
+      "validation_for_model_selection": "CS-D held-out groups. 1,347 groups (~12,000 images).",
+      "test_tier1_in_distribution": "CS-D held-out groups. 1,383 groups (~12,400 images).",
+      "test_tier2_cross_dataset": "EWU, re-split by source stem, 3 overlapping classes.",
+      "test_tier3_cross_dataset_field": "TLD-BD, all 1,073 images in the 3 overlapping classes. Test only.",
+      "never_used_for_training": [
+        "EWU",
+        "TLD-BD"
+      ],
+      "rationale": "CS-D is the only source containing blister blight, so it must carry training. EWU and TLD-BD are reserved entirely for measurement, which is the only way their numbers mean anything."
+    }
   }
 }

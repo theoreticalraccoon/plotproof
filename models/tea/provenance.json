@@ -12,7 +12,7 @@
     "Re-verify before publishing weights. Mendeley versions can be superseded and a",
     "licence can change between versions."
   ],
-  "record_version": 2,
+  "record_version": 3,
   "verified_on": "2026-09-16",
   "verified_by": "Original Mendeley Data repository pages and the corresponding Data in Brief articles (PMC full text).",
   "intended_use": "Train a tea leaf disease classifier, ship the trained weights inside PlotProof as a static ONNX artifact served to the browser. PlotProof may be commercialised.",
@@ -214,9 +214,19 @@
         ],
         "collection": "Two Sreemangal estates, Bangladesh, over eight days in Dec 2024. M.R. Khan Tea Estate (24.27257, 91.75938) and Finlay Tea Estate (24.30334, 91.74249)."
       },
-      "role": "Candidate field-condition held-out set. Identified and licence-cleared; not yet downloaded.",
-      "why_valuable": "The only candidate publishing per-estate GPS, which makes a genuine estate-held-out split possible. Real in-field conditions rather than detached leaves or studio backgrounds.",
-      "shipping_compatible": true
+      "role": "Secondary cross-dataset TEST set (test-only). The estate-held-out rationale did NOT survive audit.",
+      "why_valuable": "Downgraded. Adds red_spider_mite to cross-dataset coverage (3 of 6 active classes -> 4 of 6) with genuine in-field imagery. The estate-held-out benefit it was downloaded for does not exist.",
+      "shipping_compatible": true,
+      "data_verified": {
+        "downloaded": true,
+        "measured_images": 2008,
+        "published_claim": 2007,
+        "unreadable_files": 0,
+        "estate_metadata_present": false,
+        "finding": "0 of 400 sampled images carry EXIF GPS, and images are foldered by class with no estate directory or filename token. Not a stripping artifact: DateTimeOriginal, Make and Model all survived the publisher's compression. The two named estates exist only in the record's prose, so no geographic hold-out is possible.",
+        "date_discrepancy": "EXIF DateTimeOriginal gives 2023-08-20 and 2023-08-21 (two days). The record claims 9-16 December 2024 (eight days). EXIF is written by the camera at capture and is trusted.",
+        "device_confound": "Two devices (Apple iPhone 7, samsung SM-A217F) unevenly distributed across classes; gray_blight, red_spider and algal_leaf are 99-100% single-device. Test-only use avoids teaching the camera."
+      }
     },
     {
       "id": "tealeafdiseasebd",
@@ -293,7 +303,8 @@
       "CONFIRMED: the CNN label space includes two pests and does not match lib/grow/risk.ts's three fungal pathogens. Bridged explicitly via riskEngineKey.",
       "CONFIRMED: CS-D preserves NO estate/date/device metadata, so a field-held-out split is impossible. Source-group hold-out is the ceiling.",
       "NEW: blister blight appears in only one of five datasets examined, so it can never be cross-dataset validated. It is the model's headline caveat.",
-      "NEW: only three classes (healthy, brown_blight, helopeltis) have confident correspondence between CS-D and EWU, so the generalisation estimate covers 3 of 6 active classes."
+      "NEW: only three classes (healthy, brown_blight, helopeltis) have confident correspondence between CS-D and EWU, so the generalisation estimate covers 3 of 6 active classes.",
+      "NEW: TLD-BD cannot support an estate-held-out evaluation. No EXIF GPS, no estate labels, and its published capture dates are contradicted by EXIF by 16 months. Retained test-only as a second cross-dataset set."
     ]
   }
 }

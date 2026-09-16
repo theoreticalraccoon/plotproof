@@ -197,6 +197,135 @@ def audit_ewu(root: str) -> dict:
 
 
 # --------------------------------------------------------------------------
+# TLD-BD
+# --------------------------------------------------------------------------
+
+def exif_summary(path: str) -> dict:
+    """Pull the EXIF fields that could identify WHERE and WHEN a photo was taken.
+
+    This is the decisive test for TLD-BD. Its Mendeley description says images
+    are 'organized into folders according to its respective class label' -- i.e.
+    by class, not by estate -- and names two estates with GPS coordinates. If
+    EXIF GPSInfo survived the publisher's compression to 480x640, each image can
+    be assigned to an estate and a genuine geographic hold-out is possible. If
+    the re-encode stripped it, the estate labels exist only in prose and the
+    dataset is in exactly the same position as CS-D.
+    """
+    out = {"gps": None, "datetime": None, "make": None, "model": None}
+    try:
+        with Image.open(path) as im:
+            exif = im.getexif()
+            if not exif:
+                return out
+            # 0x8825 GPSInfo, 0x9003 DateTimeOriginal, 0x0132 DateTime,
+            # 0x010F Make, 0x0110 Model
+            gps = exif.get_ifd(0x8825) if hasattr(exif, "get_ifd") else None
+            if gps:
+                out["gps"] = {str(k): str(v) for k, v in gps.items()}
+            out["datetime"] = exif.get(0x9003) or exif.get(0x0132)
+            out["make"] = exif.get(0x010F)
+            out["model"] = exif.get(0x0110)
+    except Exception:
+        pass
+    return out
+
+
+def audit_tld(root: str, sample: int = 400, dup_sample: int = 2500) -> dict:
+    """Audit TLD-BD: contents, EXIF provenance, near-duplicates."""
+    rng = random.Random(0)
+    classes = {}
+    all_files = []
+    for entry in sorted(os.listdir(root)):
+        d = os.path.join(root, entry)
+        if not os.path.isdir(d):
+            continue
+        files = [f for f in os.listdir(d) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
+        if not files:
+            continue
+        dims, modes, bad = collections.Counter(), collections.Counter(), []
+        for f in files:
+            p = os.path.join(d, f)
+            all_files.append((entry, f, p))
+            try:
+                with Image.open(p) as im:
+                    im.verify()
+                with Image.open(p) as im:
+                    dims[im.size] += 1
+                    modes[im.mode] += 1
+            except Exception as e:
+                bad.append(f"{entry}/{f}: {e}")
+        classes[entry] = {
+            "images": len(files),
+            "dimensions": {f"{w}x{h}": c for (w, h), c in dims.most_common()},
+            "modes": dict(modes),
+            "unreadable": bad,
+            "example_filenames": sorted(files)[:4],
+        }
+
+    # --- EXIF provenance across a sample ---
+    ex_sample = rng.sample(all_files, min(sample, len(all_files)))
+    gps_present = 0
+    dt_present = 0
+    devices = collections.Counter()
+    gps_values = collections.Counter()
+    datetimes = []
+    for cls, fn, p in ex_sample:
+        e = exif_summary(p)
+        if e["gps"]:
+            gps_present += 1
+            gps_values[json.dumps(e["gps"], sort_keys=True)[:120]] += 1
+        if e["datetime"]:
+            dt_present += 1
+            datetimes.append(str(e["datetime"]))
+        if e["make"] or e["model"]:
+            devices[f"{e['make']} {e['model']}".strip()] += 1
+
+    # --- near-duplicate / group structure ---
+    dup = rng.sample(all_files, min(dup_sample, len(all_files)))
+    feats, meta = [], []
+    for cls, fn, p in dup:
+        try:
+            feats.append(colour_hist(p))
+            meta.append((cls, fn))
+        except Exception:
+            pass
+    F = np.stack(feats)
+    F /= np.linalg.norm(F, axis=1, keepdims=True)
+    S = F @ F.T
+    np.fill_diagonal(S, -1.0)
+    nn = S.max(1)
+    nn_idx = S.argmax(1)
+    same_class = sum(1 for i in range(len(meta)) if meta[i][0] == meta[int(nn_idx[i])][0])
+
+    return {
+        "total_images": sum(c["images"] for c in classes.values()),
+        "classes": classes,
+        "class_imbalance_ratio": round(
+            max(c["images"] for c in classes.values()) / max(1, min(c["images"] for c in classes.values())), 2
+        ),
+        "exif": {
+            "sampled": len(ex_sample),
+            "with_gps": gps_present,
+            "pct_with_gps": round(100 * gps_present / max(1, len(ex_sample)), 1),
+            "with_datetime": dt_present,
+            "pct_with_datetime": round(100 * dt_present / max(1, len(ex_sample)), 1),
+            "distinct_gps_values": len(gps_values),
+            "gps_value_counts": dict(gps_values.most_common(6)),
+            "devices": dict(devices.most_common(6)),
+            "datetime_range": [min(datetimes), max(datetimes)] if datetimes else None,
+            "estate_split_possible": gps_present > 0,
+        },
+        "near_duplicates": {
+            "sampled": len(meta),
+            "mean_nn_similarity": round(float(nn.mean()), 4),
+            "pct_nn_above_0_999": round(100 * float((nn >= 0.999).sum()) / len(meta), 1),
+            "pct_nn_above_0_99": round(100 * float((nn >= 0.99).sum()) / len(meta), 1),
+            "pct_nn_same_class": round(100 * same_class / len(meta), 1),
+        },
+    }
+
+
+# --------------------------------------------------------------------------
 # Deterministic, leakage-resistant split
 # --------------------------------------------------------------------------
 
@@ -232,6 +361,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--csd", help="CS-D 'Tea Leaf Dataset' directory")
     ap.add_argument("--ewu", help="EWU extracted Roboflow export directory")
+    ap.add_argument("--tld", help="TLD-BD extracted directory (the one holding per-class folders)")
     ap.add_argument("--out", default="models/tea/audit-results.json")
     ap.add_argument("--skip-stride", action="store_true", help="skip the slow stride verification")
     a = ap.parse_args()
@@ -244,6 +374,8 @@ def main() -> None:
         res["cs_d"]["split_preview_groups"] = split_preview(res["cs_d"])
     if a.ewu:
         res["ewu"] = audit_ewu(a.ewu)
+    if a.tld:
+        res["tld_bd"] = audit_tld(a.tld)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as f:

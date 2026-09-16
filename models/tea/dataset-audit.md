@@ -237,3 +237,175 @@ split, since it publishes per-estate GPS coordinates.
 | Field-held-out split | Source-group-held-out split | CS-D has no field metadata |
 | Cross-dataset number for the model | Cross-dataset number for 3 of 6 classes | Only three confident correspondences |
 | Blister blight validated | Blister blight in-distribution only | Single-source, no alternative exists |
+
+---
+
+# TLD-BD audit (added 2026-09-16)
+
+Downloaded and audited specifically to answer one question: **can TLD-BD support
+a genuine estate-held-out evaluation?** Its Mendeley record names two estates
+with GPS coordinates, which would make it the only candidate capable of a
+geographic hold-out.
+
+**The answer is no.** Findings 11–15 below.
+
+Reproduce with:
+
+```bash
+python scripts/audit_tea_datasets.py --tld "<...>/Tea Compressed Data" --out models/tea/audit-tld.json
+```
+
+## What it actually contains
+
+2,008 images (record says 2,007), **zero unreadable**, six class folders.
+The archive holds *two* sets the record does not mention: `Tea Compressed Data`
+(the 2,008 usable images) and `Tea Original Data` (full-resolution 4032×3024
+originals, the bulk of the 2.9 GB).
+
+| Class | Images | → canonical | Active in v1? |
+| --- | ---: | --- | --- |
+| healthy | 436 | `healthy` (0) | **yes** |
+| looper_infested | 332 | `looper` (10) | no |
+| helopeltis | 321 | `helopeltis` (5) | **yes** |
+| red_spider | 316 | `red_spider_mite` (4) | **yes** |
+| gray_blight | 302 | `grey_blight` (6) | no |
+| algal_leaf | 301 | `algal_leaf_spot` (7) | no |
+
+Class imbalance ratio 1.45 — the mildest of any dataset audited.
+
+---
+
+## 11. No GPS. The estate hold-out is impossible
+
+**Problem.** The entire reason for downloading TLD-BD was the two named estates
+with published coordinates — M.R. Khan (24.27257, 91.75938) and Finlay
+(24.30334, 91.74249).
+
+**Evidence.** **0 of 400 sampled images carry EXIF GPSInfo.** Zero in the
+compressed set, zero in the originals sampled. Crucially this is not a
+re-encoding artifact: the same images retain `DateTimeOriginal` (99.8%), `Make`
+and `Model`, so EXIF survived the publisher's compression intact. GPS is absent
+because it was never recorded, not because it was stripped.
+
+Nor is the estate recoverable any other way: images are organised into folders
+by **class**, exactly as the record says, with no estate directory, no manifest,
+and no estate token in any filename.
+
+**Impact.** The two estates exist only in prose. No image can be attributed to
+one. A geographic hold-out cannot be constructed at any level.
+
+**Decision.** Abandon the estate-held-out evaluation. TLD-BD is in the same
+position as CS-D on this point, for a different reason.
+
+---
+
+## 12. The capture dates contradict the published record
+
+**Problem.** The Mendeley record states collection over eight days,
+9–16 December 2024.
+
+**Evidence.** EXIF `DateTimeOriginal` on 2,008 images gives **two days:
+2023-08-20 (1,518 images) and 2023-08-21 (485)** — sixteen months earlier than
+stated, and two days rather than eight.
+
+**Impact.** Two consequences. First, the published metadata is not reliable, so
+nothing in it should be cited without checking the files. Second, even a
+*temporal* hold-out — the fallback when geography fails — yields only two
+groups, and they are confounded with class (see 13).
+
+**Decision.** Trust EXIF over the record; the camera wrote it at capture. Record
+the discrepancy rather than quietly using the EXIF dates.
+
+---
+
+## 13. Camera device is confounded with class
+
+**Problem.** Two devices took these photos, and they did not photograph the
+classes evenly.
+
+**Evidence.**
+
+| Class | iPhone 7 | Samsung SM-A217F |
+| --- | ---: | ---: |
+| gray_blight | **100%** | 0% |
+| red_spider | **100%** | 0% |
+| algal_leaf | 99% | 0% |
+| healthy | 81% | 19% |
+| helopeltis | 70% | 29% |
+| looper_infested | 48% | 52% |
+
+Capture date is confounded the same way: `gray_blight` and `looper_infested`
+appear only on 2023-08-20, while 75% of `red_spider` is on 2023-08-21.
+
+**Impact.** Three classes are effectively single-device. A model can pick up
+sensor noise, colour science and JPEG quantisation tables instead of the lesion —
+a shortcut that would inflate any score computed on this dataset. It also rules
+out device or date as a clean split axis, since splitting on either would remove
+whole classes from one side.
+
+**Decision.** Use TLD-BD **only as a held-out test set, never for training**.
+As a test set the confound is tolerable — it makes the test harder, not
+dishonest. As training data it would teach the camera.
+
+---
+
+## 14. Real capture-session grouping exists, and it is usable
+
+**Problem.** Group-level dedup needs a source unit, and TLD-BD has no explicit one.
+
+**Evidence.** Filenames are camera shutter sequences (`IMG_1966.JPG`). Consecutive
+numbers form **483 runs across 2,008 images, mean 4.2 images per run** — bursts
+of the same leaf from slightly different angles. Near-duplicate structure is far
+milder than CS-D: mean nearest-neighbour similarity **0.9706** (CS-D: 0.9988),
+with 6.8% above 0.999.
+
+A second duplication mechanism: `IMG_E####.JPG` is iOS's *edited copy* of
+`IMG_####.JPG`. **38 such pairs** exist within the same class — the same
+photograph stored twice.
+
+**Impact.** Genuine diversity, unlike CS-D's 8.93× augmentation. But shutter-run
+siblings and edited/original pairs must still be kept together.
+
+**Decision.** Group by consecutive shutter run, treating `IMG_E####` as the same
+group as `IMG_####`. Since TLD-BD is test-only, this affects de-duplication of
+the test set rather than a train/test boundary.
+
+---
+
+## 15. Dimensions are not uniform, contrary to the record
+
+**Problem.** The record says images are "compressed to 480x640 pixels".
+
+**Evidence.** The dominant size is **640×480 (landscape)**, not 480×640. Both
+orientations appear, plus odd sizes (471×640, 477×640, 438×640) and one
+**4000×3000** image sitting in the compressed `healthy` folder.
+
+**Impact.** Minor, but a fixed-size loader assuming 480×640 portrait would
+silently distort most of the set.
+
+**Decision.** Resize with aspect handling; do not assume orientation. Flag the
+4000×3000 outlier during preprocessing rather than letting it through.
+
+---
+
+## 16. TLD-BD still adds one class of cross-dataset coverage
+
+**Problem.** Having lost the estate hold-out, is TLD-BD worth keeping at all?
+
+**Evidence.** Its labels map through the existing taxonomy with **no changes
+required** — all six folder names already resolve via `teaClassFromSourceLabel`.
+Overlap with the six active v1 classes: **healthy (436), helopeltis (321),
+red_spider_mite (316) = 1,073 images**.
+
+`red_spider_mite` is **not** in the EWU overlap. So TLD-BD extends cross-dataset
+coverage from 3 of 6 active classes to **4 of 6**, and does it with genuine
+in-field imagery rather than EWU's detached leaves.
+
+Its other three classes (grey blight, algal leaf spot, looper) map to **inactive
+reserved IDs** and stay inactive: none is in CS-D, so none can be trained.
+
+**Impact.** The claimed benefit is gone; a smaller, real one remains.
+
+**Decision.** Keep TLD-BD in a **downgraded role** — a second cross-dataset test
+set, test-only, never training, never model selection. Do **not** activate any
+new class on the strength of it.
