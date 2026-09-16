@@ -108,6 +108,17 @@ export default function DiagnosePage() {
           <p className="mt-4 text-[1rem] leading-relaxed muted" style={{ maxWidth: "54ch" }}>
             {t(lang, "tea_lede")}
           </p>
+
+          {/* The audit found that 47 of 60 tea_* strings fall back to English —
+              including every action line. That is the deliberate policy (D-016:
+              never machine-translate an instruction a farmer acts on), but it
+              was silent. A Sinhala or Tamil reader is now told so in their own
+              language rather than simply meeting English text. */}
+          {lang !== "en" && (
+            <p className="mt-3 text-[0.82rem] faint" style={{ maxWidth: "54ch" }} lang={lang}>
+              {t(lang, "tea_guidance_in_english")}
+            </p>
+          )}
         </header>
       </Reveal>
 
@@ -160,25 +171,37 @@ export default function DiagnosePage() {
             </section>
           )}
 
-          {/* The classifier is tea-only. Say so rather than scoring a rubber
-              leaf against Camellia sinensis classes. */}
+          {/* INVARIANT 7: an unsupported crop must not receive a tea diagnosis.
+              The audit found this was only a warning paragraph above a working
+              camera — a coconut grower could photograph a leaf and be handed a
+              confident Camellia sinensis disease. The capture control is now
+              withheld entirely, not merely captioned. */}
           {profile && !teaPlot && (
-            <p className="text-[0.85rem] muted">
-              The leaf checker covers tea only. This plot is set to{" "}
-              {t(lang, `grow_crop_${profile.crop}`)}.
-            </p>
+            <div
+              className="rounded-[var(--radius-sm)] px-4 py-3.5"
+              style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
+            >
+              <p className="text-[0.92rem]">
+                {t(lang, "tea_crop_unsupported", { crop: t(lang, `grow_crop_${profile.crop}`) })}
+              </p>
+              <PendingLink href="/grow" className="btn btn-ghost btn-sm mt-3">
+                {t(lang, "nav_grow")}
+              </PendingLink>
+            </div>
           )}
 
-          <LeafCapture
-            lang={lang}
-            busy={busy}
-            onAnalyse={analyse}
-            onError={(reason) => setPrediction({ state: "error", reason })}
-          />
+          {teaPlot && (
+            <LeafCapture
+              lang={lang}
+              busy={busy}
+              onAnalyse={analyse}
+              onError={(reason) => setPrediction({ state: "error", reason })}
+            />
+          )}
 
           {busy && <Skeleton className="h-48 w-full" />}
 
-          {advisory && !busy && (
+          {teaPlot && advisory && !busy && (
             <DiagnosisResult
               advisory={advisory}
               card={card}

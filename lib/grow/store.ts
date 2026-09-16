@@ -8,6 +8,7 @@
  * server surface for no evidentiary gain.
  */
 import { db } from "../intake/db";
+import { guardVwc } from "./sensorGuard";
 import type { CachedWeatherDay, ProbeCalibration, SensorReading } from "./growTypes";
 import type { DailyWeather, GrowProfile } from "./types";
 
@@ -72,9 +73,14 @@ export async function recentSensorReadings(plotId: string, limit = 500): Promise
 export async function latestSoilMoisture(plotId: string, maxAgeHours = 24): Promise<number | null> {
   const rows = await recentSensorReadings(plotId, 1);
   const latest = rows[0];
-  if (!latest || latest.vwc == null) return null;
+  if (!latest) return null;
   const ageHours = (Date.now() - new Date(latest.at).getTime()) / 3_600_000;
-  return ageHours <= maxAgeHours ? latest.vwc : null;
+  if (!Number.isFinite(ageHours) || ageHours > maxAgeHours) return null;
+  // Guard the VALUE as well as its age. A miscalibrated probe can emit anything,
+  // and computeIrrigation clamps depletion into [0, TAW] — so an absurd reading
+  // does not crash, it quietly becomes a confident wrong verdict from the
+  // highest tier of the anchoring ladder. A fault must demote, never outrank.
+  return guardVwc(latest.vwc);
 }
 
 export async function clearSensorReadings(plotId: string): Promise<void> {

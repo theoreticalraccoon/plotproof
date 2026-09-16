@@ -24,6 +24,18 @@ import type { LocalPlot } from "../intake/types";
 
 export type GrowState = "loading" | "ready" | "unavailable";
 
+/**
+ * How old cached weather may be before it stops being advice.
+ *
+ * Found by the adversarial audit: the cache was unbounded, so a farmer who last
+ * had signal three weeks ago would be shown a watering verdict and an infection
+ * -pressure score computed from three-week-old weather, with nothing but a
+ * quiet "saved on <date>" line to say so. Seven days is already generous — the
+ * risk engine's window is 14 days and the water balance integrates daily — but
+ * beyond it the honest answer is that we do not know.
+ */
+const MAX_CACHE_AGE_DAYS = 7;
+
 export interface GrowData {
   state: GrowState;
   days: DailyWeather[];
@@ -59,11 +71,20 @@ export function useGrowPlot(plot: LocalPlot | null, profile: GrowProfile | null)
       const measured = await latestSoilMoisture(plot.id).catch(() => null);
       if (!cancelled) setSoilMoisture(measured);
 
-      // 1. Cache first, so something renders before the network is consulted.
-      const cache = await cachedWeather(plot.id).catch(() => []);
+      // 1. Cache first, so something renders before the network is consulted —
+      // but only while it is still plausibly current. Stale weather presented as
+      // advice is worse than no advice, because it looks identical to fresh.
+      const rawCache = await cachedWeather(plot.id).catch(() => []);
+      const freshest = rawCache.reduce<string | null>(
+        (acc, r) => (acc === null || r.fetchedAt > acc ? r.fetchedAt : acc), null);
+      const cacheAgeDays = freshest
+        ? (Date.now() - new Date(freshest).getTime()) / 86_400_000
+        : Infinity;
+      const cache = Number.isFinite(cacheAgeDays) && cacheAgeDays <= MAX_CACHE_AGE_DAYS ? rawCache : [];
+
       if (!cancelled && cache.length > 0) {
         setDays(cache);
-        setCachedAt(cache[cache.length - 1].fetchedAt);
+        setCachedAt(freshest);
         setState("ready");
       }
 
@@ -87,7 +108,11 @@ export function useGrowPlot(plot: LocalPlot | null, profile: GrowProfile | null)
         void cacheWeather(plot.id, res.days, res.fetchedAt).catch(() => {});
       } else if (cache.length === 0) {
         setState("unavailable");
-        setReason(res.reason);
+        setReason(
+          rawCache.length > 0
+            ? `${res.reason} Saved weather for this plot is more than ${MAX_CACHE_AGE_DAYS} days old, so it is not being used.`
+            : res.reason,
+        );
       }
       // A failed refresh over a good cache leaves the cache on screen; the
       // `cachedAt` stamp already tells the farmer how old it is.

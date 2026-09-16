@@ -199,6 +199,8 @@ const en: Dict = {
   tea_action_error: "Try again when you have a connection. Watering and disease-pressure advice still work.",
   tea_no_pesticide: "We never name a pesticide or a dose. Confirm any treatment with your TRI extension officer.",
   tea_limitations_title: "What this checker cannot do",
+  tea_guidance_in_english: "Detailed guidance below is written in English. We do not machine-translate instructions a farmer acts on — a mistranslated treatment instruction is worse than an English one.",
+  tea_crop_unsupported: "The leaf checker only covers tea. This plot is set to {crop}, so no leaf diagnosis is offered — a tea model cannot read a {crop} leaf. Watering and weather advice still work.",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "Export-readiness for smallholders and their cooperatives",
@@ -467,6 +469,8 @@ const si: Dict = {
   tea_evidence_title: "සාක්ෂි",
   tea_action_title: "මීළඟට කළ යුත්තේ",
   tea_try_again: "නැවත උත්සාහ කරන්න",
+  tea_crop_unsupported_short: "තේ සඳහා පමණි",
+  tea_guidance_in_english: "පහත විස්තරාත්මක උපදෙස් ඉංග්‍රීසියෙන් ලියා ඇත. ගොවියෙකු ක්‍රියාත්මක කරන උපදෙස් යන්ත්‍රයෙන් පරිවර්තනය නොකරමු — වැරදි පරිවර්තනයක් ඉංග්‍රීසියට වඩා නරකයි.",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "කුඩා ගොවීන්ට සහ ඔවුන්ගේ සමුපකාරවලට අපනයන සූදානම",
@@ -701,6 +705,8 @@ const ta: Dict = {
   tea_evidence_title: "சான்று",
   tea_action_title: "அடுத்து என்ன செய்வது",
   tea_try_again: "மீண்டும் முயற்சிக்கவும்",
+  tea_crop_unsupported_short: "தேயிலைக்கு மட்டும்",
+  tea_guidance_in_english: "கீழுள்ள விரிவான வழிகாட்டுதல் ஆங்கிலத்தில் உள்ளது. விவசாயி செயல்படுத்தும் அறிவுறுத்தல்களை நாங்கள் இயந்திர மொழிபெயர்ப்பு செய்வதில்லை — தவறான மொழிபெயர்ப்பு ஆங்கிலத்தை விட மோசமானது.",
 
   // --- landing page ------------------------------------------------------
   landing_eyebrow: "சிறு விவசாயிகளுக்கும் அவர்களின் கூட்டுறவுகளுக்கும் ஏற்றுமதி தயார்நிலை",

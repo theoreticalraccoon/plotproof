@@ -21,10 +21,15 @@ let sessionPromise: Promise<InferenceSession> | null = null;
 async function getSession(): Promise<InferenceSession> {
   if (!sessionPromise) {
     sessionPromise = (async () => {
-      const ort = await import("onnxruntime-web");
-      // Single thread, no SIMD assumptions: a mid-range Android browser is the
-      // target, and a worker-threaded build needs cross-origin isolation headers
-      // this app does not set.
+      // The "/wasm" subpath, not the default entry. The default pulls the JSEP
+      // (WebGPU) runtime: 27 MB of WebAssembly on top of a 6 MB model, which on
+      // a mid-range Android over a rural connection is the difference between a
+      // usable feature and an abandoned download. This build is 13.6 MB and
+      // loses nothing, because the session below pins executionProviders to
+      // "wasm" and never touches WebGPU. Found by the /grow adversarial audit.
+      const ort = await import("onnxruntime-web/wasm");
+      // Single thread: a worker-threaded build needs cross-origin isolation
+      // headers this app does not set.
       ort.env.wasm.numThreads = 1;
       return ort.InferenceSession.create(MODEL_URL, {
         executionProviders: ["wasm"],
@@ -91,7 +96,7 @@ export async function classifyLeaf(
   }
 
   try {
-    const ort = await import("onnxruntime-web");
+    const ort = await import("onnxruntime-web/wasm");
     const session = await getSession();
     const input = new ort.Tensor("float32", tensorData, [1, 3, size, size]);
     const outputs = await session.run({ [session.inputNames[0]]: input });

@@ -18,6 +18,13 @@ let cached: Promise<TeaModelCard | null> | null = null;
  * A card that parses but is missing the fields inference depends on is worse
  * than no card: it would produce predictions from undefined constants. Validate
  * the load-bearing ones and treat a malformed card as an absent one.
+ *
+ * The abstention threshold gets its own bound, found by the adversarial audit.
+ * `typeof threshold === "number"` accepted 0, and a threshold of 0 does not
+ * merely weaken abstention — it DISABLES it, turning a near-uniform 16.9%
+ * guess into a "confident" diagnosis on a farmer's screen. A real threshold
+ * must at minimum beat chance (1/numClasses); anything at or below that is a
+ * corrupt or tampered card, not a permissive one.
  */
 function isUsable(c: unknown): c is TeaModelCard {
   const card = c as TeaModelCard | null;
@@ -31,11 +38,17 @@ function isUsable(c: unknown): c is TeaModelCard {
     card.preprocessing.std.length === 3 &&
     typeof card.calibration?.temperature === "number" &&
     card.calibration.temperature > 0 &&
-    typeof card.abstention?.threshold === "number" &&
     Array.isArray(card.taxonomy?.classes) &&
-    card.taxonomy.classes.length > 0
+    card.taxonomy.classes.length > 0 &&
+    typeof card.abstention?.threshold === "number" &&
+    Number.isFinite(card.abstention.threshold) &&
+    card.abstention.threshold > 1 / card.taxonomy.classes.length &&
+    card.abstention.threshold <= 1
   );
 }
+
+/** Test seam: the audit asserts directly that a tampered card is refused. */
+export const __isUsableCardForTests = isUsable;
 
 export function loadTeaCard(): Promise<TeaModelCard | null> {
   if (!cached) {
