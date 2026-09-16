@@ -1,0 +1,213 @@
+{
+  "taxonomy_version": 1,
+  "active_classes": [
+    {
+      "classId": 0,
+      "key": "healthy"
+    },
+    {
+      "classId": 1,
+      "key": "blister_blight"
+    },
+    {
+      "classId": 2,
+      "key": "brown_blight"
+    },
+    {
+      "classId": 3,
+      "key": "red_rust"
+    },
+    {
+      "classId": 4,
+      "key": "red_spider_mite"
+    },
+    {
+      "classId": 5,
+      "key": "helopeltis"
+    }
+  ],
+  "cs_d": {
+    "images_by_split": {
+      "train": 55861,
+      "test": 12410,
+      "val": 12058
+    },
+    "groups_by_split": {
+      "train": 6259,
+      "test": 1390,
+      "val": 1351
+    },
+    "images_by_split_class": {
+      "train": {
+        "healthy": 8881,
+        "blister_blight": 9450,
+        "brown_blight": 9504,
+        "red_rust": 9504,
+        "red_spider_mite": 9342,
+        "helopeltis": 9180
+      },
+      "test": {
+        "healthy": 1979,
+        "blister_blight": 2016,
+        "brown_blight": 1890,
+        "red_rust": 2088,
+        "red_spider_mite": 2232,
+        "helopeltis": 2205
+      },
+      "val": {
+        "healthy": 1969,
+        "blister_blight": 2034,
+        "brown_blight": 2106,
+        "red_rust": 1908,
+        "red_spider_mite": 1926,
+        "helopeltis": 2115
+      }
+    }
+  },
+  "ewu": {
+    "images_by_split": {
+      "test": 2831
+    },
+    "groups_by_split": {
+      "test": 1854
+    },
+    "images_by_split_class": {
+      "test": {
+        "healthy": 1413,
+        "brown_blight": 640,
+        "helopeltis": 778
+      }
+    }
+  },
+  "tld_bd": {
+    "images_by_split": {
+      "test": 1073
+    },
+    "groups_by_split": {
+      "test": 1035
+    },
+    "images_by_split_class": {
+      "test": {
+        "healthy": 436,
+        "red_spider_mite": 316,
+        "helopeltis": 321
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "class_mapping",
+      "passed": true,
+      "labels_by_dataset": {
+        "cs_d": [
+          "Blister_Blight",
+          "Brown_Blight",
+          "Healthy_leaves",
+          "Leaf_Red_Rust",
+          "Red_Spider_Mite",
+          "Tea_Mosquito_Bug"
+        ],
+        "ewu": [
+          "Brown Blight",
+          "Healthy",
+          "Helopeltis"
+        ],
+        "tld_bd": [
+          "healthy",
+          "helopeltis",
+          "red_spider"
+        ]
+      },
+      "class_ids_used": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "active_class_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "model_index_consistent": true,
+      "problems": []
+    },
+    {
+      "name": "group_overlap",
+      "passed": true,
+      "groups_checked": 9000,
+      "violations": 0,
+      "examples": []
+    },
+    {
+      "name": "path_overlap",
+      "passed": true,
+      "paths_checked": 84233,
+      "violations": 0,
+      "examples": []
+    },
+    {
+      "name": "train_purity",
+      "passed": true,
+      "datasets_in_train_val": {
+        "cs_d": 67919
+      },
+      "contaminants": []
+    },
+    {
+      "name": "split_determinism",
+      "passed": true,
+      "recompute_mismatches": 0,
+      "audit_script_mismatches": 0,
+      "examples": []
+    },
+    {
+      "name": "near_duplicates_train_vs_val",
+      "passed": true,
+      "threshold": 0.9999,
+      "val_sampled": 1200,
+      "train_sampled": 1200,
+      "mean_nn_similarity": 0.9693,
+      "max_nn_similarity": 0.99601,
+      "violations": 0,
+      "closest_pairs": [
+        {
+          "val": "Red_Spider_Mite7743.jpg",
+          "train": "Red_Spider_Mite8423.jpg",
+          "similarity": 0.99601,
+          "same_group": false
+        },
+        {
+          "val": "Tea_Mosquito_Bug6416.jpg",
+          "train": "Tea_Mosquito_Bug10773.jpg",
+          "similarity": 0.994938,
+          "same_group": false
+        },
+        {
+          "val": "Brown_Blight8613.jpg",
+          "train": "Brown_Blight8502.jpg",
+          "similarity": 0.994783,
+          "same_group": false
+        },
+        {
+          "val": "Brown_Blight7903.jpg",
+          "train": "Brown_Blight7962.jpg",
+          "similarity": 0.994671,
+          "same_group": false
+        },
+        {
+          "val": "Brown_Blight8766.jpg",
+          "train": "Brown_Blight8643.jpg",
+          "similarity": 0.994504,
+          "same_group": false
+        }
+      ]
+    }
+  ],
+  "all_passed": true
+}

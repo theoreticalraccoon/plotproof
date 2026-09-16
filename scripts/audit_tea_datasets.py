@@ -35,7 +35,11 @@ CSD_CLASSES = {
     "Leaf_Red_Rust": ("Diseased Leaves/Leaf_Red_Rust", "Leaf_Red_Rust"),
     "Red_Spider_Mite": ("Diseased Leaves/Red_Spider_Mite", "Red_Spider_Mite"),
     "Tea_Mosquito_Bug": ("Diseased Leaves/Tea_Mosquito_Bug", "Tea_Mosquito_Bug"),
-    "Healthy": ("Healthy Leaves/Healthy_leaves", "Healthy_leaf"),
+    # Key must be the FOLDER name, because assign_split() hashes it. An
+    # earlier version keyed this "Healthy", which produced a different (still
+    # valid, but different) partition from ml/tea/teadata.py and made the
+    # preview counts in manifest.json disagree with the loader by 11 groups.
+    "Healthy_leaves": ("Healthy Leaves/Healthy_leaves", "Healthy_leaf"),
 }
 
 # Established empirically by `verify_stride` below: for every class, ~97% of

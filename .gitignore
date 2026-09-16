@@ -50,3 +50,9 @@ graphify-out/
 # Tea training corpora: fetched from the pinned DOIs in models/tea/provenance.json,
 # never committed (~1 GB, and CC BY 4.0 does not require redistribution).
 models/tea/data/
+
+# Training checkpoints and the versioned ONNX under models/tea/ are build
+# outputs; the PUBLISHED artifact in public/models/ is what ships.
+models/tea/*.pt
+models/tea/*.onnx
+models/tea/*.onnx.data

@@ -1,0 +1,453 @@
+{
+  "$comment": [
+    "Published model card for the PlotProof tea classifier. The app reads this file;",
+    "nothing here is duplicated in the UI. No artifact -> the feature renders nothing,",
+    "the same contract public/models/prices.json follows."
+  ],
+  "schemaVersion": 1,
+  "model": {
+    "name": "tea-disease-mnv3s",
+    "version": "1.0.0",
+    "architecture": "MobileNetV3-Small (ImageNet-pretrained backbone, new 6-class head)",
+    "why_this_architecture": "Chosen for the deployment target, not the leaderboard: it runs in a browser on a mid-range Android phone, so ~2.5M parameters matter more than a point of accuracy.",
+    "framework": "PyTorch 2.14.0+cpu",
+    "export_format": "ONNX opset 17, dynamic batch",
+    "file": "tea-disease-mnv3s-1.0.0.onnx",
+    "bytes": 6370439,
+    "sha256": "7e55457cac1f9ef1983bb3b62360916f487262f9b812bf3ffc7f220776044fe4",
+    "parameters": 1524006,
+    "trained_at": "2026-09-16T17:35:38.860165+00:00",
+    "git_rev": "9706850",
+    "seed": 1337,
+    "onnx_parity_max_abs_logit_delta": 1.341104507446289e-06
+  },
+  "taxonomy": {
+    "taxonomy_version": 1,
+    "source_of_truth": "models/tea/taxonomy.json (mirrored in lib/grow/teaClasses.ts)",
+    "classes": [
+      {
+        "outputIndex": 0,
+        "classId": 0,
+        "key": "healthy",
+        "displayName": "Healthy",
+        "kind": "healthy"
+      },
+      {
+        "outputIndex": 1,
+        "classId": 1,
+        "key": "blister_blight",
+        "displayName": "Blister blight",
+        "kind": "fungal_disease"
+      },
+      {
+        "outputIndex": 2,
+        "classId": 2,
+        "key": "brown_blight",
+        "displayName": "Brown blight",
+        "kind": "fungal_disease"
+      },
+      {
+        "outputIndex": 3,
+        "classId": 3,
+        "key": "red_rust",
+        "displayName": "Red rust",
+        "kind": "algal_disease"
+      },
+      {
+        "outputIndex": 4,
+        "classId": 4,
+        "key": "red_spider_mite",
+        "displayName": "Red spider mite",
+        "kind": "pest"
+      },
+      {
+        "outputIndex": 5,
+        "classId": 5,
+        "key": "helopeltis",
+        "displayName": "Tea mosquito bug (Helopeltis)",
+        "kind": "pest"
+      }
+    ],
+    "inactive_classes_not_predicted": [
+      {
+        "classId": 6,
+        "key": "grey_blight"
+      },
+      {
+        "classId": 7,
+        "key": "algal_leaf_spot"
+      },
+      {
+        "classId": 8,
+        "key": "red_leaf_spot"
+      },
+      {
+        "classId": 9,
+        "key": "green_mirid_bug"
+      },
+      {
+        "classId": 10,
+        "key": "looper"
+      }
+    ]
+  },
+  "preprocessing": {
+    "image_size": 160,
+    "resize_shorter_side_to": 182,
+    "crop": "center",
+    "channel_order": "RGB",
+    "scale": "divide by 255, then normalise",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "augmentation_train": [
+      "RandomResizedCrop(160, scale=0.55-1.0, ratio=0.8-1.25)",
+      "RandomHorizontalFlip",
+      "RandomVerticalFlip",
+      "RandomRotation(30)",
+      "ColorJitter(brightness=0.35, contrast=0.3, saturation=0.3, hue=0.04)",
+      "RandomApply(GaussianBlur(3, sigma=0.1-1.5), p=0.2)",
+      "RandomErasing(p=0.15, scale=0.02-0.1)"
+    ]
+  },
+  "training": {
+    "dataset": "CS-D only",
+    "dataset_ref": {
+      "id": "cs_d",
+      "name": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+      "doi": "10.17632/94fzcdz8gz.1",
+      "licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://data.mendeley.com/datasets/94fzcdz8gz/1"
+    },
+    "split_rule": "sha256(datasetId|className|groupId) \u2192 first 4 bytes as uint32 \u2192 mod 100 \u2192 <70 train, <85 val, else test",
+    "split_unit": "source_group",
+    "groups": {
+      "train": 6259,
+      "val": 1351,
+      "test": 1390
+    },
+    "images": {
+      "train_pool": 55861,
+      "val": 12058,
+      "test": 12410
+    },
+    "samples_per_group_per_epoch": 1,
+    "samples_per_group_rationale": "CS-D's nine augmentations per photograph have nearest-neighbour similarity 0.9988. Each epoch draws a different member per group, so the full set is seen over training without paying 9x the compute for near-identical images.",
+    "class_weighting": "none",
+    "class_weighting_rationale": "Training counts run 8,881-9,504 per class (max/min = 1.07). Weighting a distribution this balanced adds a knob without addressing a problem.",
+    "config": {
+      "csd": "C:/Users/HP/tea-data/csd",
+      "epochs": 14,
+      "batch_size": 64,
+      "lr": 0.0008,
+      "weight_decay": 0.0001,
+      "samples_per_group": 1,
+      "workers": 4,
+      "img_size": 160,
+      "smoke": false,
+      "out": "C:\\Users\\HP\\OneDrive\\Desktop\\Projects\\PlotProof\\models\\tea"
+    },
+    "epochs_run": 14,
+    "selection_metric": "validation macro-F1",
+    "selected_epoch": 10,
+    "history": [
+      {
+        "epoch": 0,
+        "train_loss": 0.5581911368232163,
+        "train_acc": 0.8817702508387921,
+        "val_acc": 0.9022945965951147,
+        "val_macro_f1": 0.9015270479279488,
+        "seconds": 209.1,
+        "lr": 0.0007899711648727294
+      },
+      {
+        "epoch": 1,
+        "train_loss": 0.34166506119935464,
+        "train_acc": 0.9690046333280077,
+        "val_acc": 0.9526276831976314,
+        "val_macro_f1": 0.952161251269335,
+        "seconds": 118.0,
+        "lr": 0.0007603875471609676
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.3100528214986874,
+        "train_acc": 0.9782712893433456,
+        "val_acc": 0.9851961509992598,
+        "val_macro_f1": 0.9848309690400443,
+        "seconds": 129.5,
+        "lr": 0.000712732592987212
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.2955054007726539,
+        "train_acc": 0.9825850774884167,
+        "val_acc": 0.9711324944485566,
+        "val_macro_f1": 0.9711651648628016,
+        "seconds": 185.9,
+        "lr": 0.0006493959207434935
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.2916750485646799,
+        "train_acc": 0.9849816264579007,
+        "val_acc": 0.9918578830495929,
+        "val_macro_f1": 0.991804474212355,
+        "seconds": 129.1,
+        "lr": 0.0005735534956470233
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.29017829781695476,
+        "train_acc": 0.9835436970762103,
+        "val_acc": 0.9896373056994818,
+        "val_macro_f1": 0.9895235994617361,
+        "seconds": 108.0,
+        "lr": 0.0004890083735825258
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.27814602885674433,
+        "train_acc": 0.9865793257708899,
+        "val_acc": 0.9955588452997779,
+        "val_macro_f1": 0.9955499036569518,
+        "seconds": 112.2,
+        "lr": 0.0004
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.27307924101158043,
+        "train_acc": 0.9897747243968685,
+        "val_acc": 0.997039230199852,
+        "val_macro_f1": 0.9971292540672744,
+        "seconds": 113.6,
+        "lr": 0.0003109916264174743
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.2689923639685263,
+        "train_acc": 0.99105288384726,
+        "val_acc": 0.996299037749815,
+        "val_macro_f1": 0.9963641122110353,
+        "seconds": 116.8,
+        "lr": 0.00022644650435297683
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.26398293361874847,
+        "train_acc": 0.9923310432976514,
+        "val_acc": 0.9948186528497409,
+        "val_macro_f1": 0.9948368483562963,
+        "seconds": 118.9,
+        "lr": 0.00015060407925650664
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.26240563122185107,
+        "train_acc": 0.9923310432976514,
+        "val_acc": 0.997779422649889,
+        "val_macro_f1": 0.9977415987862931,
+        "seconds": 126.2,
+        "lr": 8.726740701278824e-05
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.2573048641914414,
+        "train_acc": 0.9956862118549289,
+        "val_acc": 0.9955588452997779,
+        "val_macro_f1": 0.9955138917377826,
+        "seconds": 116.6,
+        "lr": 3.961245283903239e-05
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.25703393844469496,
+        "train_acc": 0.9961655216488257,
+        "val_acc": 0.997779422649889,
+        "val_macro_f1": 0.9977415987862931,
+        "seconds": 136.1,
+        "lr": 1.0028835127270509e-05
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.25889623147751084,
+        "train_acc": 0.9948873621984342,
+        "val_acc": 0.997779422649889,
+        "val_macro_f1": 0.9977415987862931,
+        "seconds": 115.3,
+        "lr": 0.0
+      }
+    ]
+  },
+  "evaluation": {
+    "datasets": {
+      "test_1": {
+        "id": "cs_d",
+        "name": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+        "doi": "10.17632/94fzcdz8gz.1",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/94fzcdz8gz/1"
+      },
+      "test_2": {
+        "id": "ewu_tea_leaf_disease",
+        "name": "Tea leaf disease Dataset",
+        "doi": "10.17632/mz598gxfw9.1",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/mz598gxfw9/1"
+      },
+      "test_3": {
+        "id": "tld_bd",
+        "name": "TLD-BD: A Comprehensive Tea Leaf Image Dataset for Leaf Condition Analysis",
+        "doi": "10.17632/d2xybhfw59.2",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/d2xybhfw59/2"
+      }
+    },
+    "key_metrics": {
+      "Test 1 \u2014 CS-D internal (in-distribution)": {
+        "samples": 12410,
+        "accuracy": 0.9975,
+        "macro_f1": 0.9975,
+        "ece": 0.0006,
+        "classes_present": [
+          "healthy",
+          "blister_blight",
+          "brown_blight",
+          "red_rust",
+          "red_spider_mite",
+          "helopeltis"
+        ],
+        "classes_absent": []
+      },
+      "Test 2 \u2014 EWU cross-dataset (detached leaf)": {
+        "samples": 2831,
+        "accuracy": 0.7061,
+        "macro_f1": 0.7346,
+        "ece": 0.1972,
+        "classes_present": [
+          "healthy",
+          "brown_blight",
+          "helopeltis"
+        ],
+        "classes_absent": [
+          "blister_blight",
+          "red_rust",
+          "red_spider_mite"
+        ]
+      },
+      "Test 3 \u2014 TLD-BD cross-dataset (field)": {
+        "samples": 1073,
+        "accuracy": 0.6999,
+        "macro_f1": 0.7959,
+        "ece": 0.2447,
+        "classes_present": [
+          "healthy",
+          "red_spider_mite",
+          "helopeltis"
+        ],
+        "classes_absent": [
+          "blister_blight",
+          "brown_blight",
+          "red_rust"
+        ]
+      }
+    },
+    "never_pool_note": "The three test sets measure different things and are never combined into a single headline metric.",
+    "full_report": "models/tea/evaluation.json",
+    "reliability_diagram": "models/tea/reliability.png"
+  },
+  "calibration": {
+    "method": "temperature scaling (Guo et al. 2017)",
+    "temperature": 0.5355,
+    "fitted_on": "CS-D validation split only",
+    "note": "Does not change argmax, so accuracy is unaffected and only confidence is corrected."
+  },
+  "abstention": {
+    "threshold": 0.9976,
+    "selection_rule": "The 5% quantile of validation confidence. The model abstains on inputs less confident than the bottom 5% of in-distribution predictions.",
+    "selected_on": "CS-D validation split only",
+    "validation_coverage": 0.95,
+    "validation_accuracy_on_accepted": 0.9997,
+    "rejected_rule": {
+      "rule": "lowest threshold reaching 95% accuracy-on-accepted",
+      "would_have_chosen": 0.0,
+      "why_rejected": "Validation accuracy is 0.9964 at threshold 0.0, above the target, so the rule selects 0.0 and the abstention mechanism can never fire. The validation set contains no out-of-distribution inputs, so it cannot locate the confidence at which the model becomes unreliable on them."
+    },
+    "coverage_by_test_set": {
+      "Test 1 \u2014 CS-D internal (in-distribution)": {
+        "coverage": 0.955,
+        "accuracy_on_accepted": 1.0
+      },
+      "Test 2 \u2014 EWU cross-dataset (detached leaf)": {
+        "coverage": 0.3501,
+        "accuracy_on_accepted": 0.9566
+      },
+      "Test 3 \u2014 TLD-BD cross-dataset (field)": {
+        "coverage": 0.3747,
+        "accuracy_on_accepted": 0.7587
+      }
+    },
+    "behaviour": "Below the threshold the app must show 'uncertain \u2014 retake the photo' rather than a class. A farmer photographing a hand, a shoe or a badly-lit leaf should get an abstention, never a confident wrong label."
+  },
+  "known_limitations": [
+    "TRAINED ENTIRELY ON ASSAM IMAGERY. No Sri Lankan tea appears in any training image.",
+    "NO CROSS-DATASET EVIDENCE FOR BLISTER BLIGHT OR RED RUST. Neither class appears in any external dataset in the audited corpus, so their only numbers come from Test 1, which shares CS-D's domain. They are not cross-dataset validated.",
+    "Blister blight is simultaneously the most important class in the product (it is the disease lib/grow/risk.ts models) and the least externally verifiable.",
+    "Training images are 256x256, publisher-resized and median-filtered. The model inherits that preprocessing and has never seen a full-resolution photograph.",
+    "Trained from 9,000 distinct photographs, not 80,329 images \u2014 the published set is 8.93x augmented.",
+    "Two of the six classes are PESTS (red spider mite, tea mosquito bug), not pathogens. lib/grow/risk.ts has no weather-driven infection window for them, so fusion must not attach an environmental prior to those predictions.",
+    "Open-set behaviour is handled by the abstention threshold only. There is no trained 'not a tea leaf' class, so a confident-looking non-leaf photo may still be labelled.",
+    "Red rust, algal leaf spot and red leaf spot are deliberately unmerged in the taxonomy; the literature and the dataset annotators disagree about whether they are one condition."
+  ],
+  "provenance": {
+    "training_data": {
+      "id": "cs_d",
+      "name": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+      "doi": "10.17632/94fzcdz8gz.1",
+      "licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://data.mendeley.com/datasets/94fzcdz8gz/1"
+    },
+    "evaluation_data": [
+      {
+        "id": "ewu_tea_leaf_disease",
+        "name": "Tea leaf disease Dataset",
+        "doi": "10.17632/mz598gxfw9.1",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/mz598gxfw9/1"
+      },
+      {
+        "id": "tld_bd",
+        "name": "TLD-BD: A Comprehensive Tea Leaf Image Dataset for Leaf Condition Analysis",
+        "doi": "10.17632/d2xybhfw59.2",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/d2xybhfw59/2"
+      }
+    ],
+    "licence_note": "All source datasets are CC BY 4.0, which permits commercial use and derivative works including trained weights, subject to attribution and a statement of modification. Images were de-duplicated, re-split and augmented.",
+    "records": [
+      "models/tea/provenance.json",
+      "models/tea/manifest.json",
+      "models/tea/dataset-audit.md",
+      "models/tea/leakage-report.json"
+    ]
+  },
+  "attribution": [
+    "CS-D tea leaf disease dataset \u2014 DOI 10.17632/94fzcdz8gz.1, CC BY 4.0. Images modified (de-duplicated, re-split, augmented).",
+    "Tea leaf disease Dataset (East West University) \u2014 DOI 10.17632/mz598gxfw9.1, CC BY 4.0.",
+    "TLD-BD / GreenPulse-T \u2014 DOI 10.17632/d2xybhfw59.2, CC BY 4.0."
+  ]
+}
