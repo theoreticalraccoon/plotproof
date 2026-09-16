@@ -1,0 +1,182 @@
+{
+  "$comment": [
+    "Dataset manifest for the tea classifier: what we have, where it came from,",
+    "how it is grouped, and how it will be split. Licences live in provenance.json;",
+    "class definitions live in taxonomy.json; measured numbers are reproduced by",
+    "`python scripts/audit_tea_datasets.py` into audit-results.json.",
+    "",
+    "The load-bearing field here is `groupBy`. Every dataset below ships augmented",
+    "copies of a smaller set of original photographs, and in both cases the",
+    "publisher's own split does not respect that. Splitting on images rather than",
+    "groups is the single mistake that would make every downstream number a lie."
+  ],
+
+  "manifest_version": 1,
+  "audited_on": "2026-09-16",
+  "taxonomy_version": 1,
+  "raw_data_committed": false,
+  "raw_data_note": "Images are NOT committed to this repository — not required by CC BY 4.0 and it would add ~1 GB. Fetch from the pinned DOIs in provenance.json; CS-D's archive is verified by SHA-256 below.",
+
+  "datasets": [
+    {
+      "id": "cs_d",
+      "role": "primary_training",
+      "doi": "10.17632/94fzcdz8gz.1",
+      "archive": {
+        "filename": "Tea Leaf Dataset.rar",
+        "bytes": 964100293,
+        "sha256": "07684c2f68f5f718fcb00757024a7fb57a60987fa1cd41c34ac1fbee929b2aa9",
+        "sha256_verified": true,
+        "structure": "Nested RAR: outer archive contains six inner .rar files, one per class."
+      },
+      "measured": {
+        "total_images": 80329,
+        "published_claim": 81000,
+        "claim_discrepancy": "671 fewer than the paper states; the entire shortfall is in Healthy (12,829 rather than 13,500). Every other class is exactly 13,500.",
+        "source_groups": 9000,
+        "inflation_factor": 8.93,
+        "dimensions": "256x256, uniform across a 300-image sample of every class",
+        "mode": "RGB",
+        "format": "JPEG",
+        "unreadable_files": 0,
+        "per_class": {
+          "Blister_Blight": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
+          "Brown_Blight": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
+          "Leaf_Red_Rust": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
+          "Red_Spider_Mite": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
+          "Tea_Mosquito_Bug": { "images": 13500, "groups": 1500, "group_sizes": { "9": 1500 } },
+          "Healthy": { "images": 12829, "groups": 1500, "group_sizes": { "8": 671, "9": 829 } }
+        }
+      },
+      "groupBy": {
+        "unit": "source_group",
+        "rule": "groupId = ((imageIndex - 1) mod 1500) + 1, where imageIndex is the integer in the filename, within each class folder.",
+        "derivation": "Not documented by the publisher — recovered empirically. For every class, the nearest neighbour of an image (by rotation/flip-invariant colour histogram) sits at index delta exactly 1500 for 96.5–96.8% of images, and at a multiple of 1500 for 99.5–99.9%. Mean nearest-neighbour similarity 0.9986–0.9988, i.e. siblings are near-identical. Reproduce with `verify_stride` in scripts/audit_tea_datasets.py.",
+        "consequence": "The nine images of a group are augmentations of one original photograph. They must never be separated across splits."
+      },
+      "known_limitations": [
+        "Only the augmented form is published. The 9,000 originals are not in the archive and cannot be recovered.",
+        "No estate, field, date, device or plant metadata of any kind. The paper describes seven Assam estates over seven months on three phone models, but none of that survives into the published files — so a geographic or temporal hold-out is impossible.",
+        "Images are pre-resized to 256x256 and median-filtered by the publisher, so the model cannot be trained at higher resolution and inherits their preprocessing."
+      ]
+    },
+
+    {
+      "id": "ewu",
+      "role": "cross_dataset_test",
+      "doi": "10.17632/mz598gxfw9.1",
+      "archive": { "filename": "Tea Leaf Diseases.zip", "bytes": 107706468 },
+      "format": "Roboflow YOLOv8 export (object detection), converted to single-label classification",
+      "measured": {
+        "total_images": 5180,
+        "distinct_source_images": 3060,
+        "images_per_source_mean": 1.69,
+        "dimensions": "640x640 (Roboflow 'Resize (Stretch)' — aspect ratio NOT preserved)",
+        "images_with_no_boxes": 79,
+        "images_with_multiple_classes": 0,
+        "per_class_images": {
+          "Algal Leaf Spot": 672,
+          "Brown Blight": 640,
+          "Gray Blight": 796,
+          "Healthy": 1413,
+          "Helopeltis": 778,
+          "Red Leaf Spot": 802
+        }
+      },
+      "groupBy": {
+        "unit": "source_stem",
+        "rule": "Roboflow names files <sourceStem>_jpg.rf.<hash>.jpg; the stem identifies the original photograph.",
+        "consequence": "Augmented copies share a stem and must stay together."
+      },
+      "shipped_split_is_leaky": {
+        "sizes": { "train": 4322, "valid": 430, "test": 428 },
+        "source_stems_spanning_multiple_splits": 101,
+        "pct_of_stems": 3.3,
+        "affected_images": 295,
+        "pct_of_images": 5.7,
+        "decision": "DISCARD the shipped split entirely and re-split by source stem."
+      },
+      "known_limitations": [
+        "Roboflow's export log states augmentation created 2 versions of each source image via random horizontal and vertical flips, then split randomly — which is how siblings ended up straddling splits.",
+        "Images are of DETACHED leaves against varied backgrounds, closer to a lab protocol than a farmer photographing a bush.",
+        "Filenames fall into three distinct families (2,424 camera-timestamp, 2,336 generic image_N_N, ~330 UNADJUSTEDNONRAW_thumb), suggesting three different sub-collections merged into one dataset with different capture conditions.",
+        "79 images carry no bounding box at all and therefore have no usable label."
+      ],
+      "usable_overlap_with_cs_d": ["healthy", "brown_blight", "helopeltis"]
+    },
+
+    {
+      "id": "tealeafbd",
+      "role": "UNAVAILABLE",
+      "doi": "10.17632/744vznw5k2.4",
+      "status": "NO IMAGES PUBLISHED",
+      "finding": "The Mendeley record — the CC BY 4.0 grant this dataset's licence clearance rests on — contains no image files in ANY version. Versions 1, 2 and 3 are empty; version 4 contains a single 187 KB read_me.pdf and nothing else.",
+      "documented_contents_from_readme": {
+        "total_images": 5278,
+        "dimensions": "1200x1600 JPG, ~226 KB each",
+        "per_class": {
+          "Tea algal leaf spot": 418,
+          "Brown Blight": 508,
+          "Gray Blight": 1013,
+          "Helopeltis": 607,
+          "Red spider": 515,
+          "Green mirid bug": 1282,
+          "Healthy leaf": 935
+        }
+      },
+      "decision": "DROPPED as the cross-dataset partner. The counts above are transcribed from the readme for the record and are NOT verified against pixels, because there are no pixels to verify.",
+      "note": "A Kaggle mirror exists, but taking images from a mirror would break the provenance chain: the CC BY 4.0 grant we verified attaches to the Mendeley record, and a mirror's contents and licence would need independent verification. Not worth it when licence-clean alternatives exist."
+    },
+
+    {
+      "id": "tld_bd",
+      "role": "candidate_field_condition_test",
+      "doi": "10.17632/d2xybhfw59.2",
+      "licence": "CC BY 4.0",
+      "status": "IDENTIFIED, NOT YET DOWNLOADED",
+      "total_images": 2007,
+      "dimensions": "480x640 JPG",
+      "classes": ["Algal Leaf", "Grey Blight", "Healthy Leaf", "Helopeltis", "Looper Infested", "Red Spider"],
+      "why_valuable": "Real in-field conditions from two named Sreemangal estates WITH GPS coordinates (M.R. Khan 24.27257,91.75938 and Finlay 24.30334,91.74249), collected over eight days in December 2024. The only candidate carrying estate-level metadata, which makes a genuine estate-held-out split possible.",
+      "blister_blight": false
+    },
+
+    {
+      "id": "tealeafdiseasebd",
+      "role": "rejected_for_v1",
+      "doi": "10.17632/jcvxm4gh7d.3",
+      "licence": "CC BY 4.0",
+      "total_images": 13085,
+      "classes": ["Healthy", "Red Spider", "Brown Blight", "Gray Blight", "Helopeltis", "Algal Leaf Spot", "Red Rust"],
+      "rejected_because": "Every leaf is photographed against a BLACK BACKGROUND. As a held-out set it would measure background shift rather than generalisation, and as training data it would teach the background. 7 GB for a domain we do not serve.",
+      "useful_finding": "This team also ships 'Algal Leaf Spot' and 'Red Rust' as SEPARATE classes — independent corroboration for keeping them unmerged in the taxonomy."
+    }
+  ],
+
+  "blister_blight_availability": {
+    "datasets_examined": ["cs_d", "ewu", "tealeafbd", "tld_bd", "tealeafdiseasebd"],
+    "datasets_containing_blister_blight": ["cs_d"],
+    "implication": "The flagship Sri Lankan tea disease, and the one lib/grow/risk.ts is built around, exists in exactly one dataset. It cannot be cross-dataset validated by any source found. This is the single most important caveat attached to the model."
+  },
+
+  "split": {
+    "unit": "source_group",
+    "ratios": { "train": 70, "val": 15, "test": 15 },
+    "method": "sha256(datasetId|className|groupId) → first 4 bytes as uint32 → mod 100 → <70 train, <85 val, else test",
+    "implementation": "assign_split() in scripts/audit_tea_datasets.py",
+    "properties": [
+      "Deterministic and machine-independent — no stored split file to lose or diverge.",
+      "Stable under growth: adding a class or more images never reshuffles what is already assigned.",
+      "Whole groups move together, so an augmented sibling can never straddle a boundary.",
+      "Keyed by dataset id too, so CS-D group 7 and EWU group 7 are unrelated."
+    ],
+    "cs_d_group_preview": { "train": 6270, "val": 1347, "test": 1383 },
+    "cs_d_group_preview_note": "Groups, not images. Close enough to 70/15/15 without forcing exact ratios, which would require a global sort and break the stability-under-growth property.",
+    "evaluation_plan": [
+      "Primary: in-distribution test split above, reported per class. Expect a high number and do not present it as generalisation.",
+      "Secondary: cross-dataset on EWU, restricted to healthy / brown_blight / helopeltis — the only three classes with confident correspondence. This is the honest generalisation estimate.",
+      "Blister blight: in-distribution ONLY. No cross-dataset number exists or can be manufactured.",
+      "Report expected calibration error and a reliability diagram alongside accuracy, not accuracy alone."
+    ]
+  }
+}

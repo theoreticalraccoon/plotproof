@@ -46,3 +46,7 @@ graphify-out/
 
 .vercel
 .env*
+
+# Tea training corpora: fetched from the pinned DOIs in models/tea/provenance.json,
+# never committed (~1 GB, and CC BY 4.0 does not require redistribution).
+models/tea/data/

@@ -1,0 +1,279 @@
+{
+  "$comment": [
+    "Canonical tea-condition taxonomy for PlotProof. This is the CONTRACT between",
+    "the training pipeline and the app: class IDs are stable forever, and the model",
+    "output vector is defined by `active_class_ids` in order.",
+    "",
+    "Raw dataset folder names are NOT used as labels anywhere downstream. Three",
+    "datasets spell the same condition three ways ('Gray Blight' / 'Grey Blight',",
+    "'Tea_Mosquito_Bug' / 'Helopeltis'), and one of those pairs is the same insect",
+    "under two common names. Mapping them here once, with the evidence for each",
+    "merge recorded, is what stops a silent relabelling later.",
+    "",
+    "Mirrored in lib/grow/teaClasses.ts. The two must not drift."
+  ],
+  "taxonomy_version": 1,
+  "created": "2026-09-16",
+  "merge_policy": "Two source labels are merged ONLY with cited evidence that they denote the same condition. Where evidence conflicts, they stay separate and the conflict is recorded. Unmerged is recoverable; a wrong merge is not.",
+  "classes": [
+    {
+      "classId": 0,
+      "key": "healthy",
+      "displayName": "Healthy",
+      "kind": "healthy",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Healthy_leaves"
+        ],
+        "ewu": [
+          "Healthy"
+        ],
+        "tealeafbd_documented": [
+          "Healthy leaf"
+        ],
+        "tld_bd": [
+          "Healthy leaf"
+        ]
+      },
+      "trainImages": 12829,
+      "trainSourceGroups": 1500,
+      "notes": "Unambiguous across every dataset. The only CS-D class whose groups are uneven (829 groups of 9, 671 of 8) because the class stops at 12,829 rather than 13,500."
+    },
+    {
+      "classId": 1,
+      "key": "blister_blight",
+      "displayName": "Blister blight",
+      "pathogen": "Exobasidium vexans",
+      "kind": "fungal_disease",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Blister_Blight"
+        ]
+      },
+      "trainImages": 13500,
+      "trainSourceGroups": 1500,
+      "riskEngineKey": "blister_blight",
+      "notes": "SINGLE-SOURCE. Of the five tea datasets examined (CS-D, teaLeafBD, EWU, TLD-BD, TeaLeafDiseaseBD), CS-D is the ONLY one containing blister blight. It therefore cannot be cross-dataset validated at all, and it is simultaneously the most important class in the product — the flagship up-country Ceylon tea disease and the one lib/grow/risk.ts is built around. Treat every blister-blight number as in-distribution only."
+    },
+    {
+      "classId": 2,
+      "key": "brown_blight",
+      "displayName": "Brown blight",
+      "pathogen": "Colletotrichum camelliae",
+      "kind": "fungal_disease",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Brown_Blight"
+        ],
+        "ewu": [
+          "Brown Blight"
+        ],
+        "tealeafbd_documented": [
+          "Brown Blight"
+        ],
+        "tld_bd": []
+      },
+      "trainImages": 13500,
+      "trainSourceGroups": 1500,
+      "riskEngineKey": "brown_blight",
+      "crossDatasetTestable": true,
+      "notes": "Same name across datasets, same pathogen. One of only three classes usable for the cross-dataset generalisation test."
+    },
+    {
+      "classId": 3,
+      "key": "red_rust",
+      "displayName": "Red rust",
+      "pathogen": "Cephaleuros sp. (parasitic alga)",
+      "kind": "algal_disease",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Leaf_Red_Rust"
+        ],
+        "tealeafdiseasebd": [
+          "Red Rust"
+        ]
+      },
+      "trainImages": 13500,
+      "trainSourceGroups": 1500,
+      "notes": "NOT merged with algal_leaf_spot (5) or red_leaf_spot (9) despite overlapping literature — see `unresolved_ambiguities`."
+    },
+    {
+      "classId": 4,
+      "key": "red_spider_mite",
+      "displayName": "Red spider mite",
+      "pathogen": "Oligonychus coffeae",
+      "kind": "pest",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Red_Spider_Mite"
+        ],
+        "tealeafbd_documented": [
+          "Red spider"
+        ],
+        "tld_bd": [
+          "Red Spider"
+        ],
+        "tealeafdiseasebd": [
+          "Red Spider"
+        ]
+      },
+      "trainImages": 13500,
+      "trainSourceGroups": 1500,
+      "riskEngineKey": null,
+      "notes": "A PEST, not a pathogen. 'Red spider' and 'red spider mite' are the same mite. No weather-driven infection window exists for it in lib/grow/risk.ts, so fusion must not attach an environmental prior to this class."
+    },
+    {
+      "classId": 5,
+      "key": "helopeltis",
+      "displayName": "Tea mosquito bug (Helopeltis)",
+      "pathogen": "Helopeltis theivora",
+      "kind": "pest",
+      "active": true,
+      "sourceLabels": {
+        "cs_d": [
+          "Tea_Mosquito_Bug"
+        ],
+        "ewu": [
+          "Helopeltis"
+        ],
+        "tealeafbd_documented": [
+          "Helopeltis"
+        ],
+        "tld_bd": [
+          "Helopeltis"
+        ]
+      },
+      "trainImages": 13500,
+      "trainSourceGroups": 1500,
+      "riskEngineKey": null,
+      "crossDatasetTestable": true,
+      "mergeEvidence": "Helopeltis theivora Waterhouse (Hemiptera: Miridae) is the species whose universal common name in South Asian tea is 'tea mosquito bug'. CABI Compendium entry for H. theivora is titled 'tea mosquito bug'. Merge is on species identity, not name similarity.",
+      "notes": "A PEST. Same caveat as red_spider_mite regarding fusion priors. One of the three cross-dataset testable classes."
+    },
+    {
+      "classId": 6,
+      "key": "grey_blight",
+      "displayName": "Grey blight",
+      "pathogen": "Pestalotiopsis theae",
+      "kind": "fungal_disease",
+      "active": false,
+      "sourceLabels": {
+        "ewu": [
+          "Gray Blight"
+        ],
+        "tealeafbd_documented": [
+          "Gray Blight"
+        ],
+        "tld_bd": [
+          "Grey Blight"
+        ],
+        "tealeafdiseasebd": [
+          "Gray Blight"
+        ]
+      },
+      "riskEngineKey": "grey_blight",
+      "notes": "RESERVED, inactive in v1. Absent from CS-D, which is the only training source with blister blight. Present in three other datasets. Note the spelling split: US 'Gray' in the datasets, UK 'Grey' in PlotProof's own risk engine — the key here is canonical and the source labels carry both."
+    },
+    {
+      "classId": 7,
+      "key": "algal_leaf_spot",
+      "displayName": "Algal leaf spot",
+      "pathogen": "Cephaleuros virescens",
+      "kind": "algal_disease",
+      "active": false,
+      "sourceLabels": {
+        "ewu": [
+          "Algal Leaf Spot"
+        ],
+        "tealeafbd_documented": [
+          "Tea algal leaf spot"
+        ],
+        "tld_bd": [
+          "Algal Leaf"
+        ],
+        "tealeafdiseasebd": [
+          "Algal Leaf Spot"
+        ]
+      },
+      "notes": "RESERVED, inactive in v1. Absent from CS-D. Kept distinct from red_rust — see `unresolved_ambiguities`."
+    },
+    {
+      "classId": 8,
+      "key": "red_leaf_spot",
+      "displayName": "Red leaf spot",
+      "kind": "unclear",
+      "active": false,
+      "sourceLabels": {
+        "ewu": [
+          "Red Leaf Spot"
+        ]
+      },
+      "notes": "RESERVED, inactive in v1. Its relationship to red_rust and algal_leaf_spot is genuinely unresolved — see `unresolved_ambiguities`."
+    },
+    {
+      "classId": 9,
+      "key": "green_mirid_bug",
+      "displayName": "Green mirid bug",
+      "kind": "pest",
+      "active": false,
+      "sourceLabels": {
+        "tealeafbd_documented": [
+          "Green mirid bug"
+        ]
+      },
+      "notes": "RESERVED, inactive. Documented only in teaLeafBD, whose images are not obtainable from its licensed record."
+    },
+    {
+      "classId": 10,
+      "key": "looper",
+      "displayName": "Looper caterpillar damage",
+      "kind": "pest",
+      "active": false,
+      "sourceLabels": {
+        "tld_bd": [
+          "Looper Infested"
+        ]
+      },
+      "notes": "RESERVED, inactive. TLD-BD only."
+    }
+  ],
+  "active_class_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "active_class_order_note": "The model's output vector is exactly this array, in this order. Reserved IDs 6-10 are NOT emitted by the v1 model; activating one is a retrain and a taxonomy_version bump, never a silent re-index.",
+  "rejection": {
+    "mechanism": "out_of_distribution_score",
+    "isClass": false,
+    "rationale": "Not-a-tea-leaf is handled by an OOD/energy score OUTSIDE the class vector, not as class 11. Making it a class would require a representative negative set ('everything that is not a tea leaf'), which cannot be sampled honestly. A score lets the model abstain without pretending to have learned the complement of its domain.",
+    "product_requirement": "A farmer will photograph a hand, a shoe, or the sky. Abstaining is the correct product behaviour; a confident label on a shoe is a defect."
+  },
+  "unresolved_ambiguities": [
+    {
+      "id": "red_rust_vs_algal_leaf_spot_vs_red_leaf_spot",
+      "labels": [
+        "red_rust (3)",
+        "algal_leaf_spot (7)",
+        "red_leaf_spot (8)"
+      ],
+      "evidence_for_merging": "Plant-pathology sources treat 'red rust' as the name given to Cephaleuros infection specifically on tea and coffee, and list Cephaleuros parasiticus as a synonym of C. virescens — which would make red rust and algal leaf spot the same disease under two names.",
+      "evidence_against_merging": "The EWU annotators ship 'Algal Leaf Spot' and 'Red Leaf Spot' as SEPARATE classes in the same dataset, so they evidently saw two distinguishable presentations. Independently, the TeaLeafDiseaseBD team also ship 'Algal Leaf Spot' and 'Red Rust' as separate classes. Two unrelated annotation teams both chose to split them.",
+      "decision": "DO NOT MERGE. Keep 3, 7 and 8 distinct.",
+      "reasoning": "The taxonomic literature and the annotators disagree, and the annotators are describing what is actually in the pixels. Merging on literature alone would collapse classes the labels do not support, and a wrong merge is unrecoverable once the model is trained — whereas leaving them separate costs only that classes 7 and 8 stay inactive in v1, which they would be anyway (neither is in CS-D)."
+    },
+    {
+      "id": "csd_repository_title_mismatch",
+      "decision": "Treated as the same dataset.",
+      "reasoning": "The Mendeley record is titled 'Tea Leaf Dataset' with a single author, while the Data in Brief article names it CS-D with a different author list. Class names, per-class raw count (1,500) and total raw count (9,000) all match the article exactly, and the article cites this DOI. Attribution credits both."
+    }
+  ]
+}

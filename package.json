@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types test/geometry.test.ts && node --experimental-strip-types test/confidence.test.ts && node --experimental-strip-types test/compliance.test.ts && node --experimental-strip-types test/documents.test.ts && node --experimental-strip-types test/status.test.ts && node --experimental-strip-types test/irrigation.test.ts && node --experimental-strip-types test/risk.test.ts"
+    "test": "node --experimental-strip-types test/geometry.test.ts && node --experimental-strip-types test/confidence.test.ts && node --experimental-strip-types test/compliance.test.ts && node --experimental-strip-types test/documents.test.ts && node --experimental-strip-types test/status.test.ts && node --experimental-strip-types test/irrigation.test.ts && node --experimental-strip-types test/risk.test.ts && node --experimental-strip-types test/teaClasses.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -1,0 +1,286 @@
+{
+  "stride_assumed": 1500,
+  "cs_d": {
+    "total_images": 80329,
+    "total_source_groups": 9000,
+    "inflation_factor": 8.93,
+    "classes": {
+      "Blister_Blight": {
+        "images": 13500,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "9": 1500
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      },
+      "Brown_Blight": {
+        "images": 13500,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "9": 1500
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      },
+      "Leaf_Red_Rust": {
+        "images": 13500,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "9": 1500
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      },
+      "Red_Spider_Mite": {
+        "images": 13500,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "9": 1500
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      },
+      "Tea_Mosquito_Bug": {
+        "images": 13500,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "9": 1500
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      },
+      "Healthy": {
+        "images": 12829,
+        "source_groups": 1500,
+        "group_size_distribution": {
+          "8": 671,
+          "9": 829
+        },
+        "dimensions_sampled": {
+          "256x256": 300
+        },
+        "modes_sampled": {
+          "RGB": 300
+        },
+        "unreadable_in_sample": 0,
+        "sample_size": 300
+      }
+    },
+    "stride_verification": {
+      "Blister_Blight": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.8,
+        "pct_nn_at_multiple_of_stride": 99.7,
+        "mean_nn_similarity": 0.9986,
+        "top_deltas": [
+          [
+            1500,
+            3000
+          ],
+          [
+            3000,
+            91
+          ],
+          [
+            13,
+            2
+          ]
+        ]
+      },
+      "Brown_Blight": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.5,
+        "pct_nn_at_multiple_of_stride": 99.6,
+        "mean_nn_similarity": 0.9988,
+        "top_deltas": [
+          [
+            1500,
+            2992
+          ],
+          [
+            3000,
+            96
+          ],
+          [
+            1023,
+            4
+          ]
+        ]
+      },
+      "Leaf_Red_Rust": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.8,
+        "pct_nn_at_multiple_of_stride": 99.9,
+        "mean_nn_similarity": 0.9987,
+        "top_deltas": [
+          [
+            1500,
+            3000
+          ],
+          [
+            3000,
+            97
+          ],
+          [
+            34,
+            2
+          ]
+        ]
+      },
+      "Red_Spider_Mite": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.8,
+        "pct_nn_at_multiple_of_stride": 99.9,
+        "mean_nn_similarity": 0.9986,
+        "top_deltas": [
+          [
+            1500,
+            3000
+          ],
+          [
+            3000,
+            98
+          ],
+          [
+            22,
+            2
+          ]
+        ]
+      },
+      "Tea_Mosquito_Bug": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.8,
+        "pct_nn_at_multiple_of_stride": 99.7,
+        "mean_nn_similarity": 0.9986,
+        "top_deltas": [
+          [
+            1500,
+            3000
+          ],
+          [
+            3000,
+            92
+          ],
+          [
+            9,
+            2
+          ]
+        ]
+      },
+      "Healthy": {
+        "sampled": 3100,
+        "pct_nn_at_stride": 96.5,
+        "pct_nn_at_multiple_of_stride": 99.5,
+        "mean_nn_similarity": 0.9987,
+        "top_deltas": [
+          [
+            1500,
+            2992
+          ],
+          [
+            3000,
+            94
+          ],
+          [
+            444,
+            4
+          ]
+        ]
+      }
+    },
+    "split_preview_groups": {
+      "Blister_Blight": {
+        "train": 1050,
+        "val": 226,
+        "test": 224
+      },
+      "Brown_Blight": {
+        "train": 1056,
+        "val": 234,
+        "test": 210
+      },
+      "Leaf_Red_Rust": {
+        "train": 1056,
+        "val": 212,
+        "test": 232
+      },
+      "Red_Spider_Mite": {
+        "train": 1038,
+        "val": 214,
+        "test": 248
+      },
+      "Tea_Mosquito_Bug": {
+        "train": 1020,
+        "val": 235,
+        "test": 245
+      },
+      "Healthy": {
+        "train": 1050,
+        "val": 226,
+        "test": 224
+      },
+      "_total_groups": {
+        "train": 6270,
+        "val": 1347,
+        "test": 1383
+      }
+    }
+  },
+  "ewu": {
+    "total_images": 5180,
+    "split_sizes": {
+      "train": 4322,
+      "valid": 430,
+      "test": 428
+    },
+    "distinct_source_stems": 3060,
+    "images_per_source_mean": 1.69,
+    "class_counts": {
+      "Algal Leaf Spot": 672,
+      "Brown Blight": 640,
+      "Gray Blight": 796,
+      "Healthy": 1413,
+      "Helopeltis": 778,
+      "Red Leaf Spot": 802
+    },
+    "images_with_no_boxes": 79,
+    "images_with_multiple_classes": 0,
+    "shipped_split_leakage": {
+      "source_stems_in_more_than_one_split": 101,
+      "pct_of_stems": 3.3,
+      "affected_images": 295,
+      "pct_of_images": 5.7
+    }
+  }
+}
