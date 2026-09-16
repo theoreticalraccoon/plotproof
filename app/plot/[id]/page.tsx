@@ -3,16 +3,16 @@
 /**
  * Evidence pack (on-screen). The demo's "show the generated pack" step.
  *
- * Every way the analysis step can stall is handled explicitly, cold serverless
- * start, queued/running job, slow network, outright failure, or an
- * insufficient-data verdict, each degrades into a sentence the presenter can
- * read out, never a spinner or a stack trace. Print / Save-as-PDF is the pack
- * output; there is deliberately no server-side PDF generator.
+ * The pack is assembled entirely from records on this device, so it cannot
+ * stall on a network call. Forest status is deliberately NOT inferred here: it
+ * is read from published datasets (JRC GFC2020, Hansen GFC) and cited as
+ * theirs. Print / Save-as-PDF is the pack output; there is deliberately no
+ * server-side PDF generator.
  *
  * Layout note: the sheet is set like a filed document, section label in the
  * left margin and the body in a single measured column, so a reader scans the
  * labels down the edge and reads across only where they stop. Page chrome
- * (toolbar, job status) lives OUTSIDE the sheet — it is not part of the record
+ * (toolbar, actions) lives OUTSIDE the sheet — it is not part of the record
  * and it must not print.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -29,14 +29,9 @@ import { printAs } from "@/lib/print";
 import { getAttestationForPlot, getFarmer, getPlot, mediaBlob, mediaObjectUrl } from "@/lib/intake/store";
 import { verifyAttestationIntegrity, type VerifyResult } from "@/lib/intake/integrity";
 import { captureConfidence } from "@/lib/intake/confidence";
-import { fetchJson, NetError, warmup } from "@/lib/net";
-import type { AnalysisResult, JobHandle, JobPoll } from "@/lib/analysis";
 import type { LocalAttestation, LocalFarmer, LocalPlot } from "@/lib/intake/types";
-import type { AcousticExhibit } from "@/lib/acoustic/types";
 
 const CUTOFF = "2020-12-31";
-const POLL_MS = 1200;
-const MAX_WAIT_MS = 45_000;
 
 /**
  * The sheet is white paper in BOTH themes (see .doc-sheet), so anything drawn
@@ -57,16 +52,10 @@ const PAPER_SKELETON = {
   "--skeleton-sheen-accent": "rgba(15, 107, 70, 0.07)",
 } as React.CSSProperties;
 
-type JobState =
-  | "loading" // reading the plot from the device
-  | "notfound"
-  | "warming" // waking the analysis service
-  | "queued"
-  | "running"
-  | "ready"
-  | "slow" // taking longer than expected, still trying
-  | "unavailable" // no analysis service connected: no verdict exists, say so
-  | "failed";
+/** Only the device read can stall now: the pack is assembled entirely from
+ *  local records. Remote layers (forest facts, credibility) arrive as their own
+ *  sections with their own states, so neither can hold up the record itself. */
+type PackState = "loading" | "notfound" | "ready";
 
 export default function EvidencePackPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,73 +63,11 @@ export default function EvidencePackPage() {
   const [farmer, setFarmer] = useState<LocalFarmer | null>(null);
   const [attestation, setAttestation] = useState<LocalAttestation | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [acoustic, setAcoustic] = useState<AcousticExhibit | null>(null);
-  // Tracked separately from `acoustic`: a null exhibit that has not been asked
-  // for yet is not the same claim as "no detections near this plot", and the
-  // page must not make the second claim while the first is still true.
-  const [acousticPending, setAcousticPending] = useState(true);
-  const [state, setState] = useState<JobState>("loading");
-  const [error, setError] = useState<string | null>(null);
-  const cancelled = useRef(false);
+  const [state, setState] = useState<PackState>("loading");
 
-  const runAnalysis = useCallback(async (p: LocalPlot) => {
-    setError(null);
-    setState("warming");
-    warmup(); // wake a cold function before we need it
-    try {
-      const req = {
-        plotId: p.id,
-        geometry: { type: "Polygon" as const, coordinates: [p.ring] },
-        countryCode: p.countryCode,
-        commodity: p.commodity ?? "unknown",
-        cutoffDate: CUTOFF,
-      };
-      const handle = await fetchJson<JobHandle>("/api/analysis/submit", {
-        method: "POST",
-        body: req,
-        timeoutMs: 15000,
-        retries: 2, // absorb a cold start
-      });
-      setState("queued");
-
-      const deadline = Date.now() + MAX_WAIT_MS;
-      for (;;) {
-        if (cancelled.current) return;
-        const poll = await fetchJson<JobPoll>(
-          `/api/analysis/poll?jobId=${encodeURIComponent(handle.jobId)}`,
-          { timeoutMs: 10000, retries: 2 },
-        );
-        if (poll.status === "succeeded") {
-          setResult(poll.result);
-          setState("ready");
-          return;
-        }
-        if (poll.status === "failed") {
-          setError("The analysis service reported a failure for this plot.");
-          setState("failed");
-          return;
-        }
-        setState(poll.status === "running" ? "running" : "queued");
-        if (Date.now() > deadline) {
-          setState("slow");
-          return;
-        }
-        await sleep(POLL_MS);
-      }
-    } catch (e) {
-      if (e instanceof NetError && e.status === 503) {
-        setState("unavailable");
-        return;
-      }
-      setError(e instanceof NetError ? e.message : "Analysis could not be started.");
-      setState("failed");
-    }
-  }, []);
-
-  // Load the plot from the device, then start analysis.
+  // Assemble the pack from the device. Everything here is local, so there is
+  // nothing to poll and nothing that can time out.
   useEffect(() => {
-    cancelled.current = false;
     let revoked: string | null = null;
     (async () => {
       const p = await getPlot(id);
@@ -159,20 +86,12 @@ export default function EvidencePackPage() {
           setPhotoUrl(url);
         }
       }
-      const c = centroid(p.ring);
-      void fetchJson<AcousticExhibit>(
-        `/api/acoustic/exhibit?lng=${c.lng}&lat=${c.lat}&radiusKm=3&days=90`,
-      )
-        .then(setAcoustic)
-        .catch(() => setAcoustic(null)) // acoustic is a bonus exhibit, never blocks
-        .finally(() => setAcousticPending(false));
-      await runAnalysis(p);
+      setState("ready");
     })();
     return () => {
-      cancelled.current = true;
       if (revoked) URL.revokeObjectURL(revoked);
     };
-  }, [id, runAnalysis]);
+  }, [id]);
 
   if (state === "loading") return <PackSkeleton />;
 
@@ -198,9 +117,6 @@ export default function EvidencePackPage() {
 
   const conf = captureConfidence(plot.captureMethod);
   const generatedAt = new Date();
-  const analysisPending =
-    state === "warming" || state === "queued" || state === "running";
-  const printReady = state === "ready" || state === "unavailable";
   const gfwUrl = `https://www.globalforestwatch.org/map/?map=${encodeURIComponent(
     JSON.stringify({
       center: { lat: centroid(plot.ring).lat, lng: centroid(plot.ring).lng },
@@ -220,23 +136,14 @@ export default function EvidencePackPage() {
         />
 
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2.5">
-          <span
-            title={
-              printReady
-                ? undefined
-                : "Available once the analysis step finishes or reports that no service is connected."
-            }
+          <ActionButton
+            className="btn btn-primary btn-sm"
+            onAction={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
+            loadingLabel="Opening…"
+            successToast="Print dialog opened. Choose Save as PDF for a file copy."
           >
-            <ActionButton
-              className="btn btn-primary btn-sm"
-              disabled={!printReady}
-              onAction={() => printAs(`EUDR Evidence Pack ${plot.id.slice(0, 8)}`)}
-              loadingLabel="Opening…"
-              successToast="Print dialog opened. Choose Save as PDF for a file copy."
-            >
-              <Printer size={15} aria-hidden="true" /> Download PDF
-            </ActionButton>
-          </span>
+            <Printer size={15} aria-hidden="true" /> Download PDF
+          </ActionButton>
 
           <ActionButton
             className="btn btn-ghost btn-sm"
@@ -258,10 +165,6 @@ export default function EvidencePackPage() {
             Public verification page
           </ExternalAction>
         </div>
-
-        {/* Status of the analysis step. It describes the page, not the record,
-            so it sits above the sheet rather than inside it. */}
-        <JobBanner state={state} error={error} onRetry={() => runAnalysis(plot)} />
       </div>
 
       {/* ---- the record ---------------------------------------------------- */}
@@ -308,47 +211,17 @@ export default function EvidencePackPage() {
             </p>
           </Section>
 
-          <Section title="Satellite assessment">
-            <div aria-busy={analysisPending || undefined}>
-              {result ? (
-                <div>
-                  <p className="text-[1.1rem] font-semibold leading-snug" style={{ maxWidth: "48ch" }}>
-                    {verdictSentence(result.verdict)}
-                  </p>
-                  <p className="doc-faint mt-2 text-[0.85rem]">
-                    Detection confidence {(result.confidence * 100).toFixed(0)}% · model{" "}
-                    {result.modelVersion}
-                  </p>
-                  {result.verdict === "flagged" && result.clearingDateRange && (
-                    <p className="doc-faint mt-1 text-[0.85rem]">
-                      Estimated clearing window {result.clearingDateRange.earliest} →{" "}
-                      {result.clearingDateRange.latest}
-                      {result.clearedHectares != null && ` · ~${result.clearedHectares.toFixed(2)} ha`}
-                    </p>
-                  )}
-                </div>
-              ) : state === "unavailable" ? (
-                <div>
-                  <p className="text-[1.1rem] font-semibold leading-snug" style={{ maxWidth: "48ch" }}>
-                    No satellite assessment. None has been performed for this plot.
-                  </p>
-                  <p className="doc-faint mt-2 text-[0.85rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
-                    This deployment has no analysis service connected, so this pack
-                    contains the plot geometry and field attestation only. Assess the
-                    coordinates against the EU JRC Global Forest Cover 2020 layer and
-                    Global Forest Watch before relying on them.
-                  </p>
-                </div>
-              ) : analysisPending ? (
-                <div role="status" aria-label="Awaiting the analysis result" className="print:hidden">
-                  <PaperSkeleton className="h-5 w-full max-w-md" />
-                  <PaperSkeleton className="skeleton-sm mt-2.5 h-5 w-2/3 max-w-sm" />
-                  <PaperSkeleton className="skeleton-sm mt-4 h-3 w-56" />
-                </div>
-              ) : (
-                <p className="doc-faint text-[0.9rem]">Awaiting analysis result…</p>
-              )}
-            </div>
+          <Section title="Forest status at these coordinates">
+            <p className="text-[1.1rem] font-semibold leading-snug" style={{ maxWidth: "48ch" }}>
+              Not yet assessed for this plot.
+            </p>
+            <p className="doc-faint mt-2 text-[0.85rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
+              PlotProof runs no deforestation model of its own — deliberately. Forest status is a
+              question of published record, not of our inference, and it is answered against the
+              EU JRC Global Forest Cover 2020 layer and Hansen Global Forest Change. Until that
+              layer is attached to this pack, check the coordinates on Global Forest Watch using
+              the link above and record the result yourself.
+            </p>
           </Section>
 
           <Section title="Plot geometry">
@@ -384,81 +257,22 @@ export default function EvidencePackPage() {
             </details>
           </Section>
 
-          <Section title="Before / after imagery">
-            {result && result.imagery.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
-                {result.imagery.map((t, i) => (
-                  <figure key={i}>
-                    {t.url.startsWith("http") ? (
-                      // Real rendered tile from the analysis service: true colour,
-                      // plot outlined, acquisition date burned in, consistent stretch.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={t.url}
-                        alt={`${t.role} satellite tile, ${t.acquisitionDate}`}
-                        loading="lazy"
-                        decoding="async"
-                        className="doc-rule aspect-square w-full border object-cover"
-                      />
-                    ) : (
-                      <div className="doc-rule doc-faint flex aspect-square items-center justify-center border text-center text-[0.75rem]">
-                        sample imagery ({t.role}), stub result
-                      </div>
-                    )}
-                    <figcaption className="doc-faint mt-2 text-[0.75rem] leading-snug">
-                      {t.role}: {t.acquisitionDate} · {t.sensor} · cloud{" "}
-                      {(t.cloudCover * 100).toFixed(0)}%
-                    </figcaption>
-                  </figure>
-                ))}
-              </div>
-            ) : analysisPending ? (
-              <div
-                role="status"
-                aria-label="Awaiting imagery"
-                className="grid grid-cols-2 gap-4 print:hidden"
-              >
-                <PaperSkeleton className="aspect-square w-full" />
-                <PaperSkeleton className="aspect-square w-full" />
-              </div>
-            ) : (
-              <p className="doc-faint text-[0.9rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
-                {result?.verdict === "insufficient_data"
-                  ? "No renderable imagery, insufficient clear observations for this plot."
-                  : state === "unavailable"
-                    ? "No satellite imagery, no analysis service is connected to this deployment."
-                    : "Imagery renders once analysis completes."}
-              </p>
-            )}
-          </Section>
-
           <Section title="Methodology">
-            {result ? (
-              <ul className="flex flex-col gap-2 text-[0.87rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
-                <Bullet>Model: {result.modelVersion}.</Bullet>
-                <Bullet>
-                  Sources: Sentinel-2 L2A (optical, 10 m), Sentinel-1 GRD (radar), Hansen Global
-                  Forest Change (baseline). Accessed {result.dataAccessedAt?.slice(0, 10) ?? "-"} (UTC).
-                </Bullet>
-                <Bullet>
-                  Assessment cut-off: {CUTOFF}. Forest definition: national parameters,{" "}
-                  <strong>not yet verified against official national sources</strong>, treat
-                  the threshold values as provisional.
-                </Bullet>
-                <Bullet>
-                  Change detection outside the model: sustained forest-fraction drop across
-                  observations.
-                </Bullet>
-              </ul>
-            ) : (
-              <p className="text-[0.87rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
-                No in-house satellite analysis is performed — deliberately. For deforestation
-                context, consult the authoritative public datasets for these coordinates: JRC
-                Tropical Moist Forest and Global Forest Watch (Hansen Global Forest Change).
-                Plot geometry is captured on-device in WGS84 (EPSG:4326); area is geodesic.
-                The EUDR cut-off date used throughout is {CUTOFF}.
-              </p>
-            )}
+            <ul className="flex flex-col gap-2 text-[0.87rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
+              <Bullet>
+                <strong>No in-house deforestation model.</strong> PlotProof does not infer forest
+                loss. Forest status is read from published record — the EU JRC Global Forest Cover
+                2020 layer and Hansen Global Forest Change (UMD/Google/USGS/NASA) — so the claim
+                belongs to those datasets and is checkable against them, not to us.
+              </Bullet>
+              <Bullet>
+                <strong>Geometry.</strong> Captured on-device in WGS84 (EPSG:4326); area is
+                geodesic on the ellipsoid.
+              </Bullet>
+              <Bullet>
+                <strong>Cut-off.</strong> The EUDR assessment date used throughout is {CUTOFF}.
+              </Bullet>
+            </ul>
           </Section>
 
           {/* The caveats are the most legally consequential paragraphs in the
@@ -514,25 +328,6 @@ export default function EvidencePackPage() {
             )}
           </Section>
 
-          <Section title="Acoustic corroboration (near this plot)">
-            {acousticPending ? (
-              <div role="status" aria-label="Loading acoustic corroboration" className="print:hidden">
-                <PaperSkeleton className="skeleton-sm h-3.5 w-full max-w-md" />
-                <PaperSkeleton className="skeleton-sm mt-2 h-3.5 w-1/2 max-w-xs" />
-              </div>
-            ) : acoustic && acoustic.summary.total > 0 ? (
-              <p className="text-[0.9rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
-                {acoustic.summary.chainsaw} chainsaw + {acoustic.summary.heavyVehicle} heavy-vehicle
-                detections from {acoustic.summary.nodes} node(s) within {acoustic.radiusKm} km
-                {acoustic.summary.firstAt &&
-                  `, ${acoustic.summary.firstAt.slice(0, 10)} → ${acoustic.summary.lastAt?.slice(0, 10)} (UTC)`}
-                .
-              </p>
-            ) : (
-              <p className="doc-faint text-[0.9rem]">No acoustic detections near this plot.</p>
-            )}
-          </Section>
-
           <footer className="doc-rule doc-faint mt-8 border-t pt-4 text-[0.72rem]">
             On-screen evidence pack. Use Print / Save as PDF for a file copy.
           </footer>
@@ -569,55 +364,6 @@ function ExternalAction({
   );
 }
 
-/**
- * Status of the analysis step. Each state is a sentence a presenter can read
- * out; the tone rule on the left carries the severity and the text itself stays
- * at full contrast, so nothing is legible only by colour.
- */
-function JobBanner({ state, error, onRetry }: { state: JobState; error: string | null; onRetry: () => Promise<void> }) {
-  if (state === "ready") return null;
-  const copy: Record<string, string> = {
-    warming: "Waking the analysis service (first run can take a few seconds)…",
-    queued: "Analysis queued, waiting for the service to pick it up…",
-    running: "Analysing satellite imagery for this plot…",
-    slow: "Analysis is taking longer than usual, the network or service is slow.",
-    unavailable:
-      "Satellite analysis is not connected in this deployment. This pack shows captured evidence only, no verdict is produced.",
-    failed: error ?? "Analysis couldn't be completed.",
-  };
-  const bad = state === "failed" || state === "slow" || state === "unavailable";
-  const tone = bad ? "var(--warn)" : "var(--info)";
-  return (
-    <div
-      role="status"
-      aria-busy={!bad || undefined}
-      className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 print:hidden"
-      style={{
-        borderLeft: `3px solid ${tone}`,
-        background: bad ? "var(--warn-soft)" : "var(--info-soft)",
-        borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
-      }}
-    >
-      <span
-        className="text-[0.66rem] font-semibold uppercase tracking-[0.16em]"
-        style={{ color: tone }}
-      >
-        Analysis
-      </span>
-      {!bad && <span className="spinner" aria-hidden="true" />}
-      <span className="min-w-0 flex-1 text-[0.9rem] leading-snug" style={{ maxWidth: "68ch" }}>
-        {copy[state]}
-      </span>
-      {bad && state !== "unavailable" && (
-        <ActionButton className="btn btn-ghost btn-sm" onAction={onRetry} loadingLabel="Retrying…">
-          Retry
-        </ActionButton>
-      )}
-    </div>
-  );
-}
-
-/** Section label in the left margin, body in one measured column. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="doc-rule mt-7 grid gap-x-8 gap-y-3 break-inside-avoid border-t pt-5 sm:grid-cols-[9rem_1fr]">
@@ -833,11 +579,6 @@ function PackSkeleton() {
   );
 }
 
-function verdictSentence(v: AnalysisResult["verdict"]): string {
-  if (v === "clear") return "No forest-cover loss detected within this plot over the observed period.";
-  if (v === "flagged") return "Possible forest-cover loss detected within this plot.";
-  return "Not enough clear imagery to determine a verdict for this plot.";
-}
 
 /**
  * TRACES-ready geolocation file. EUDR due diligence statements carry producer
@@ -879,6 +620,3 @@ function centroid(ring: [number, number][]): { lng: number; lat: number } {
   };
 }
 
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}

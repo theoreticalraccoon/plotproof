@@ -16,7 +16,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Search, CornerDownLeft, Leaf, FileText, Satellite, MapPin, AudioLines, Home, Languages } from "lucide-react";
+import { Search, CornerDownLeft, Leaf, FileText, Satellite, Home, Languages } from "lucide-react";
 import { t, useLang, LANGS, setLang } from "@/lib/i18n";
 import { EASE_OUT_2 } from "@/lib/motion/variants";
 import type { LucideIcon } from "lucide-react";
@@ -85,8 +85,6 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       { id: "sell", label: t(lang, "nav_sell"), group: navGroup, icon: Leaf, kind: "navigate", href: "/sell" },
       { id: "documents", label: t(lang, "nav_documents"), group: navGroup, icon: FileText, kind: "navigate", href: "/documents" },
       { id: "intake", label: t(lang, "nav_evidence"), group: navGroup, icon: Satellite, kind: "navigate", href: "/intake" },
-      { id: "explore", label: t(lang, "nav_explore"), group: navGroup, icon: MapPin, kind: "navigate", href: "/explore" },
-      { id: "acoustic", label: t(lang, "footer_acoustic"), group: navGroup, icon: AudioLines, kind: "navigate", href: "/acoustic" },
     ];
     const actions: Command[] = [
       { id: "start-sale", label: t(lang, "cmd_action_start_sale"), group: actionGroup, icon: Leaf, kind: "navigate", href: "/sell" },

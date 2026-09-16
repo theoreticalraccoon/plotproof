@@ -17,7 +17,7 @@
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Leaf, Menu, X, Search, Sprout, FileText, Satellite, MapPin } from "lucide-react";
+import { Leaf, Menu, X, Search, Sprout, FileText, Satellite } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import PendingLink from "@/components/motion/PendingLink";
 import { useCommandPalette } from "./CommandPalette";
@@ -27,10 +27,13 @@ import { EASE_IN_OUT, EASE_OUT_2 } from "@/lib/motion/variants";
 import type { Variants } from "framer-motion";
 
 const LINKS = [
+  // Order follows the farmer's year, not the build order: grow it, sell it,
+  // then prove it. "Grow" leads because it is the only lane that matters before
+  // a harvest exists.
+  { href: "/grow", key: "nav_grow", Icon: Leaf },
   { href: "/sell", key: "nav_sell", Icon: Sprout },
   { href: "/documents", key: "nav_documents", Icon: FileText },
   { href: "/intake", key: "nav_evidence", Icon: Satellite },
-  { href: "/explore", key: "nav_explore", Icon: MapPin },
 ] as const;
 
 /**

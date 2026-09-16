@@ -12,7 +12,7 @@
  * surface; it is now plain text under an accent rule.
  *
  * Links are PendingLink like the rest of navigation: a footer link is often the
- * slowest jump in the app (/explore pulls the map bundle), which is exactly
+ * slowest jump in the app, which is exactly
  * where an unacknowledged tap gets repeated.
  */
 import { Leaf } from "lucide-react";
@@ -26,8 +26,6 @@ const PRODUCT_LINKS = [
 ] as const;
 
 const RESOURCE_LINKS = [
-  { href: "/explore", key: "nav_explore" },
-  { href: "/acoustic", key: "footer_acoustic" },
   { href: "/whats-real", key: "footer_whats_real" },
   { href: "/privacy", key: "footer_privacy" },
 ] as const;

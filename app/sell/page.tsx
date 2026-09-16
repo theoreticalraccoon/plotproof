@@ -24,7 +24,7 @@ import { suggestShipping } from "@/lib/compliance/shipping";
 import { saveIntent, loadIntent, clearIntent } from "@/lib/compliance/intent";
 import { getStatuses, setStatus, clearAllStatuses, type StatusMap } from "@/lib/compliance/status";
 import { pushUserState } from "@/lib/supabase/userState";
-import { countryName } from "@/lib/public/format";
+import { countryName } from "@/lib/geo/countries";
 import { t, useLang } from "@/lib/i18n";
 import DocumentChecklist from "@/components/compliance/DocumentChecklist";
 import PriceCard from "@/components/sell/PriceCard";

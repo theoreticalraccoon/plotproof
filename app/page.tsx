@@ -347,8 +347,6 @@ export default function Home() {
           </h2>
         </Reveal>
         <ul className="mt-6">
-          <SecondaryRow href="/explore" title={t(lang, "nav_explore")} body={t(lang, "landing_explore_desc")} />
-          <SecondaryRow href="/acoustic" title={t(lang, "footer_acoustic")} body={t(lang, "landing_acoustic_desc")} />
         </ul>
       </section>
 

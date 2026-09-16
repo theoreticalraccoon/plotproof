@@ -7,6 +7,8 @@
  */
 import Dexie, { type Table } from "dexie";
 import type { LocalAttestation, LocalFarmer, LocalMedia, LocalPlot } from "./types";
+import type { GrowProfile } from "../grow/types";
+import type { CachedWeatherDay, SensorReading } from "../grow/growTypes";
 
 /** A cached basemap tile, keyed "z/x/y". Pre-downloaded per district. */
 export interface CachedTile {
@@ -35,6 +37,9 @@ export class IntakeDB extends Dexie {
   outbox!: Table<OutboxItem, number>;
   media!: Table<LocalMedia, string>;
   attestations!: Table<LocalAttestation, string>;
+  growProfiles!: Table<GrowProfile, string>;
+  weatherCache!: Table<CachedWeatherDay, [string, string]>;
+  sensorReadings!: Table<SensorReading, number>;
 
   constructor() {
     super("intake");
@@ -49,6 +54,17 @@ export class IntakeDB extends Dexie {
     this.version(2).stores({
       media: "id, plotId, kind, syncStatus",
       attestations: "id, plotId, officerId, syncStatus",
+    });
+    // v3: the GROW lane. Purely additive — every v1/v2 table and the outbox
+    // contract are untouched, so a field record captured before this upgrade
+    // still reads back exactly as it was attested. Keyed by plotId rather than
+    // folded into LocalPlot for the same reason.
+    this.version(3).stores({
+      growProfiles: "plotId, crop",
+      // Compound primary key: one row per plot per day, so a re-fetch of an
+      // overlapping date range updates in place instead of duplicating.
+      weatherCache: "[plotId+date], plotId, date",
+      sensorReadings: "++seq, plotId, at",
     });
   }
 }
@@ -81,5 +97,10 @@ export async function clearIntakeData(): Promise<void> {
     d.attestations.clear(),
     d.media.clear(),
     d.outbox.clear(),
+    // Grow-lane data is account-scoped too: a new account on a shared device
+    // must not inherit the previous farmer's crop profile or sensor trace.
+    d.growProfiles.clear(),
+    d.weatherCache.clear(),
+    d.sensorReadings.clear(),
   ]);
 }

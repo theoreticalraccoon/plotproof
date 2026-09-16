@@ -11,7 +11,7 @@ import { Printer } from "lucide-react";
 import { getProduct } from "@/lib/compliance/catalog";
 import { loadIntent } from "@/lib/compliance/intent";
 import { markInProgress } from "@/lib/compliance/status";
-import { countryName } from "@/lib/public/format";
+import { countryName } from "@/lib/geo/countries";
 import { docNumber, lineAmount } from "@/lib/compliance/documents";
 import NoIntent from "@/components/documents/NoIntent";
 import DocBreadcrumb from "@/components/documents/DocBreadcrumb";

@@ -21,6 +21,7 @@ import {
   kinks,
   polygon as turfPolygon,
   featureCollection,
+  centerOfMass,
 } from "@turf/turf";
 import type { LngLat, PlotValidation, ValidationError, ValidationWarning } from "./types";
 
@@ -28,6 +29,28 @@ import type { LngLat, PlotValidation, ValidationError, ValidationWarning } from 
 export const AREA_MISMATCH_RATIO = 0.2; // ±20%
 /** Overlaps below this many hectares are treated as boundary-touch noise. */
 export const OVERLAP_MIN_HA = 0.001; // ~10 m²
+
+/**
+ * Centre of a plot as [lng, lat], for anything that needs a POINT rather than a
+ * boundary — the weather grid cell, a sensor's registered position, a map pin.
+ *
+ * DERIVED, never stored: `LocalPlot` holds the captured ring and nothing else,
+ * so the attested record keeps exactly the shape it was signed with. Recomputing
+ * this is cheap and cannot drift out of sync with the boundary.
+ *
+ * Uses centre-of-mass rather than the bounding-box centre so a concave or
+ * L-shaped plot still yields a point inside its own land.
+ */
+export function plotCentre(ring: LngLat[]): { lng: number; lat: number } | null {
+  const closed = closeRing(dedupeConsecutive(ring));
+  if (closed.length < 4) return null;
+  try {
+    const [lng, lat] = centerOfMass(turfPolygon([closed])).geometry.coordinates;
+    return { lng, lat };
+  } catch {
+    return null;
+  }
+}
 
 /** Close a ring: append the first point if it isn't already the last. */
 export function closeRing(points: LngLat[]): LngLat[] {

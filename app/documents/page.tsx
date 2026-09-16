@@ -14,7 +14,7 @@ import { resolveRequirements } from "@/lib/compliance/resolver";
 import { loadIntent } from "@/lib/compliance/intent";
 import { getStatuses, progressSummary, setStatus, type StatusMap } from "@/lib/compliance/status";
 import { pushUserState } from "@/lib/supabase/userState";
-import { countryName } from "@/lib/public/format";
+import { countryName } from "@/lib/geo/countries";
 import { t, useLang } from "@/lib/i18n";
 import DocumentChecklist from "@/components/compliance/DocumentChecklist";
 import LanguageSwitcher from "@/components/LanguageSwitcher";

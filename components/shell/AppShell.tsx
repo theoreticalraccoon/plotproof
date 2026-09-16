@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import Nav from "./Nav";
 import NavProgress from "./NavProgress";
@@ -11,19 +10,11 @@ import { ToastProvider } from "./Toast";
 import { CommandPaletteProvider } from "./CommandPalette";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import AuthGate from "./AuthGate";
-import SmoothScroll from "./SmoothScroll";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import { t, useLang } from "@/lib/i18n";
 
-// /explore is a full-height, self-contained map app (its own internal scroll
-// regions), a marketing footer pushed below it would just add a dead scroll
-// area, so it's the one route that opts out.
-const NO_FOOTER = new Set(["/explore"]);
-
 export default function AppShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const lang = useLang();
-  const showFooter = !NO_FOOTER.has(pathname);
 
   return (
     <AuthProvider>
@@ -34,7 +25,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
             {t(lang, "skip_to_content")}
           </a>
           <GlassFilter />
-          <SmoothScroll />
           <ScrollProgress />
           <AmbientBackground />
           <NavProgress />
@@ -44,7 +34,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <AuthGate>{children}</AuthGate>
             </PageTransition>
           </main>
-          {showFooter && <Footer />}
+          <Footer />
         </div>
       </CommandPaletteProvider>
     </ToastProvider>
