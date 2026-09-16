@@ -1,0 +1,218 @@
+{
+  "$comment": [
+    "Dataset provenance and licence record for the PlotProof tea-disease classifier.",
+    "Written BEFORE any training, deliberately. The acoustic model was built on ESC-50",
+    "and only afterwards found to be CC BY-NC, which made the weights unshippable and",
+    "the work unusable (see PARKED.md). This file exists so that cannot happen twice.",
+    "",
+    "Every licence below was read from the ORIGINAL repository record (Mendeley Data),",
+    "not from a Kaggle mirror, a blog, a copied README, or a search-engine summary.",
+    "That distinction turned out to matter: see `licence_conflict_finding`.",
+    "",
+    "Re-verify before publishing weights. Mendeley versions can be superseded and a",
+    "licence can change between versions."
+  ],
+
+  "record_version": 1,
+  "verified_on": "2026-09-16",
+  "verified_by": "Original Mendeley Data repository pages and the corresponding Data in Brief articles (PMC full text).",
+  "intended_use": "Train a tea leaf disease classifier, ship the trained weights inside PlotProof as a static ONNX artifact served to the browser. PlotProof may be commercialised.",
+
+  "licence_conflict_finding": {
+    "summary": "For BOTH primary datasets the Data in Brief ARTICLE is CC BY-NC while the Mendeley DATASET is CC BY 4.0. These govern different artifacts and are not in conflict, but they are trivially easy to conflate.",
+    "why_it_matters": "A web search for teaLeafBD's licence returns 'CC BY-NC' — that is the article licence being reported as the data licence. Relying on that summary would have wrongly blocked this dataset. Relying on the inverse mistake elsewhere could wrongly ship non-commercial data.",
+    "rule_adopted": "The licence that governs the IMAGES is the one displayed on the repository record hosting the images. The article licence governs the article text and figures only.",
+    "residual_risk": "If a rightsholder intended the CC BY-NC of their paper to extend to their data, the repository record still says otherwise and is the operative grant. Low risk, recorded rather than ignored."
+  },
+
+  "datasets": [
+    {
+      "id": "cs_d",
+      "name": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+      "repository_title": "Tea Leaf Dataset",
+      "source_url": "https://data.mendeley.com/datasets/94fzcdz8gz/1",
+      "doi": "10.17632/94fzcdz8gz.1",
+      "version_pinned": "1",
+      "article": {
+        "title": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+        "journal": "Data in Brief",
+        "doi": "10.1016/j.dib.2025.112251",
+        "open_access_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12681924/",
+        "article_licence": "CC BY-NC 4.0",
+        "article_licence_note": "Governs the article text. The article does NOT state a licence for the data; the repository record does."
+      },
+      "licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "licence_source": "Displayed verbatim on the Mendeley Data record for DOI 10.17632/94fzcdz8gz.1",
+      "commercial_use": "permitted",
+      "derivatives_and_model_weights": "permitted",
+      "redistribution": "permitted with attribution",
+      "attribution_required": true,
+      "non_commercial_clause": false,
+      "share_alike_clause": false,
+      "content": {
+        "classes": [
+          "Healthy leaf",
+          "Blister Blight",
+          "Brown Blight",
+          "Leaf Red Rust",
+          "Tea Mosquito Bug",
+          "Red Spider Mite"
+        ],
+        "raw_images": 9000,
+        "augmented_images": 81000,
+        "per_class_raw": 1500,
+        "collection": "Seven tea estates across Assam, India (Pathini, Amchong, Sonapur, Chandana, Ananda, Doolahat, Silcoorie), over seven months, three smartphone models."
+      },
+      "data_quality_flags": [
+        "Published PRE-AUGMENTED (zoom, flip, rotation, shift, shear) and median-filtered, resized to 256x256. Near-duplicates are therefore guaranteed, not merely likely.",
+        "Consequence for training: perceptual-hash de-duplication must run BEFORE any split, or the in-dataset accuracy will be inflated by augmented siblings straddling the split.",
+        "The published archive may not preserve per-estate labels. If it does not, the planned field-held-out split is not possible on this dataset and the cross-dataset test against teaLeafBD becomes the only honest generalisation estimate. To confirm on download.",
+        "Two of the six classes (Tea Mosquito Bug, Red Spider Mite) are PESTS, not fungal diseases. They do not map onto lib/grow/risk.ts, whose three classes are fungal pathogens with weather-driven infection windows. The CNN label space and the risk-engine label space are therefore NOT the same set and must not be silently merged in fusion."
+      ],
+      "provenance_ambiguity": [
+        "The Mendeley record lists a single author (Megha Gupta) and a generic title ('Tea Leaf Dataset'), which does not match the author list or the name 'CS-D' used in the Data in Brief article. The class list, per-class count (1500) and total raw count (9000) match the article exactly, and the article cites this DOI, so these are treated as the same dataset with a differing repository display title.",
+        "Attribution should therefore credit BOTH the Mendeley depositor record AND the Data in Brief article, rather than choosing between them."
+      ],
+      "shipping_compatible": true
+    },
+
+    {
+      "id": "tealeafbd",
+      "name": "teaLeafBD",
+      "repository_title": "teaLeafBD",
+      "source_url": "https://data.mendeley.com/datasets/744vznw5k2/4",
+      "doi": "10.17632/744vznw5k2.4",
+      "version_pinned": "4",
+      "authors": [
+        "B M Shahria Alam",
+        "Fahad Ahammed",
+        "Golam Kibria",
+        "Mohammad Tahmid Noor",
+        "Omar Faruq Shikdar",
+        "Kazi Isat Mahazabin",
+        "Md Nawab Yousuf Ali"
+      ],
+      "article": {
+        "title": "teaLeafBD: A comprehensive image dataset to classify the diseased tea leaf to automate the leaf selection process in Bangladesh",
+        "journal": "Data in Brief",
+        "volume": "61, article 111769",
+        "open_access_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12221660/",
+        "article_licence": "CC BY-NC 4.0",
+        "article_licence_note": "Governs the article text only. Web summaries misreport this as the dataset licence; the repository record says CC BY 4.0."
+      },
+      "licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "licence_source": "Displayed verbatim on the Mendeley Data records for versions 3 (27 Jan 2025) and 4 (14 Apr 2025). Both checked; both CC BY 4.0.",
+      "commercial_use": "permitted",
+      "derivatives_and_model_weights": "permitted",
+      "redistribution": "permitted with attribution",
+      "attribution_required": true,
+      "non_commercial_clause": false,
+      "share_alike_clause": false,
+      "content": {
+        "classes": [
+          "Healthy leaf",
+          "Brown Blight",
+          "Gray Blight",
+          "Tea algal leaf spot",
+          "Helopeltis",
+          "Red spider",
+          "Green mirid bug"
+        ],
+        "images": 5278,
+        "collection": "Eight tea gardens in Sylhet and Sreemangal, Bangladesh, during 2024. Four Android phones: Oppo Reno8 Pro, Realme 6i, Redmi 12, Realme Narzo 50."
+      },
+      "data_quality_flags": [
+        "Version drift: v3 reports 5,276 images, v4 reports 5,278, and the article cites v4. Pin v4 and record the count actually downloaded rather than the published one.",
+        "Independent of CS-D in country, tea gardens, photographers and camera hardware. That independence is the whole value: it makes a leave-one-dataset-out generalisation estimate possible, which is a stronger honesty claim than any single-source split."
+      ],
+      "role": "Held-out cross-dataset test set. Trained on CS-D, tested here, on the shared label space only.",
+      "shipping_compatible": true
+    },
+
+    {
+      "id": "ewu_tea_leaf_disease",
+      "name": "Tea leaf disease Dataset",
+      "source_url": "https://data.mendeley.com/datasets/mz598gxfw9/1",
+      "doi": "10.17632/mz598gxfw9.1",
+      "version_pinned": "1",
+      "authors": ["Md Samiul Islam"],
+      "institution": "East West University",
+      "licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "licence_source": "Displayed verbatim on the Mendeley Data record for DOI 10.17632/mz598gxfw9.1",
+      "commercial_use": "permitted",
+      "derivatives_and_model_weights": "permitted",
+      "redistribution": "permitted with attribution",
+      "attribution_required": true,
+      "non_commercial_clause": false,
+      "share_alike_clause": false,
+      "content": {
+        "classes": [
+          "Healthy",
+          "Algal Leaf Spot",
+          "Brown Blight",
+          "Gray Blight",
+          "Helopeltis",
+          "Red Leaf Spot"
+        ],
+        "images": 5180,
+        "annotation": "Bounding boxes per instance, annotated in Roboflow.",
+        "collection": "Captured manually using DETACHED tea leaves under varied lighting and backgrounds."
+      },
+      "data_quality_flags": [
+        "Detached-leaf imagery photographed against varied backgrounds is closer to a lab protocol than to a farmer holding a phone over a bush. Mixing it into training risks teaching the background rather than the lesion — the PlantVillage failure mode ML.md already warns about for satellite chips.",
+        "Object-detection annotations, not plain classification folders. Usable but needs a different loader."
+      ],
+      "role": "OPTIONAL third source. Not part of the planned train/test design. Licence-cleared so it can be added later, but held back for the quality reason above.",
+      "shipping_compatible": true
+    }
+  ],
+
+  "rejected_or_not_used": [
+    {
+      "name": "PlantVillage",
+      "reason": "Contains no tea. Lab-condition single leaves on uniform backgrounds, which generalise poorly to field imagery. ML.md's standing instruction against training on EuroSat is the same objection in a different modality."
+    },
+    {
+      "name": "ESC-50 (acoustic model)",
+      "reason": "Not tea. Listed here only as the precedent that motivated this file: CC BY-NC 3.0, discovered after the model was built, which made the weights unshippable."
+    }
+  ],
+
+  "cc_by_4_0_obligations": {
+    "verified_from": "https://creativecommons.org/licenses/by/4.0/",
+    "permits_commercial_use": "Yes — 'copy and redistribute the material in any medium or format for any purpose, even commercially'.",
+    "permits_derivatives": "Yes — 'remix, transform, and build upon the material for any purpose, even commercially'.",
+    "model_weights_note": "Whether trained weights are legally a derivative work of the training images is unsettled. CC BY 4.0 grants the adaptation right explicitly, so the question does not need resolving here — the grant covers it either way.",
+    "attribution_required": [
+      "name of the creator and attribution parties",
+      "a copyright notice",
+      "a license notice",
+      "a disclaimer notice",
+      "a link to the material",
+      "an indication of whether the material was modified, and of previous modifications"
+    ],
+    "no_additional_restrictions": "'You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.'"
+  },
+
+  "obligations_on_plotproof": [
+    "Ship full attribution for every training source on the model card and on /models: creator, title, DOI link, 'CC BY 4.0' with its URL, and a statement that the images were modified (de-duplicated, resized, re-split, augmented).",
+    "State plainly that the images were modified. They will be — de-duplication and re-splitting are modifications.",
+    "Do NOT commit the raw image corpora to this repository. Not required by the licence, and it would bloat the repo. Ship weights plus a download script that fetches from the pinned DOIs.",
+    "Apply no terms to the shipped weights that would restrict downstream users more than CC BY 4.0 allows, per the no-additional-restrictions clause.",
+    "Re-verify every licence immediately before publishing weights, and bump record_version."
+  ],
+
+  "conclusion": {
+    "all_planned_datasets_shipping_compatible": true,
+    "blocking_issues": [],
+    "verdict": "CS-D and teaLeafBD are both CC BY 4.0 at their authoritative repository records. Commercial use, derivative works and trained model weights are all permitted, subject to attribution and a statement of modification. Training may proceed.",
+    "non_blocking_concerns_carried_forward": [
+      "CS-D ships pre-augmented, so de-duplication before splitting is mandatory rather than advisable.",
+      "The CNN label space includes pests and does not match lib/grow/risk.ts's three fungal pathogens. Fusion must map between them explicitly, never merge them silently.",
+      "Whether CS-D preserves per-estate labels is unknown until download; if absent, the cross-dataset test is the only honest generalisation number available."
+    ]
+  }
+}
