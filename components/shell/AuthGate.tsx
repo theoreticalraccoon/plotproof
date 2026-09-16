@@ -4,7 +4,7 @@
  * Route gate. The farmer product (sell, documents, intake, alerts, plot) is
  * account-first: a signed-out visitor sees a clean prompt to create an account
  * instead of a populated app. The public front door (landing, login) and the
- * public-good layers (explore map, acoustic preview) stay open. When Supabase
+ * public pages (the landing page, /whats-real, /verify) stay open. When Supabase
  * isn't configured the gate is inert, so the app still runs as a prototype.
  */
 import { usePathname } from "next/navigation";

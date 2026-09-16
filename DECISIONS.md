@@ -516,10 +516,121 @@ farmer-path and supporting routes.
 
 ---
 
-## Sign-off still needed from you
-1. **Countries** — Sri Lanka is fixed; pick two of Indonesia / Vietnam / the
-   Philippines. (Affects which ID-scan channels we build first.)
-2. **Week-six spine (D-005)** — confirm the single-slice-first plan.
-3. **PII handling (D-007)** — consent + whether ID images are stored.
-4. **Schema sign-off (SCHEMA.md)** — still open; needed before the real Supabase
-   sync transport replaces the stub.
+---
+
+## D-017 — ML becomes the spine, not a bolted-on notebook
+
+The project is submitted under Big Data/ML/AI/Data Science and did not support
+the claim: the satellite model was deleted (D-015), leaving a univariate price
+forecast that beats naive by 4.6 vs 4.9 MAPE and a 37-line keyword matcher
+labelled "the data-science front door".
+
+Reorganised around the three jobs a farmer actually has — **grow it, price it,
+pass it** — with one data spine. The plot record already captured for EUDR now
+also keys the weather grid cell and the sensor binding.
+
+**The architectural decision that made it possible in the time available:** every
+model ships as a **static artifact consumed client-side**, following the pattern
+`ml/prices` already proved. No Python service, no inference server, no new API
+routes. `app/api/` still contains exactly one route. The CNN runs in the browser
+via ONNX; weather is Open-Meteo called directly (CORS-open, no key); the soil
+probe talks to the page over Web Serial.
+
+**GROW lane built (deterministic half first, deliberately):** FAO-56 water
+balance and a weather-driven disease-risk engine, both pure and tested. No model
+to train, no dataset to caveat — which de-risked the lane before the CNN landed.
+
+Three things real data changed that unit tests alone would not have caught
+(`scripts/live-check.ts` runs the chain against live Open-Meteo):
+
+1. Canopy interception was a flat 2 mm/day. Against a month of live Nuwara Eliya
+   weather that zeroed nearly every light-rain day and said "water soon" on a
+   plot whose own soil-moisture data said it was saturated.
+2. Surface soil moisture (0.45) is nothing like the root zone (0.33). Now
+   depth-blended over the crop's rooting depth from four Open-Meteo layers.
+3. That made an **anchoring ladder** worth building: sensor > grid > balance. An
+   observation of the state beats an integration toward it, because a running
+   balance accumulates every coefficient error and never forgets it. The UI names
+   which tier answered — a farmer deciding whether to act on "water now" should
+   know whether anything actually touched their soil.
+
+Also: temperature is a **gate**, not a weighted term, in the risk model. As a
+weight it let blister blight score maximum risk at 28 °C, past the point
+*Exobasidium vexans* develops. A necessary condition must be a gate; no weight is
+large enough to substitute for one.
+
+---
+
+## D-018 — Tea classifier: licence and audit before training
+
+Trained a MobileNetV3-Small leaf classifier. The order of work is the decision
+worth recording: **licence, then audit, then training loop.** The acoustic model
+was built on ESC-50 and only afterwards found to be CC BY-NC, which made the
+weights unshippable and the effort dead.
+
+**Licence finding.** For both primary datasets the Data in Brief *article* is
+CC BY-NC while the Mendeley *dataset* is CC BY 4.0. A web search for teaLeafBD's
+licence returns "CC BY-NC" — the article licence reported as the data licence.
+Reading the authoritative repository record rather than a mirror decided the
+outcome. All datasets used are CC BY 4.0: commercial use and trained weights
+permitted, with attribution and a statement of modification.
+
+**Audit findings that changed the plan** (`models/tea/dataset-audit.md`):
+
+- CS-D is **9,000 photographs, not 80,329 images** — 8.93x augmented, grouping
+  undocumented, recovered empirically (nearest neighbour at index delta exactly
+  1500). Splitting on images would have produced ~99% "accuracy" that was
+  memorisation of augmented siblings.
+- **teaLeafBD publishes no images at all.** The CC BY 4.0 record contains zero
+  image files in any version. Licence clean, nothing to license. Dropped.
+- **Blister blight appears in exactly one of five datasets.** It is the flagship
+  Sri Lankan disease, the one `lib/grow/risk.ts` models, and it can never be
+  cross-dataset validated.
+- **TLD-BD cannot support an estate hold-out.** It names two estates with GPS in
+  prose; 0 of 4,016 files carry EXIF GPS, though 100% carry other EXIF — so GPS
+  was never recorded, not stripped. Kept test-only.
+
+**The result is a gap, not a number.** In-distribution 0.9975 accuracy against
+~0.70 cross-dataset. The three test sets are never averaged; they measure
+different things. Calibration does not survive the domain shift either — ECE
+0.0006 in-distribution, 0.20–0.24 cross-dataset, i.e. the model stays confident
+while becoming wrong.
+
+**The abstention mechanism is therefore not optional**, and choosing its
+threshold exposed a subtle trap: the first rule took the lowest threshold
+reaching 95% accuracy-on-accepted, but validation accuracy is 0.9964 at threshold
+0.0, so it chose 0.0 and the mechanism could never fire. A validation set
+contains no out-of-distribution inputs *by construction*, so it cannot locate
+where the model becomes unreliable on them. Replaced with the 5% quantile of
+in-distribution confidence — a question validation can answer. On EWU it declines
+65% of inputs and lifts accuracy on the rest from 0.706 to 0.957.
+
+**Taxonomy is a contract** (`models/tea/taxonomy.json` + `lib/grow/teaClasses.ts`,
+drift-tested). Class IDs are stable forever; dataset folder names never reach the
+app. Two of six classes are **pests**, so `riskEngineKey` is `null` for them —
+meaning *no environmental prior exists*, not *prior is neutral*. Fusion must not
+reweight a mite by a fungal infection window. Red rust, algal leaf spot and red
+leaf spot stay unmerged: the pathology literature says one disease, two unrelated
+annotation teams shipped them separate, and a wrong merge is unrecoverable once
+trained.
+
+---
+
+## D-019 — Documentation sweep after the pivot
+
+Deleted `GO-LIVE.md` (stages for a service and a U-Net that no longer exist;
+redundant with `DEPLOY.md`) and `ml/acoustic/` (orphaned once its routes went).
+Rewrote `ML.md`, `PROJECT.md`, `SCHEMA.md`, `PARKED.md`, `NEXT-STEPS.md`,
+`DEPLOY.md`.
+
+Two of these were **live bugs, not stale prose**:
+
+- `vercel.json` ran a daily cron against `/api/monitoring/sweep`, deleted weeks
+  earlier — a 404 every night in production.
+- `.env.example` documented four secrets whose features were all gone, inviting
+  someone to provision credentials for nothing.
+
+Also removed six orphaned i18n keys across all three dictionaries, corrected the
+`/whats-real` claims about acoustic monitoring (which described a page that no
+longer exists), and added the tea model's honest limitations there instead.
+`/whats-real` is the one page where a stale claim is worse than no page.

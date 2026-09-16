@@ -1,92 +1,67 @@
-# Next steps that only a human can do
+# Next steps
 
-Infrastructure is live. What remains cannot be coded — it needs a person in a
-field, a conversation, and a careful read.
+Current as of 2026-09-16.
 
----
+## Immediately next (code)
 
-## ✅ Done — infrastructure (2026-07-27)
+**Wire the tea classifier into `/grow/diagnose`.** The model is trained,
+evaluated and published; nothing consumes it yet. Requirements, all of which are
+already data in `public/models/tea-disease-mnv3s-card.json` and must not be
+retyped into a component:
 
-- **Database migrations applied.** All six objects exist in Supabase:
-  `user_state`, `farmers`, `plots`, `attestations`, `media`, `lot_verification`.
-- **Secrets set in Vercel.** `CRON_SECRET` and `ACOUSTIC_INGEST_TOKEN` are
-  configured and enforcing — both guarded routes return `401` without a token
-  and `200` with one (verified against production, not assumed).
-- **Supabase connected** to the deployment; sync and `/verify/<id>` are wired
-  to a real database.
-- **Live at** https://plot-proof.vercel.app
+1. Load the ONNX lazily — only on that route, never in the main bundle (it is
+   6 MB).
+2. Preprocess from the card's own constants (`image_size`, `mean`, `std`).
+   Reuse `processPhoto` from `lib/intake/image.ts` for capture.
+3. **Honour the abstention threshold (0.9976).** Below it the answer is
+   "uncertain — retake the photo", never a class. Without this the model is ~70%
+   accurate on real field photos while sounding certain.
+4. Never describe blister blight or red rust as cross-dataset validated.
+5. No artifact → render nothing, per the `PriceCard` contract.
 
-Consequence: a plot captured on a phone now syncs to the server under row-level
-security, and its verification page becomes a real, shareable URL. Nothing in
-the persistence chain is simulated any more.
+**Then fusion — `lib/grow/fusion.ts`.** Combine the CNN's visual evidence with
+the weather risk engine as a calibrated posterior, not an average. The
+justification is concrete: the CNN is trained on Assam and carries a transfer
+gap; the risk engine is computed from local weather and carries none. Consult
+`riskEngineKey` — it is `null` for both pests, meaning *no environmental prior
+exists*, not *prior is neutral*. A red-spider-mite prediction must not be
+reweighted by a fungal infection window.
 
----
+**Then `/models`** — one page listing every model with its metric *and its
+baseline*, dataset provenance, and known failure modes. Cheap to build and the
+single highest-leverage page for the submission category.
 
-## 1. Capture one real plot (half a day) — the highest-value remaining action
+## Blocked on a decision
 
-Zero real plots exist. Every feature is still a hypothesis until one farmer and
-one officer have touched it.
+- **Magicbit soil sensor.** The Dexie tables (`sensorReadings`,
+  `growProfiles`) and the three-tier anchoring ladder already exist and work; a
+  real probe would move `/grow` from "grid" to "sensor". Needs the hardware
+  plugged in and a two-point calibration.
+- **Sinhala LLM assistant** — needs an API key and a per-query cost decision.
+- **Colombo auction spice prices** — needs a real PDF digitisation pass.
 
-Take a phone to a real farm (Matale or Ratnapura):
+## Only a human can do these
 
-1. Sign in at https://plot-proof.vercel.app → **Intake**
-2. Trace the boundary — ideally by *walking* it, which is the highest-confidence
-   capture method and the one never yet tested outdoors
-3. Attest with the farmer: plot photo, read the consent statement aloud, capture
-   signature or thumbprint
-4. Back online, confirm the sync bar clears, then open
-   `https://plot-proof.vercel.app/verify/<plot-id>` — that page is now a real
-   artifact you can send to anyone
+**Capture one real plot.** Zero real plots exist. Every feature is a hypothesis
+until one farmer and one officer have touched it. Take a phone to a farm, trace a
+boundary, attest with the farmer, then open `/verify/<id>`. Write down where the
+officer hesitates, whether the map is readable in sunlight, and what the farmer
+asks. That list is worth more than anything in the backlog.
 
-**Watch for, and write down:** where the officer hesitates, whether the map is
-readable in direct sunlight, how long attestation takes, what the farmer asks.
-That list is worth more than any feature currently in the backlog.
+**Photograph Sri Lankan tea leaves.** The classifier is trained entirely on
+Assam imagery and there is no Sri Lankan tea in any public dataset examined. Even
+200 labelled local leaves would convert the largest caveat on the model card into
+a measurement.
 
-If arranging this proves impossible, *that* is the finding — record why.
+**One exporter or cooperative conversation.** Ask where their smallholder plot
+geolocation will come from when EUDR filing starts, whether an attested boundary
+would be usable evidence, what it would take to trust it, and who already offers
+them this.
 
-## 2. One exporter or cooperative conversation (1 hour)
+## Done
 
-The entire repositioning rests on an untested assumption: that someone
-downstream wants farmer-side plot evidence. Ask one person who would know.
-
-Five questions, verbatim:
-
-1. When EUDR filing starts (Dec 2026 for medium/large operators), where will
-   your smallholder plot geolocation come from?
-2. Would an attested boundary — officer countersignature, recorded farmer
-   consent, tamper-evident record — be usable evidence for your filing?
-3. What would it need before you'd trust it? (Land title? Independent satellite
-   check? A specific person's signature?)
-4. Would you pay for it, or pay more for crop that carries it?
-5. Who already offers you this? (Listen for Koltiva, Meridia, Farmforce, TraceX.)
-
-Q3's answer redesigns the trust ladder on `/verify`. Q5's answer is the
-competitive map. Both change what gets built next.
-
-## 3. Read the competition rubric against the product (30 min)
-
-Score-weighted attributes, and where the evidence already sits:
-
-| Attribute | Weight | Your strongest evidence |
-|---|---|---|
-| Content & Standards | 18% | `/whats-real`, cited EUDR dates (Reg 2025/2650), catalog verification dates, published model backtests |
-| Product Stability & Reliability | 12% | Fail-closed auth, staleness gates, honest "unavailable" states, 45 passing tests |
-| User Requirements | 10% | Trilingual Sinhala-first, offline-first capture, four-question sell flow |
-| Compatibility & Interoperability | 10% | DDS GeoJSON (TRACES-shaped), CSV import, public verification URL, GFW deep link |
-| Application of Technologies | 7.5% | Hash-chained attestation, backtested price pipeline, YAMNet classifier |
-| Innovation | 7.5% | Farmer-owned verification record; honesty-as-a-feature |
-| Understanding of Problem | 7.5% | Two-lane positioning (EUDR crops vs spice food-safety), "what happens next" |
-| Understanding of Business Environment | 7.5% | Who legally files the DDS, container-scale reality, `PARKED.md` competitor map |
-
-The honesty overhaul is the differentiator to argue from — most submissions
-cannot show a page documenting their own limits.
-
----
-
-## Blocked on a decision from you
-
-- **Sinhala LLM assistant** (explain any checklist field, translate buyer
-  emails). Ready to build; needs an API key and a per-query cost decision.
-- **Sri Lanka EDB / Colombo auction spice prices** — would fill the
-  cinnamon/pepper/cardamom gap the World Bank data can't. Sources are PDF
-  bulletins, so this needs a real digitisation pass, not a scrape hack.
+- GROW lane: Open-Meteo, FAO-56 irrigation, disease risk engine, `/grow`.
+- Tea classifier v1.0.0: licence cleared at source, corpora audited, leakage gate,
+  trained, calibrated, three-tier evaluation, published artifact.
+- Watchdog layers removed; the stale monitoring cron and dead env vars with them.
+- Supabase live; captured plots sync and `/verify/<id>` is a real URL.

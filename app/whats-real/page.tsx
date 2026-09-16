@@ -76,6 +76,17 @@ export default function WhatsRealPage() {
         <div className="min-w-0">
           <Part id="real" n="01" title="Real and working">
             <Entries>
+              <Entry term="Watering advice from this plot's own weather.">
+                The FAO-56 soil-water balance, implemented directly, with every constant traceable
+                to a published table. Weather comes from a model grid near the plot, not a station
+                on it, and the screen says so. If the weather cannot be fetched, nothing below it
+                is shown rather than estimated.
+              </Entry>
+              <Entry term="Disease pressure from weather.">
+                How far the last two weeks favoured blister blight, brown blight or grey blight,
+                with the measured conditions that produced the score. This is infection pressure,
+                not a diagnosis — weather favouring a disease is not the same as having it.
+              </Entry>
               <Entry term="Offline plot capture.">
                 Trace on a map, walk the boundary, mark corners, or import a file. Geometry is
                 validated (self-intersection, area sanity, overlap against other plots) and stored
@@ -151,15 +162,29 @@ export default function WhatsRealPage() {
               <Entry term="Satellite deforestation verdicts.">
                 We deliberately do not run our own deforestation model. An earlier in-house analysis
                 service was removed after review: it could not be trained or validated honestly by
-                one developer. For deforestation context, plots link to the authoritative public
+                one developer, and inventing a verdict was worse than having none. For deforestation context, plots link to the authoritative public
                 datasets instead — JRC Tropical Moist Forest and Global Forest Watch (Hansen) — so
                 any verdict-shaped claim is theirs, not ours.
               </Entry>
-              <Entry term="Acoustic monitoring.">
-                Research, currently paused — it needs field sensors (ESP32 + LoRa) that do not exist
-                yet. The chainsaw classifier is real ML (ESC-50 benchmark, cross-validated metrics
-                on the acoustic page; research-licensed data, unvalidated on field audio), but
-                nothing here implies an operational network.
+              <Entry term="Leaf disease diagnosis from a photo.">
+                The classifier is trained, evaluated and published, but nothing in the app uses it
+                yet — there is no camera screen. When it lands it will carry the caveat below.
+              </Entry>
+              <Entry term="Tea disease detection outside its training domain.">
+                The model scores 99.8% on held-out data from the set it was trained on, and about
+                70% on photographs from farms it has never seen. That gap is the honest number.
+                It is trained entirely on Assam imagery; no Sri Lankan tea appears in any public
+                dataset we could find. Two classes — blister blight and red rust — appear in no
+                other dataset at all, so they have no independent check whatsoever.
+              </Entry>
+              <Entry term="Acoustic chainsaw detection.">
+                Deleted. The hardware never existed, and the benchmark data it was built on is
+                licensed for research only, so the model could never have shipped.
+              </Entry>
+              <Entry term="A soil sensor on a real farm.">
+                The app reads a soil probe over USB and the code path works, but no probe has been
+                deployed on a farm. Until one is, watering advice is anchored to a satellite-informed
+                soil model, and the screen says which of the two produced the number.
               </Entry>
               <Entry term="Real plots.">
                 No real farmer plot has been captured yet. Any plot you see in a demonstration was

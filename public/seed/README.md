@@ -20,12 +20,16 @@ See `plots.template.csv` for a working example. Columns (header row required):
 | `commodity`      | no       | rubber, coffee, cocoa, oil palm…                             |
 | `claimed_area_ha`| no       | Farmer's stated area; compared to the drawn area.            |
 
-## The three-country / one-cooperative-each target
+## What to collect
 
-Put ~15 real plots per country, three countries (Sri Lanka + two of Indonesia /
-Vietnam / the Philippines), one cooperative each — use a distinct `membership_no`
-prefix per cooperative (e.g. `COOP-LK-###`). Column mapping is auto-guessed and
-adjustable at import time.
+Sri Lanka first. A handful of real plots from one cooperative is worth more than
+a spread across three countries — zero real plots exist today, so every feature
+in the app is still a hypothesis (see `NEXT-STEPS.md`). Use a distinct
+`membership_no` prefix per cooperative (e.g. `COOP-LK-###`). Column mapping is
+auto-guessed and adjustable at import time.
+
+A plot imported here also feeds the GROW lane: its boundary gives the weather
+grid cell for watering and disease-pressure advice on `/grow`.
 
 The template rows are **examples with placeholder coordinates** — delete them.
-Nothing here fabricates real plots; the map/pack only ever show data you load.
+Nothing here fabricates real plots; the app only ever shows data you load.

@@ -1,8 +1,9 @@
 # Design System Master File
 
-> **LOGIC:** When building a specific page, first check `design-system/pages/[page-name].md`.
-> If that file exists, its rules **override** this Master file.
-> If not, strictly follow the rules below.
+> **LOGIC:** These are the design rules for the whole app. There are no
+> per-page override files — the `pages/` directory this once pointed at was
+> always empty and has been removed. The live source of truth for tokens is
+> `app/globals.css`; where this file and that disagree, the CSS wins.
 
 ---
 

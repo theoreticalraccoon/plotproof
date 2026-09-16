@@ -20,6 +20,7 @@ import PendingLink from "@/components/motion/PendingLink";
 import { t, useLang } from "@/lib/i18n";
 
 const PRODUCT_LINKS = [
+  { href: "/grow", key: "nav_grow" },
   { href: "/sell", key: "nav_sell" },
   { href: "/documents", key: "nav_documents" },
   { href: "/intake", key: "nav_evidence" },
