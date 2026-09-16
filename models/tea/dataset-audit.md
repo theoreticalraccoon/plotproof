@@ -281,11 +281,14 @@ Class imbalance ratio 1.45 — the mildest of any dataset audited.
 with published coordinates — M.R. Khan (24.27257, 91.75938) and Finlay
 (24.30334, 91.74249).
 
-**Evidence.** **0 of 400 sampled images carry EXIF GPSInfo.** Zero in the
-compressed set, zero in the originals sampled. Crucially this is not a
-re-encoding artifact: the same images retain `DateTimeOriginal` (99.8%), `Make`
-and `Model`, so EXIF survived the publisher's compression intact. GPS is absent
-because it was never recorded, not because it was stripped.
+**Evidence.** **0 of 4,016 images carry EXIF GPSInfo** — an exhaustive sweep of
+both the compressed set and the full-resolution originals, not a sample.
+Meanwhile **100% carry some EXIF** and **99.8% carry `DateTimeOriginal`**, along
+with `Make` and `Model`. So EXIF survived the publisher's compression entirely
+intact, and GPS is absent because it was never recorded — not because it was
+stripped. (The archive ships `Tea Original Data` alongside `Tea Compressed
+Data`, each holding the same 2,008 images per class; the record mentions
+neither.)
 
 Nor is the estate recoverable any other way: images are organised into folders
 by **class**, exactly as the record says, with no estate directory, no manifest,

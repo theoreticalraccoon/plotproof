@@ -12,7 +12,7 @@
     "Re-verify before publishing weights. Mendeley versions can be superseded and a",
     "licence can change between versions."
   ],
-  "record_version": 3,
+  "record_version": 4,
   "verified_on": "2026-09-16",
   "verified_by": "Original Mendeley Data repository pages and the corresponding Data in Brief articles (PMC full text).",
   "intended_use": "Train a tea leaf disease classifier, ship the trained weights inside PlotProof as a static ONNX artifact served to the browser. PlotProof may be commercialised.",
@@ -219,13 +219,15 @@
       "shipping_compatible": true,
       "data_verified": {
         "downloaded": true,
-        "measured_images": 2008,
+        "measured_images": "2,008 compressed + 2,008 originals = 4,016 files",
         "published_claim": 2007,
         "unreadable_files": 0,
         "estate_metadata_present": false,
-        "finding": "0 of 400 sampled images carry EXIF GPS, and images are foldered by class with no estate directory or filename token. Not a stripping artifact: DateTimeOriginal, Make and Model all survived the publisher's compression. The two named estates exist only in the record's prose, so no geographic hold-out is possible.",
+        "finding": "Confirmed by EXHAUSTIVE sweep of all 4,016 files: zero carry EXIF GPSInfo, while 100% carry EXIF and 99.8% carry DateTimeOriginal. GPS was never recorded. No estate directory, manifest or filename token in either set. The two named estates exist only in the record's prose, so no geographic hold-out is possible.",
         "date_discrepancy": "EXIF DateTimeOriginal gives 2023-08-20 and 2023-08-21 (two days). The record claims 9-16 December 2024 (eight days). EXIF is written by the camera at capture and is trusted.",
-        "device_confound": "Two devices (Apple iPhone 7, samsung SM-A217F) unevenly distributed across classes; gray_blight, red_spider and algal_leaf are 99-100% single-device. Test-only use avoids teaching the camera."
+        "device_confound": "Two devices (Apple iPhone 7, samsung SM-A217F) unevenly distributed across classes; gray_blight, red_spider and algal_leaf are 99-100% single-device. Test-only use avoids teaching the camera.",
+        "sha256_matches_published": true,
+        "sha256": "52744d5a040640dae7a96790c260b14eda649b78bcf8499fca3a868ee166ec00"
       }
     },
     {

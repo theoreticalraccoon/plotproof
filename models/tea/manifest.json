@@ -192,7 +192,8 @@
         "bytes": 3074000000,
         "sha256": "52744d5a040640dae7a96790c260b14eda649b78bcf8499fca3a868ee166ec00",
         "note": "v1 and v2 are byte-identical (same sha256); the version bump changed metadata only.",
-        "structure": "Two top-level sets the record does not mention: 'Tea Compressed Data' (2,008 usable images) and 'Tea Original Data' (4032x3024 originals, the bulk of the 2.9 GB)."
+        "structure": "Two parallel top-level sets the record does not mention: 'Tea Compressed Data' and 'Tea Original Data', each holding the SAME 2,008 images per class (301/302/436/321/332/316). The originals are the full-resolution source of the compressed set, 4,016 files in total.",
+        "sha256_verified": true
       },
       "measured": {
         "total_images": 2008,
@@ -209,8 +210,8 @@
         },
         "dimensions": "Dominant 640x480 LANDSCAPE, not the 480x640 the record states. Both orientations present, plus 471x640/477x640/438x640 and one 4000x3000 in the compressed healthy folder.",
         "exif": {
-          "gps_present": "0 of 400 sampled",
-          "datetime_present": "99.8%",
+          "gps_present": "0 of 4,016 (0.0%) in BOTH the compressed and original sets",
+          "datetime_present": "99.8% (4006/4016)",
           "devices": {
             "Apple iPhone 7": 327,
             "samsung SM-A217F": 72
@@ -220,11 +221,19 @@
             "2023-08-21 (485 images)"
           ],
           "record_claims_dates": "9-16 December 2024 (eight days)",
-          "date_discrepancy": "EXIF is 16 months earlier and spans two days, not eight. EXIF is written by the camera at capture and is trusted over the record."
+          "date_discrepancy": "EXIF is 16 months earlier and spans two days, not eight. EXIF is written by the camera at capture and is trusted over the record.",
+          "sweep": "EXHAUSTIVE - all 4,016 files in both sets, not a sample.",
+          "any_exif_present": "100.0% (4016/4016)",
+          "devices_full": {
+            "Apple iPhone 7": 1655,
+            "samsung SM-A217F": 348,
+            "unknown": 5
+          },
+          "original_dimensions": "4032x3024 (1403), 4000x3000 (339), 3024x4032 (233), 3023x4032 (14) - two device resolutions"
         }
       },
       "estate_split_possible": false,
-      "estate_split_finding": "NO. Zero GPS in any sampled image. Not a re-encoding artifact: DateTimeOriginal, Make and Model all survived the publisher's compression, so EXIF was preserved and GPS was simply never recorded. Images are foldered by CLASS; there is no estate directory, manifest, or filename token. The two named estates exist only in the record's prose.",
+      "estate_split_finding": "NO - confirmed by exhaustive sweep of all 4,016 files. Zero carry EXIF GPSInfo, while 100% carry some EXIF and 99.8% carry DateTimeOriginal. GPS was therefore never recorded, not stripped by the publisher's compression. Images are foldered by CLASS in both sets; there is no estate directory, manifest or filename token. The two named estates exist only in the record's prose.",
       "device_class_confound": {
         "finding": "Device is strongly confounded with class.",
         "per_class_iphone7_pct": {
