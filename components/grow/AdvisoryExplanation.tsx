@@ -16,15 +16,17 @@
  */
 import { Calculator, Camera, CloudSun, Ruler } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
-import { renderEvidence } from "@/lib/grow/tea/display";
+import { fallbackLang, renderEvidence } from "@/lib/grow/tea/display";
 import type { EvidenceSource, TeaAdvisory, TeaModelCard } from "@/lib/grow/tea/types";
 
 /**
- * The four provenance tiers, each with the word that says what it IS.
+ * The four provenance tiers: the SOURCE the line came from, and the KIND of
+ * claim it is.
  *
- * "Measured" and "Estimated" are doing real work here: they are the difference
- * between a probe in this plot and a land-surface model for the district, and a
- * farmer deciding whether to irrigate deserves to know which one is talking.
+ * Both are needed and neither repeats the other. "Soil sensor · measured here"
+ * and "Weather model · outside estimate" are the difference between a probe in
+ * this plot and a land-surface model for the district, and a farmer deciding
+ * whether to irrigate deserves to know which one is talking.
  */
 const SOURCE_META: Record<
   EvidenceSource,
@@ -79,7 +81,12 @@ export default function AdvisoryExplanation({
                     </span>
                     <span className="text-[0.7rem] faint">{t(lang, meta.kindKey)}</span>
                   </p>
-                  <p className="mt-1 text-[0.88rem] leading-relaxed">{renderEvidence(lang, e)}</p>
+                  <p
+                    className="mt-1 text-[0.88rem] leading-relaxed"
+                    {...fallbackLang(lang, e.messageKey)}
+                  >
+                    {renderEvidence(lang, e)}
+                  </p>
                 </div>
               </li>
             );
@@ -92,7 +99,10 @@ export default function AdvisoryExplanation({
         <h2 id="action-heading" className="eyebrow">
           {t(lang, "tea_action_title")}
         </h2>
-        <p className="mt-2.5 text-[0.95rem] leading-relaxed">
+        <p
+          className="mt-2.5 text-[0.95rem] leading-relaxed"
+          {...fallbackLang(lang, advisory.actionKey)}
+        >
           {t(lang, advisory.actionKey, advisory.actionSlots)}
         </p>
         {/* The app never names a pesticide or a dose, the same way it never
@@ -114,8 +124,12 @@ export default function AdvisoryExplanation({
             className="mt-3 space-y-2 border-l-2 pl-4 text-[0.82rem] muted"
             style={{ borderColor: "var(--glass-hairline)" }}
           >
+            {/* Card prose, English in every language — it is the model card's
+                own wording and translating it would be restating the card. */}
             {card.known_limitations.map((l) => (
-              <li key={l}>{l}</li>
+              <li key={l} lang="en">
+                {l}
+              </li>
             ))}
           </ul>
         </details>

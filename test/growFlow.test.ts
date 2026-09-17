@@ -14,9 +14,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildAdvisory } from "../lib/grow/tea/evidence.ts";
 import { decide } from "../lib/grow/tea/predict.ts";
-import { renderEvidence, localisedClassName, resolveSlots } from "../lib/grow/tea/display.ts";
+import {
+  fallbackLang,
+  localisedClassName,
+  renderEvidence,
+  resolveSlots,
+} from "../lib/grow/tea/display.ts";
 import { resolvePlotId } from "../lib/grow/selection.ts";
-import { t, LANGS, type Lang } from "../lib/i18n/strings.ts";
+import { hasTranslation, t, LANGS, type Lang } from "../lib/i18n/strings.ts";
+import { crossDatasetDeclineRate } from "../lib/grow/tea/card.ts";
 import type { TeaModelCard } from "../lib/grow/tea/types.ts";
 import type { DiseaseRisk, IrrigationAdvice, TeaDisease } from "../lib/grow/types.ts";
 
@@ -77,6 +83,9 @@ const OBSERVED = "2026-09-16";
  * reading source code.
  */
 const IDENTIFIER = /\b[a-z0-9]+(?:_[a-z0-9]+)+\b/;
+
+/** An interpolation slot that was never filled, e.g. a literal `{pct}`. */
+const SLOT = /\{[a-z]+\}/;
 
 test("no evidence row leaks a raw identifier, in any language", () => {
   const scenarios = [
@@ -402,10 +411,10 @@ test("no rendered string is left with an unfilled {slot}", () => {
   for (const lang of LANG_CODES) {
     for (const e of advisory.evidence) {
       const s = renderEvidence(lang, e);
-      assert.ok(!/\{[a-z]+\}/.test(s), `[${lang}] unfilled slot in ${e.messageKey}: ${s}`);
+      assert.ok(!SLOT.test(s), `[${lang}] unfilled slot in ${e.messageKey}: ${s}`);
     }
     const action = t(lang, advisory.actionKey, advisory.actionSlots);
-    assert.ok(!/\{[a-z]+\}/.test(action), `[${lang}] unfilled slot in action: ${action}`);
+    assert.ok(!SLOT.test(action), `[${lang}] unfilled slot in action: ${action}`);
   }
 });
 
@@ -421,6 +430,104 @@ test("class names localise where reviewed and fall back to the card otherwise", 
       assert.notEqual(name, `tea_class_${c.key}`, `${lang} leaked the key for ${c.key}`);
       assert.ok(name.length > 0);
     }
+  }
+});
+
+// ================= abstention is explained, not just enforced ============
+
+test("the published decline rate is derived from the card's worst cross-dataset set", () => {
+  const rate = crossDatasetDeclineRate(card);
+  assert.ok(rate !== null, "the published card must carry coverage_by_test_set");
+  const cov = card.abstention.coverage_by_test_set!;
+  const crossCoverages = Object.entries(cov)
+    .filter(([n]) => /cross-dataset/i.test(n))
+    .map(([, v]) => v.coverage);
+  assert.ok(crossCoverages.length >= 1);
+  // The WORST cross-dataset set, not an average, and never the in-distribution
+  // one — which answers 95% of the time and would flatter the figure away.
+  assert.equal(rate, 1 - Math.min(...crossCoverages));
+  assert.ok(rate! > 0.5, "on unseen farms the model declines more often than it answers");
+  const inDist = Object.entries(cov).find(([n]) => !/cross-dataset/i.test(n));
+  if (inDist) assert.ok(1 - inDist[1].coverage < rate!);
+});
+
+test("a card without coverage yields no rate rather than a fabricated one", () => {
+  const stripped = { ...card, abstention: { ...card.abstention, coverage_by_test_set: undefined } };
+  assert.equal(crossDatasetDeclineRate(stripped), null);
+  const empty = { ...card, abstention: { ...card.abstention, coverage_by_test_set: {} } };
+  assert.equal(crossDatasetDeclineRate(empty), null);
+});
+
+test("the abstention explanation frames declining as caution, not failure", () => {
+  for (const lang of LANG_CODES) {
+    const s = t(lang, "tea_uncertain_expected", { pct: 65 });
+    assert.ok(s.includes("65"), `[${lang}] the rate must appear`);
+    assert.ok(!SLOT.test(s), `[${lang}] unfilled slot: ${s}`);
+  }
+  // English is the one whose sense we can assert here.
+  const en = t("en", "tea_uncertain_expected", { pct: 65 }).toLowerCase();
+  assert.ok(en.includes("often"), "must say this is expected, not exceptional");
+  assert.ok(/not a fault|careful/.test(en), "must say it is caution rather than breakage");
+});
+
+// ================= English fallbacks are marked, not hidden ==============
+
+test("knowingly-English text is marked lang=en for screen readers", () => {
+  // An advisory sentence has no si/ta entry by policy, so a Sinhala page renders
+  // English. Unmarked, a Sinhala voice pronounces it — WCAG 3.1.2.
+  assert.equal(hasTranslation("si", "tea_action_confirm"), false, "policy: stays English");
+  assert.deepEqual(fallbackLang("si", "tea_action_confirm"), { lang: "en" });
+  assert.deepEqual(fallbackLang("ta", "tea_action_confirm"), { lang: "en" });
+  // A translated string must NOT be mislabelled as English.
+  assert.equal(hasTranslation("si", "tea_state_uncertain"), true);
+  assert.deepEqual(fallbackLang("si", "tea_state_uncertain"), {});
+  // English pages never carry the attribute at all.
+  assert.deepEqual(fallbackLang("en", "tea_action_confirm"), {});
+});
+
+test("every evidence string is either translated or marked, never neither", () => {
+  const advisory = buildAdvisory({
+    prediction: decide(logitsFor("brown_blight", 40), card),
+    risks: [risk("brown_blight", "low", 0.1), risk("blister_blight", "high", 0.8)],
+    irrigation: irrigation("sensor"),
+    observedThrough: OBSERVED,
+  });
+  for (const lang of ["si", "ta"] as Lang[]) {
+    for (const e of advisory.evidence) {
+      const marked = fallbackLang(lang, e.messageKey).lang === "en";
+      const translated = hasTranslation(lang, e.messageKey);
+      assert.ok(marked !== translated, `[${lang}] ${e.messageKey}: marking must match reality`);
+    }
+  }
+});
+
+// ================= no dead i18n keys ====================================
+
+test("retired keys are gone from every dictionary", () => {
+  const retired = [
+    "grow_area",
+    "irrigation_anchor_label",
+    "tea_crop_unsupported_short",
+    "tea_evidence_title",
+    "tea_state_confident",
+  ];
+  for (const dead of retired) {
+    for (const lang of LANG_CODES) {
+      assert.equal(hasTranslation(lang, dead), false, `[${lang}] ${dead} should be retired`);
+    }
+  }
+});
+
+test("the source label names a source, not the kind of claim", () => {
+  // "Measured" as the sensor SOURCE label rendered as "Measured · measured here"
+  // beside the kind chip. The source says where a line came from, the kind says
+  // what sort of claim it is, and neither should repeat the other.
+  for (const lang of LANG_CODES) {
+    assert.notEqual(
+      t(lang, "tea_src_sensor").toLowerCase(),
+      t(lang, "tea_kind_measured").toLowerCase(),
+      `[${lang}] source and kind labels must not be the same word`,
+    );
   }
 });
 

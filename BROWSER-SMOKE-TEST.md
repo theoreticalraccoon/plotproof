@@ -11,8 +11,9 @@ What is already verified, and why none of it counts:
 | --- | --- |
 | `public/models/*` serve 200 | A stale service worker, a proxy or a cached deploy also serve 200 |
 | `ml/tea/smoke_infer.py` runs the published `.onnx` | That is onnxruntime **for Python**, a different runtime and a different build |
-| 171 unit tests pass | They exercise the pure functions either side of the session, not the session |
-| `ml/tea/check_ts_parity.py` passes 56/56 | It proves the two preprocessing implementations agree; it runs the ONNX in Python |
+| 178 unit tests pass | They exercise the pure functions either side of the session, not the session |
+| `ml/tea/check_ts_parity.py` passes (37/37 confident at n=40) | It proves the two preprocessing implementations agree; it still runs the ONNX in Python |
+| `scripts/audit_release.py` passes | It proves the card, the artifact and the docs agree; it never touches a browser |
 
 The untested span is exactly: **WASM instantiation → `InferenceSession.create`
 → `session.run`** on a real device. Everything before and after it is covered.
@@ -141,7 +142,7 @@ CS-D test split — the split is deterministic, see `ml/tea/teadata.py`).
 | --- | --- | --- |
 | T-08 | A known held-out CS-D leaf image of a class you know | Most likely **confident**, and the class should be the one you know. If it abstains, that is acceptable and not a failure — record it. If it is confidently **wrong**, that is a finding: record the filename. |
 | T-09 | A real photograph of any leaf taken with the phone camera | Any state is acceptable. What is checked: it completes, inference ms is recorded, and if confident the "not cross-validated" warning appears for blister blight / red rust. |
-| T-10 | A deliberately blurry leaf photo | Expected **uncertain** — heading "Uncertain — retake the photo", photo tips listed, and **no disease name anywhere on screen**. |
+| T-10 | A deliberately blurry leaf photo | Expected **uncertain** — heading "Uncertain — retake the photo", the line explaining that the model declines ~65% of photos from unfamiliar farms, photo tips listed, and **no disease name anywhere on screen**. |
 | T-11 | A very dark / underexposed leaf photo | Same expectation as T-10. |
 | T-12 | Photograph a hand, a shoe, or the floor | Expected **uncertain**. A confident class here is the most serious possible finding — screenshot the panel including the calibrated confidence. |
 | T-13 | Select a `.txt` renamed to `.jpg` | State = **error**, `bad_image` ("That file could not be read as an image"). Not uncertain. |
@@ -154,7 +155,7 @@ CS-D test split — the split is deterministic, see `ml/tea/teadata.py`).
 | # | Step | Expected observable behaviour |
 | --- | --- | --- |
 | T-17 | Confident result | A class name, a confidence %, the model version, the "confidence is not the chance it is right" caveat, and — for blister blight or red rust — the amber "could not be checked against any independent dataset" block. Panel: Abstention decision = `accepted (>= threshold)`, PASS. |
-| T-18 | Uncertain result (from T-10/T-11/T-12) | No class anywhere in the advisory. Panel shows `abstained (< <threshold>)` and "Class withheld: yes (leaned …)" — the leaning class appears **only** in the diagnostics panel, never in the advisory. |
+| T-18 | Uncertain result (from T-10/T-11/T-12) | No class anywhere in the advisory. Panel shows `abstained (< <threshold>)` and "Class withheld: yes (leaned …)" — the leaning class appears **only** in the diagnostics panel, never in the advisory. The percentage in the "you will see this often" line must equal 100 − the lowest cross-dataset coverage in the card (65% as published); if it differs, the UI is not reading the card. |
 | T-19 | Inference error (from T-04/T-06) | Red "The leaf checker could not run" block with a "Try again" button, distinct in wording and colour from the amber uncertain block. **Field status and Conditions must still render above and below it** — a failed model does not take the watering advice down with it. |
 
 ### D. Invariants to eyeball while you are in there
@@ -163,7 +164,9 @@ CS-D test split — the split is deterministic, see `ml/tea/teadata.py`).
 | --- | --- | --- |
 | T-20 | Note the watering advice on `/grow` for the tea plot, then run several diagnoses of different classes, then return | The irrigation verdict and deficit are **identical**. A diagnosis never feeds the water balance. |
 | T-21 | In a run where the evidence rows show a weather/conditions disagreement | The class heading is unchanged; the conditions row says the two disagree and the action line says to inspect and consult — it never substitutes the weather-favoured disease. |
+| T-21b | On a 320px-wide screen, open "Why this advice" in සිංහල | Each row reads `SOURCE · kind` (e.g. "පස් සංවේදකය · මෙහිදී මැනූ") with no horizontal scrolling and no word broken mid-character. The disease name and pressure band in Conditions sit on one line or wrap cleanly, never overlapping. |
 | T-22 | Compare the version in "Model 1.0.0" under the class heading with the panel's Model row and `public/models/tea-disease-mnv3s-card.json` | All three identical; panel's "Model version shown" = PASS. |
+| T-23b | With a screen reader on, in සිංහල or தமிழ், read the "Why this advice" rows and the action line | The English sentences are announced with an **English** voice, not a Sinhala/Tamil one. They carry `lang="en"` because they are English by policy. The headings, labels and buttons around them stay in the page language. |
 | T-23 | Switch language to සිංහල / தமிழ் | Every heading, button, state, error, band and disease name is in that language; the advisory SENTENCES stay English and the disclosure at the top says so. No screen shows a raw identifier such as `water_now` or `blister_blight`. |
 | T-24 | With two or more plots: select the second on `/grow`, tap "Check the leaves" | `/grow/diagnose` opens on **that same plot**. Switching plots on the diagnosis page clears any leaf result rather than re-describing it against the new plot. |
 

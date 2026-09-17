@@ -17,6 +17,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { diseaseBasis } from "@/lib/grow/risk";
+import { fallbackLang } from "@/lib/grow/tea/display";
 import type { DiseaseRisk, RiskBand } from "@/lib/grow/types";
 
 const BAND_COLOR: Record<RiskBand, string> = {
@@ -31,11 +32,14 @@ export default function RiskCard({ risk, lang }: { risk: DiseaseRisk; lang: Lang
 
   return (
     <article className="glass p-4">
+      {/* `min-w-0` / `shrink-0`: a Sinhala or Tamil disease name is much longer
+          than the English one, and without these the band label is squeezed and
+          wraps mid-word on a 320px screen. */}
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-[0.98rem] font-semibold">
+        <h3 className="min-w-0 text-[0.98rem] font-semibold">
           {t(lang, `risk_disease_${risk.disease}`)}
         </h3>
-        <span className="text-[0.85rem] font-semibold" style={{ color }}>
+        <span className="shrink-0 text-[0.85rem] font-semibold" style={{ color }}>
           {t(lang, `risk_band_${risk.band}`)}
         </span>
       </div>
@@ -78,12 +82,15 @@ export default function RiskCard({ risk, lang }: { risk: DiseaseRisk; lang: Lang
             <div className="mt-3 border-l-2 pl-3.5" style={{ borderColor: "var(--glass-hairline)" }}>
               <ul className="space-y-1.5 text-[0.85rem]">
                 {risk.drivers.map((d) => (
-                  <li key={d.key}>{t(lang, d.key, d.slots)}</li>
+                  <li key={d.key} {...fallbackLang(lang, d.key)}>
+                    {t(lang, d.key, d.slots)}
+                  </li>
                 ))}
               </ul>
               <p className="mt-3 text-[0.78rem] faint">
                 <span className="font-medium">{t(lang, "risk_basis")}:</span>{" "}
-                {diseaseBasis(risk.disease)}
+                {/* Citation prose from risk.ts, English in every language. */}
+                <span lang="en">{diseaseBasis(risk.disease)}</span>
               </p>
             </div>
           )}

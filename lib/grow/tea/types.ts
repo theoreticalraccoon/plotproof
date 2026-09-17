@@ -53,7 +53,17 @@ export interface TeaModelCard {
   preprocessing: CardPreprocessing;
   evaluation: { key_metrics: Record<string, CardTestMetrics> };
   calibration: { method: string; temperature: number; fitted_on: string; note: string };
-  abstention: { threshold: number; selection_rule: string; behaviour: string };
+  abstention: {
+    threshold: number;
+    selection_rule: string;
+    behaviour: string;
+    /**
+     * Fraction of each test set the model ANSWERED at this threshold, published
+     * per test set. Optional because an older card may predate it, and because
+     * the UI must degrade to saying less rather than to inventing a number.
+     */
+    coverage_by_test_set?: Record<string, { coverage: number; accuracy_on_accepted: number }>;
+  };
   known_limitations: string[];
   attribution: string[];
 }

@@ -13,6 +13,7 @@
 import { Droplets } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { IRRIGATION_SOURCE } from "@/lib/grow/irrigation";
+import { fallbackLang } from "@/lib/grow/tea/display";
 import type { IrrigationAdvice, IrrigationVerdict } from "@/lib/grow/types";
 
 const TONE: Record<IrrigationVerdict, { color: string; soft: string }> = {
@@ -49,7 +50,10 @@ export default function IrrigationCard({
         {t(lang, `irrigation_${advice.verdict}`)}
       </h2>
 
-      <p className="mt-2.5 text-[0.95rem] leading-relaxed">
+      <p
+        className="mt-2.5 text-[0.95rem] leading-relaxed"
+        {...fallbackLang(lang, advice.reasonKey)}
+      >
         {t(lang, advice.reasonKey, advice.reasonSlots)}
       </p>
 
@@ -57,6 +61,7 @@ export default function IrrigationCard({
         <p
           className="mt-4 rounded-[var(--radius-sm)] px-3.5 py-3 text-[0.95rem] font-medium"
           style={{ background: tone.soft, color: tone.color }}
+          {...fallbackLang(lang, "irrigation_apply")}
         >
           {t(lang, "irrigation_apply", {
             mm: advice.recommendedMm,
@@ -68,7 +73,9 @@ export default function IrrigationCard({
       {/* A rainfed plot cannot act on a watering instruction, so we reframe it
           as a stress warning instead of telling someone to do the impossible. */}
       {showQuantity && rainfed && (
-        <p className="mt-2.5 text-[0.85rem] muted">{t(lang, "irrigation_rainfed_note")}</p>
+        <p className="mt-2.5 text-[0.85rem] muted" {...fallbackLang(lang, "irrigation_rainfed_note")}>
+          {t(lang, "irrigation_rainfed_note")}
+        </p>
       )}
 
       {/*

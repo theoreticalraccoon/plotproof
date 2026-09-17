@@ -66,11 +66,6 @@ export function loadTeaCard(): Promise<TeaModelCard | null> {
   return cached;
 }
 
-/** Test seam: lets a test inject a card without a network. */
-export function __setCardForTests(card: TeaModelCard | null): void {
-  cached = Promise.resolve(card);
-}
-
 // --- derived facts ------------------------------------------------------
 
 /**
@@ -98,11 +93,30 @@ export function isCrossDatasetValidated(card: TeaModelCard, key: TeaClassKey): b
   return crossDatasetValidatedKeys(card).has(key);
 }
 
-/** The worst-case accuracy observed on a cross-dataset test, for honest phrasing. */
-export function crossDatasetAccuracyRange(card: TeaModelCard): { low: number; high: number } | null {
-  const accs = Object.entries(card.evaluation?.key_metrics ?? {})
+/**
+ * How often the model DECLINES to answer on photographs from farms it has never
+ * seen, as a fraction — the worst case across the published cross-dataset test
+ * sets.
+ *
+ * This exists because abstention looks like breakage from the outside. At the
+ * published threshold the model answers roughly a third of cross-dataset field
+ * photos, so a farmer taking real photographs will meet "uncertain" far more
+ * often than an answer, and without being told why that reads as a broken
+ * feature rather than a careful one.
+ *
+ * Derived from `abstention.coverage_by_test_set`, never written down here, and
+ * deliberately the WORST (lowest coverage) cross-dataset set rather than an
+ * average: the in-distribution set answers 95% of the time and would flatter
+ * the number into uselessness. Returns null when the card does not publish
+ * coverage, so the UI simply says less.
+ */
+export function crossDatasetDeclineRate(card: TeaModelCard): number | null {
+  const cov = card.abstention?.coverage_by_test_set;
+  if (!cov) return null;
+  const rates = Object.entries(cov)
     .filter(([name]) => /cross-dataset/i.test(name))
-    .map(([, m]) => m.accuracy);
-  if (accs.length === 0) return null;
-  return { low: Math.min(...accs), high: Math.max(...accs) };
+    .map(([, v]) => v.coverage)
+    .filter((c) => typeof c === "number" && c >= 0 && c <= 1);
+  if (rates.length === 0) return null;
+  return 1 - Math.min(...rates);
 }

@@ -193,7 +193,12 @@ export default function GrowPage() {
                   style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
                 >
                   <p className="text-[0.92rem]">{t(lang, "weather_unavailable")}</p>
-                  {grow.reason && <p className="mt-1.5 text-[0.82rem] muted">{grow.reason}</p>}
+                  {/* Network-layer detail, English in every language. */}
+                  {grow.reason && (
+                    <p className="mt-1.5 text-[0.82rem] muted" lang="en">
+                      {grow.reason}
+                    </p>
+                  )}
                   <button type="button" className="btn btn-ghost btn-sm mt-3" onClick={grow.refresh}>
                     {t(lang, "weather_retry")}
                   </button>

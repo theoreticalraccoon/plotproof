@@ -77,7 +77,6 @@ const en: Dict = {
   grow_soil_clay_loam: "Clay loam",
   grow_soil_clay: "Clay",
   grow_soil_help: "Squeeze damp soil in your hand: it crumbles apart = sandy, it holds a ribbon = clay.",
-  grow_area: "{ha} ha",
 
   weather_title: "Weather on this plot",
   weather_loading: "Loading weather for this plot…",
@@ -105,7 +104,6 @@ const en: Dict = {
   irrigation_anchor_sensor: "Set by your soil sensor, measured in this plot.",
   irrigation_anchor_grid: "Set by a satellite-informed soil model for this area. A sensor in the plot would replace this estimate with a measurement.",
   irrigation_anchor_balance: "Estimated from rainfall and evaporation only — no soil observation was available.",
-  irrigation_anchor_label: "Soil state from",
   irrigation_method: "FAO-56 soil-water balance",
 
   risk_title: "Disease pressure",
@@ -170,7 +168,7 @@ const en: Dict = {
   // Evidence layer — each line names where it came from.
   tea_src_image: "Photo",
   tea_src_environment: "Conditions",
-  tea_src_sensor: "Measured",
+  tea_src_sensor: "Soil sensor",
   tea_src_weather: "Weather model",
   tea_ev_image_confident: "The photo looks like {disease} ({pct}% confidence).",
   tea_ev_image_uncertain: "The photo was not clear enough to name a condition.",
@@ -394,6 +392,12 @@ const en: Dict = {
   irrigation_raw_label: "Stress begins at",
   irrigation_mm: "{mm} mm",
   irrigation_mm_used: "{mm} mm used",
+
+  // Abstention is the single most likely thing to be MISREAD as breakage: at the
+  // published threshold the model answers only about a third of real field
+  // photographs. Saying so, with the rate read off the card, turns "this app
+  // never works" into "this model knows when it does not know".
+  tea_uncertain_expected: "You will see this often. On photographs from farms unlike the ones it learned from, this model declines to answer about {pct}% of the time. That is it being careful, not a fault in the app.",
 };
 
 const si: Dict = {
@@ -490,11 +494,10 @@ const si: Dict = {
   tea_state_uncertain: "අවිනිශ්චිතයි — නැවත ඡායාරූපයක් ගන්න",
   tea_src_image: "ඡායාරූපය",
   tea_src_environment: "තත්ත්ව",
-  tea_src_sensor: "මැනූ",
+  tea_src_sensor: "පස් සංවේදකය",
   tea_src_weather: "කාලගුණ ආකෘතිය",
   tea_action_title: "මීළඟට කළ යුත්තේ",
   tea_try_again: "නැවත උත්සාහ කරන්න",
-  tea_crop_unsupported_short: "තේ සඳහා පමණි",
   tea_guidance_in_english: "පහත විස්තරාත්මක උපදෙස් ඉංග්‍රීසියෙන් ලියා ඇත. ගොවියෙකු ක්‍රියාත්මක කරන උපදෙස් යන්ත්‍රයෙන් පරිවර්තනය නොකරමු — වැරදි පරිවර්තනයක් ඉංග්‍රීසියට වඩා නරකයි.",
 
   // --- landing page ------------------------------------------------------
@@ -646,7 +649,6 @@ const si: Dict = {
   grow_soil_sandy_loam: "වැලි ලෝම්",
   grow_soil_clay_loam: "මැටි ලෝම්",
   grow_soil_help: "තෙත් පස අතට ගෙන මිරිකන්න: කැඩී බිඳී යයි නම් වැලි, පටියක් සේ රැඳේ නම් මැටි.",
-  grow_area: "හෙක්ටයාර {ha}",
   grow_needs_profile: "මෙම ඉඩමට තවම බෝගය සහ පස පිළිබඳ විස්තර නැත. මෙම පිටුවේ සියල්ල ගණනය වන්නේ ඒවා අනුවයි.",
   grow_needs_profile_cta: "බෝගය සහ පස සකසන්න",
   grow_disease_tea_only: "ජලය සැපයීමේ උපදෙස් {crop} සඳහා වලංගුයි. රෝග ආකෘතිය තේ සඳහා පමණක් බැවින් මෙම ඉඩමට රෝග පීඩනයක් නොපෙන්වයි.",
@@ -730,6 +732,8 @@ const si: Dict = {
   tea_class_red_rust: "රතු මලකඩ",
   tea_class_red_spider_mite: "රතු මකුළු මයිටාව",
   tea_class_helopeltis: "තේ මදුරුවා",
+
+  tea_uncertain_expected: "මෙය නිතර සිදුවේ. එය ඉගෙන ගත් ගොවිපළවලට වෙනස් ගොවිපළක ඡායාරූපවලදී, මෙම ආකෘතිය ආසන්න වශයෙන් {pct}% ක් පිළිතුරු දීම ප්‍රතික්ෂේප කරයි. එය ප්‍රවේශම් වීමකි, යෙදුමේ දෝෂයක් නොවේ.",
 };
 
 const ta: Dict = {
@@ -826,11 +830,10 @@ const ta: Dict = {
   tea_state_uncertain: "உறுதியற்றது — மீண்டும் படம் எடுக்கவும்",
   tea_src_image: "புகைப்படம்",
   tea_src_environment: "நிலைமைகள்",
-  tea_src_sensor: "அளவிடப்பட்டது",
+  tea_src_sensor: "மண் உணரி",
   tea_src_weather: "வானிலை மாதிரி",
   tea_action_title: "அடுத்து என்ன செய்வது",
   tea_try_again: "மீண்டும் முயற்சிக்கவும்",
-  tea_crop_unsupported_short: "தேயிலைக்கு மட்டும்",
   tea_guidance_in_english: "கீழுள்ள விரிவான வழிகாட்டுதல் ஆங்கிலத்தில் உள்ளது. விவசாயி செயல்படுத்தும் அறிவுறுத்தல்களை நாங்கள் இயந்திர மொழிபெயர்ப்பு செய்வதில்லை — தவறான மொழிபெயர்ப்பு ஆங்கிலத்தை விட மோசமானது.",
 
   // --- landing page ------------------------------------------------------
@@ -980,7 +983,6 @@ const ta: Dict = {
   grow_soil_sandy_loam: "மணல் வண்டல்",
   grow_soil_clay_loam: "களி வண்டல்",
   grow_soil_help: "ஈரமான மண்ணைக் கையில் பிழியுங்கள்: நொறுங்கினால் மணல், நாடாவாக நீண்டால் களிமண்.",
-  grow_area: "{ha} ஹெக்டேர்",
   grow_needs_profile: "இந்த நிலத்துக்கு இன்னும் பயிர், மண் விவரங்கள் இல்லை. இந்தப் பக்கத்தில் உள்ள அனைத்தும் அவற்றிலிருந்தே கணக்கிடப்படுகின்றன.",
   grow_needs_profile_cta: "பயிரையும் மண்ணையும் அமை",
   grow_disease_tea_only: "நீர்ப்பாசன ஆலோசனை {crop} பயிருக்கும் பொருந்தும். நோய் மாதிரி தேயிலைக்கு மட்டுமே என்பதால் இந்த நிலத்துக்கு நோய் அழுத்தம் காட்டப்படவில்லை.",
@@ -1064,9 +1066,25 @@ const ta: Dict = {
   tea_class_red_rust: "சிவப்புத் துரு",
   tea_class_red_spider_mite: "சிவப்புச் சிலந்திப் பூச்சி",
   tea_class_helopeltis: "தேயிலைக் கொசு",
+
+  tea_uncertain_expected: "இது அடிக்கடி நிகழும். அது கற்ற பண்ணைகளிலிருந்து வேறுபட்ட பண்ணைகளின் புகைப்படங்களில், இந்த மாதிரி ஏறக்குறைய {pct}% நேரம் பதில் சொல்ல மறுக்கிறது. இது கவனமாக இருப்பது, செயலியின் கோளாறு அல்ல.",
 };
 
 const DICTS: Record<Lang, Dict> = { en, si, ta };
+
+/**
+ * Does THIS language have its own entry for this key, or would `t()` fall back?
+ *
+ * Needed because the fallback is deliberate and permanent for the advisory
+ * sentences (D-016), which means a Sinhala or Tamil page knowingly renders
+ * English paragraphs. A screen reader announcing English words with a Sinhala
+ * voice is close to unintelligible, so the renderer marks those runs
+ * `lang="en"` (WCAG 3.1.2, Language of Parts). It can only do that if it can
+ * ask which strings actually fell back.
+ */
+export function hasTranslation(lang: Lang, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(DICTS[lang], key);
+}
 
 /** Translate a key, falling back to English, with {slot} interpolation. */
 export function t(lang: Lang, key: string, slots?: Record<string, string | number>): string {

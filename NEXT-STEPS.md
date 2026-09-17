@@ -33,6 +33,13 @@ reweighted by a fungal infection window.
 baseline*, dataset provenance, and known failure modes. Cheap to build and the
 single highest-leverage page for the submission category.
 
+**Native-speaker translation review.** Every Sinhala and Tamil string in the
+GROW lane was written by a language model and has had no human review. The table
+is in [models/tea/TRANSLATION-REVIEW.md](models/tea/TRANSLATION-REVIEW.md) (126
+strings, regenerate with `python scripts/translation_review.py`). Safety and
+action rows first. This does not block the browser gate, but it should not ship
+to a real farmer unreviewed.
+
 ## Blocked on a decision
 
 - **Magicbit soil sensor.** The Dexie tables (`sensorReadings`,

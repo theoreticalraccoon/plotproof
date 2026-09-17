@@ -55,11 +55,6 @@ async function getSession(): Promise<InferenceSession> {
   return sessionPromise;
 }
 
-/** Is the model plausibly usable? Used to decide whether to offer the camera. */
-export async function teaModelAvailable(): Promise<boolean> {
-  return (await loadTeaCard()) !== null;
-}
-
 export interface ClassifyResult {
   prediction: TeaPrediction;
   card: TeaModelCard | null;
@@ -152,26 +147,4 @@ export async function classifyLeaf(
       runtime: null,
     };
   }
-}
-
-/** Decode a user-selected file into an <img>. Rejects with a readable reason. */
-export function decodeImageFile(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("not_an_image"));
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      // The object URL is kept alive: revoking it here would blank the preview
-      // the caller is about to render. The caller revokes on unmount.
-      resolve(img);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("decode_failed"));
-    };
-    img.src = url;
-  });
 }

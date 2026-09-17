@@ -17,7 +17,8 @@
 import { AlertTriangle, Camera, HelpCircle } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { localisedClassName } from "@/lib/grow/tea/display";
-import type { TeaPrediction } from "@/lib/grow/tea/types";
+import { crossDatasetDeclineRate } from "@/lib/grow/tea/card";
+import type { TeaModelCard, TeaPrediction } from "@/lib/grow/tea/types";
 
 const PHOTO_TIPS = [
   "tea_tip_light",
@@ -29,13 +30,18 @@ const PHOTO_TIPS = [
 
 export default function LeafAssessment({
   prediction,
+  card,
   lang,
   onRetry,
 }: {
   prediction: TeaPrediction;
+  /** Only for the published abstention rate. No decision is taken from it here. */
+  card: TeaModelCard | null;
   lang: Lang;
   onRetry: () => void;
 }) {
+  const declineRate = card ? crossDatasetDeclineRate(card) : null;
+
   if (prediction.state === "confident") {
     const name = localisedClassName(lang, prediction.classKey, prediction.displayName);
     return (
@@ -77,8 +83,10 @@ export default function LeafAssessment({
           <ul className="mt-3 space-y-1.5">
             {prediction.distribution.slice(1).map((d) => (
               <li key={d.key} className="flex items-baseline justify-between gap-3 text-[0.85rem]">
-                <span className="muted">{localisedClassName(lang, d.key, d.displayName)}</span>
-                <span className="tabular-nums faint">{(d.probability * 100).toFixed(1)}%</span>
+                <span className="min-w-0 muted">{localisedClassName(lang, d.key, d.displayName)}</span>
+                <span className="shrink-0 tabular-nums faint">
+                  {(d.probability * 100).toFixed(1)}%
+                </span>
               </li>
             ))}
           </ul>
@@ -113,6 +121,18 @@ export default function LeafAssessment({
         <p className="mt-2.5 text-[0.9rem]" style={{ maxWidth: "58ch" }}>
           {t(lang, "tea_uncertain_body")}
         </p>
+
+        {/* Abstention is the thing most likely to be read as breakage: at the
+            published threshold the model answers only about a third of real
+            field photographs, so a farmer will meet this screen far more often
+            than an answer. The rate is read off the card, never written here,
+            and the sentence is omitted entirely if the card does not publish
+            coverage — saying less rather than inventing a number. */}
+        {declineRate !== null && (
+          <p className="mt-2.5 text-[0.85rem]" style={{ maxWidth: "58ch" }}>
+            {t(lang, "tea_uncertain_expected", { pct: Math.round(declineRate * 100) })}
+          </p>
+        )}
 
         <h3 className="mt-4 text-[0.85rem] font-semibold">{t(lang, "tea_photo_tips_title")}</h3>
         <ul className="mt-2 space-y-1.5 text-[0.85rem]">

@@ -10,7 +10,7 @@
 // Relative, and from `strings` rather than the `@/lib/i18n` barrel: the barrel
 // is a client module that pulls in React, which would make this file
 // untestable under plain Node. `strings.ts` is a pure dictionary.
-import { t, type Lang } from "../../i18n/strings.ts";
+import { hasTranslation, t, type Lang } from "../../i18n/strings.ts";
 import type { EvidenceItem } from "./types";
 
 /**
@@ -54,4 +54,18 @@ export function localisedClassName(lang: Lang, classKey: string, cardDisplayName
   const key = `tea_class_${classKey}`;
   const translated = t(lang, key);
   return translated === key ? cardDisplayName : translated;
+}
+
+/**
+ * Props marking a run of text that is knowingly in English on a non-English page.
+ *
+ * The advisory sentences are deliberately never machine-translated (D-016), so a
+ * Sinhala or Tamil reader meets English paragraphs by design. Leaving them
+ * unmarked makes a screen reader pronounce English words with a Sinhala or Tamil
+ * voice, which is close to unintelligible — WCAG 3.1.2 exists for exactly this.
+ * Spread onto the element: `{...fallbackLang(lang, key)}`.
+ */
+export function fallbackLang(lang: Lang, key: string): { lang?: "en" } {
+  if (lang === "en") return {};
+  return hasTranslation(lang, key) ? {} : { lang: "en" };
 }

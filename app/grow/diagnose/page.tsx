@@ -278,7 +278,14 @@ export default function DiagnosePage() {
                   style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
                 >
                   <p className="text-[0.92rem]">{t(lang, "weather_unavailable")}</p>
-                  {grow.reason && <p className="mt-1.5 text-[0.82rem] muted">{grow.reason}</p>}
+                  {/* Network-layer detail, English in every language: it is a
+                      diagnostic under an already-translated headline, so it is
+                      marked rather than left for a Sinhala voice to mispronounce. */}
+                  {grow.reason && (
+                    <p className="mt-1.5 text-[0.82rem] muted" lang="en">
+                      {grow.reason}
+                    </p>
+                  )}
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm mt-3 min-h-[44px]"
@@ -332,14 +339,7 @@ export default function DiagnosePage() {
           )}
 
           {teaPlot && (
-            <div
-              // The result replaces the capture control in place, so a screen
-              // reader is told what happened rather than silently losing its
-              // context. Polite, not assertive: nothing here is an emergency.
-              aria-live="polite"
-              aria-busy={busy}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {!prediction && !busy && (
                 <LeafCapture
                   lang={lang}
@@ -349,6 +349,11 @@ export default function DiagnosePage() {
                 />
               )}
 
+              {/* Only the OUTCOME is live. The capture control used to sit inside
+                  this region, so every state change re-announced the whole card —
+                  heading, format note, buttons — before the result a farmer was
+                  waiting for. Polite, not assertive: nothing here is an emergency. */}
+              <div aria-live="polite" aria-busy={busy} className="space-y-6">
               {busy && (
                 <section className="glass-card p-5" aria-labelledby="leaf-busy-heading">
                   <p className="eyebrow">{t(lang, "tea_section_leaf")}</p>
@@ -366,10 +371,12 @@ export default function DiagnosePage() {
               {prediction && !busy && (
                 <LeafAssessment
                   prediction={prediction}
+                  card={card}
                   lang={lang}
                   onRetry={() => setPrediction(null)}
                 />
               )}
+              </div>
             </div>
           )}
 

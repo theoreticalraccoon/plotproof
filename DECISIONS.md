@@ -686,3 +686,64 @@ mistranslated instruction a farmer acts on is worse than an English one), and
 
 **Browser inference remains unverified on a real device.** Nothing in this entry
 changes that; see [BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md).
+
+---
+
+## D-021 — Pre-release audit: the threshold stays, the explanation was missing
+
+Audited the release candidate end to end. The threshold was **not** changed, and
+the evaluation protocol was not touched. What the audit found was that the
+threshold was correct and unexplained, which is its own defect.
+
+**The abstention question.** At 0.9976 the model answers 95.5% of
+in-distribution photographs but only 35.0% of EWU and 37.5% of TLD-BD ones —
+so on a real Sri Lankan farm, which resembles neither training set, a farmer
+will meet "uncertain" far more often than an answer. The accepted-accuracy
+figures say the threshold is doing its job (0.759 on accepted TLD-BD against
+0.700 overall), and no principled change is available anyway: the threshold was
+selected as the 5% quantile of *validation* confidence, and retuning it against
+EWU or TLD-BD would consume the only held-out evidence we have and invalidate
+every number the card publishes. So it stays.
+
+The product implication is the part that was wrong. A farmer who is declined
+four times running has no way to tell "this model knows when it does not know"
+from "this app is broken", and the second reading loses the feature. The
+uncertain screen now carries the published decline rate —
+`crossDatasetDeclineRate()` derives it from `abstention.coverage_by_test_set`,
+taking the WORST cross-dataset set rather than an average, because the
+in-distribution set answers 95% of the time and would flatter the figure into
+uselessness. The number is never written into the app, and the sentence is
+omitted entirely rather than guessed at if a card does not publish coverage.
+
+**Screen readers were being handed English in a Sinhala voice.** The advisory
+sentences stay English by policy (D-016). Unmarked, a Sinhala or Tamil screen
+reader pronounces them phonetically, which is close to unintelligible — WCAG
+3.1.2 exists for exactly this. `hasTranslation()` now lets the renderer ask
+which strings actually fell back, and `fallbackLang()` marks those runs
+`lang="en"`. A test asserts the marking matches reality in both directions, so a
+translated string cannot be mislabelled as English either.
+
+**`aria-live` was too wide.** It wrapped the capture control as well as the
+result, so every state change re-announced the whole capture card — heading,
+formats, buttons — before the result the farmer was waiting for. Narrowed to the
+outcome.
+
+**Smaller fixes.** Dead code removed (`teaModelAvailable`, `decodeImageFile` —
+which duplicated the decode already inside `LeafCapture` — `crossDatasetAccuracyRange`,
+`__setCardForTests`, and the keys `grow_area`, `irrigation_anchor_label`,
+`tea_crop_unsupported_short`). `tea_src_sensor` was "Measured", which rendered
+as "Measured · measured here" beside the provenance chip; it now names the
+source, "Soil sensor". Two flex rows gained `min-w-0`/`shrink-0`, because a
+Sinhala disease name is long enough to squeeze the pressure band into a
+mid-word wrap at 320px.
+
+**Two new scripts, both checks rather than copies.** `scripts/audit_release.py`
+hashes the bytes that ship and fails if the card, the artifact, the provenance,
+the taxonomy or the docs disagree — including re-asserting, every run, that
+neither blister blight nor red rust appears in any cross-dataset test set.
+`scripts/translation_review.py` generates `models/tea/TRANSLATION-REVIEW.md`
+from the dictionary, so the review table cannot go stale, and checks
+interpolation slots mechanically. Neither restates a metric.
+
+**Browser inference is still unverified on a real device.** Nothing in this
+audit changes that.
