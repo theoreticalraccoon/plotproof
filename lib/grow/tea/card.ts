@@ -40,6 +40,12 @@ function isUsable(c: unknown): c is TeaModelCard {
     card.calibration.temperature > 0 &&
     Array.isArray(card.taxonomy?.classes) &&
     card.taxonomy.classes.length > 0 &&
+    // `predict.ts` maps logit i to classes[i]. That is only correct while the
+    // array is in output order, and nothing in the JSON enforces it — a card
+    // listing the same six classes alphabetically would parse, validate and
+    // then silently rename every diagnosis. Checked here because it is
+    // unobservable downstream: the wrong answer looks exactly like a right one.
+    card.taxonomy.classes.every((c, i) => c.outputIndex === i) &&
     typeof card.abstention?.threshold === "number" &&
     Number.isFinite(card.abstention.threshold) &&
     card.abstention.threshold > 1 / card.taxonomy.classes.length &&

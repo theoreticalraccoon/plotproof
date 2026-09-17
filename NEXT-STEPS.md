@@ -1,25 +1,26 @@
 # Next steps
 
-Current as of 2026-09-16.
+Current as of 2026-09-17.
 
-## Immediately next (code)
+## Immediately next (blocking release)
 
-**Wire the tea classifier into `/grow/diagnose`.** The model is trained,
-evaluated and published; nothing consumes it yet. Requirements, all of which are
-already data in `public/models/tea-disease-mnv3s-card.json` and must not be
-retyped into a component:
+**Run the real-device browser smoke test.** The tea classifier is trained,
+evaluated, published, integrated and audited — but `classifyLeaf` ->
+onnxruntime-web has never been observed executing in a browser. Files serving,
+Python inference, unit tests and preprocessing parity do not substitute for it.
 
-1. Load the ONNX lazily — only on that route, never in the main bundle (it is
-   6 MB).
-2. Preprocess from the card's own constants (`image_size`, `mean`, `std`).
-   Reuse `processPhoto` from `lib/intake/image.ts` for capture.
-3. **Honour the abstention threshold (0.9976).** Below it the answer is
-   "uncertain — retake the photo", never a class. Without this the model is ~70%
-   accurate on real field photos while sounding certain.
-4. Never describe blister blight or red rust as cross-dataset validated.
-5. No artifact → render nothing, per the `PriceCard` contract.
+The checklist, the traced runtime path and the acceptance criteria are in
+[BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md). It needs a human with an Android
+phone and a desktop browser; `?diag=1` on `/grow/diagnose` exposes the model
+version, runtime backend, tensor shapes, timings, calibrated confidence and
+abstention decision needed to record the result. Until it is run, the feature is
+not releasable.
 
-**Then fusion — `lib/grow/fusion.ts`.** Combine the CNN's visual evidence with
+**Fusion — superseded, deliberately.** `lib/grow/tea/evidence.ts` now does this
+job and does NOT combine the two into a single score. The audit's position stands:
+a posterior would hide the disagreement, and the disagreement is the honest
+signal. Revisit only with a reason to overturn that. The original intent, kept
+for the record: combine the CNN's visual evidence with
 the weather risk engine as a calibrated posterior, not an average. The
 justification is concrete: the CNN is trained on Assam and carries a transfer
 gap; the risk engine is computed from local weather and carries none. Consult

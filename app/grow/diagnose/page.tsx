@@ -21,13 +21,21 @@ import Reveal from "@/components/motion/Reveal";
 import { Skeleton } from "@/components/motion/Skeleton";
 import LeafCapture from "@/components/grow/LeafCapture";
 import DiagnosisResult from "@/components/grow/DiagnosisResult";
+import DiagnosticsPanel from "@/components/grow/DiagnosticsPanel";
 import { t, useLang } from "@/lib/i18n";
 import { listPlots } from "@/lib/intake/store";
 import { getGrowProfile } from "@/lib/grow/store";
 import { useGrowPlot } from "@/lib/grow/useGrowPlot";
-import { loadTeaCard } from "@/lib/grow/tea/card";
+import { MODEL_URL, loadTeaCard } from "@/lib/grow/tea/card";
 import { classifyLeaf } from "@/lib/grow/tea/infer";
 import { buildAdvisory } from "@/lib/grow/tea/evidence";
+import {
+  buildDiagnosticRows,
+  diagnosticsEnabled,
+  verifyPublishedModel,
+  type ArtifactCheck,
+  type RuntimeFacts,
+} from "@/lib/grow/tea/diagnostics";
 import type { TeaAdvisory, TeaModelCard, TeaPrediction } from "@/lib/grow/tea/types";
 import type { GrowProfile } from "@/lib/grow/types";
 import type { LocalPlot } from "@/lib/intake/types";
@@ -41,6 +49,13 @@ export default function DiagnosePage() {
   const [busy, setBusy] = useState(false);
   const [prediction, setPrediction] = useState<TeaPrediction | null>(null);
 
+  // --- diagnostics (?diag=1) ---------------------------------------------
+  // Read in an effect, not during render: `location` does not exist on the
+  // server and reading it inline would mismatch hydration.
+  const [diag, setDiag] = useState(false);
+  const [runtime, setRuntime] = useState<RuntimeFacts | null>(null);
+  const [artifact, setArtifact] = useState<ArtifactCheck | null>(null);
+
   useEffect(() => {
     listPlots()
       .then((p) => {
@@ -49,7 +64,16 @@ export default function DiagnosePage() {
       })
       .catch(() => setPlots([]));
     void loadTeaCard().then(setCard);
+    setDiag(diagnosticsEnabled(window.location.search));
   }, []);
+
+  // Hash the bytes the browser actually received and compare them to the card.
+  // Only under ?diag=1: it is a second full fetch of the model, which no farmer
+  // should pay for. Normally a cache hit.
+  useEffect(() => {
+    if (!diag || !card || card === "loading") return;
+    void verifyPublishedModel(MODEL_URL, card).then(setArtifact);
+  }, [diag, card]);
 
   useEffect(() => {
     if (!plotId) return;
@@ -64,8 +88,9 @@ export default function DiagnosePage() {
     setBusy(true);
     setPrediction(null);
     try {
-      const { prediction: p } = await classifyLeaf(img);
+      const { prediction: p, runtime: r } = await classifyLeaf(img);
       setPrediction(p);
+      setRuntime(r);
     } finally {
       setBusy(false);
     }
@@ -82,6 +107,12 @@ export default function DiagnosePage() {
   }, [prediction, grow.risks, grow.irrigation, grow.observedThrough]);
 
   const teaPlot = profile?.crop === "tea";
+
+  const diagRows = useMemo(
+    () => (diag ? buildDiagnosticRows(card === "loading" ? null : card, prediction, runtime, artifact) : []),
+    [diag, card, prediction, runtime, artifact],
+  );
+  const diagFailures = diagRows.filter((r) => r.ok === false).length;
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 py-6 sm:px-8">
@@ -209,6 +240,11 @@ export default function DiagnosePage() {
               onRetry={() => setPrediction(null)}
             />
           )}
+        </div>
+      )}
+      {diag && card !== "loading" && (
+        <div className="mt-8">
+          <DiagnosticsPanel rows={diagRows} failures={diagFailures} />
         </div>
       )}
     </main>
