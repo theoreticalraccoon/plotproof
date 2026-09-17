@@ -92,10 +92,12 @@ export default function IrrigationCard({
 
       <hr className="hairline mt-4" />
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[0.8rem]">
-        <dt className="faint">Soil can hold</dt>
-        <dd className="text-right tabular-nums">{advice.tawMm} mm</dd>
-        <dt className="faint">Stress begins at</dt>
-        <dd className="text-right tabular-nums">{advice.rawMm} mm used</dd>
+        <dt className="faint">{t(lang, "irrigation_taw_label")}</dt>
+        <dd className="text-right tabular-nums">{t(lang, "irrigation_mm", { mm: advice.tawMm })}</dd>
+        <dt className="faint">{t(lang, "irrigation_raw_label")}</dt>
+        <dd className="text-right tabular-nums">
+          {t(lang, "irrigation_mm_used", { mm: advice.rawMm })}
+        </dd>
       </dl>
       <p className="mt-3 text-[0.75rem] faint">
         {t(lang, "irrigation_method")} · {IRRIGATION_SOURCE.name}

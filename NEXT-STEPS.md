@@ -5,7 +5,8 @@ Current as of 2026-09-17.
 ## Immediately next (blocking release)
 
 **Run the real-device browser smoke test.** The tea classifier is trained,
-evaluated, published, integrated and audited — but `classifyLeaf` ->
+evaluated, published, integrated, audited and now fully wired into the finished
+`/grow` advisory — but `classifyLeaf` ->
 onnxruntime-web has never been observed executing in a browser. Files serving,
 Python inference, unit tests and preprocessing parity do not substitute for it.
 

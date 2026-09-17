@@ -305,7 +305,16 @@ test("sensor says saturated while the balance says dry: sensor wins, advisory ag
   assert.equal(r.verdict, "no_action");
   const soil = adv.evidence.find((e) => e.messageKey === "tea_ev_soil_measured");
   assert.ok(soil, "a real measurement should be labelled as measured");
-  assert.equal(soil!.slots.verdict, "no_action", "the advisory must not contradict the anchor");
+  // The slot now carries the i18n key rather than the raw enum, so that the
+  // rendered sentence reads "Watering advice: No watering needed" instead of
+  // "water_now". The invariant is unchanged: it must still be the SAME verdict
+  // the anchor produced.
+  assert.equal(
+    soil!.slots.verdict,
+    `irrigation_${r.verdict}`,
+    "the advisory must not contradict the anchor",
+  );
+  assert.ok(soil!.translatedSlots?.includes("verdict"));
 });
 
 // =====================================================================

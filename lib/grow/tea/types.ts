@@ -111,6 +111,19 @@ export interface EvidenceItem {
   /** i18n key + slots — this layer never builds user-facing prose itself. */
   messageKey: string;
   slots: Record<string, string | number>;
+  /**
+   * Slot names whose VALUE is itself an i18n key, to be translated by the
+   * renderer before interpolation.
+   *
+   * Without this the evidence layer leaks engineering identifiers straight onto
+   * a farmer's screen: the environmental rows carried `blister_blight` and the
+   * soil row carried `water_now`, so the advisory read "Conditions currently
+   * favour blister_blight" and "Watering advice: water_now" — in every
+   * language. Naming the translatable slots explicitly keeps this module pure
+   * (it still calls no `t()`) while making the leak impossible to reintroduce
+   * silently, because a test asserts no rendered slot survives as a raw key.
+   */
+  translatedSlots?: string[];
 }
 
 /**

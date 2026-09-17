@@ -1,16 +1,25 @@
 "use client";
 
 /**
- * /grow/diagnose — photograph a leaf, get an advisory.
+ * /grow/diagnose — the complete advisory for one plot.
  *
- * The full path: plot → grow profile → leaf photo → preprocessing → CNN →
- * calibration → abstention → evidence layer → advisory.
+ * Reads, in the order a farmer thinks in:
  *
- * This component orchestrates and renders. It holds no model constants: the
+ *   1. Field status    — what the soil is doing, and which tier of evidence said so
+ *   2. Leaf assessment — what the photograph suggests, or that it could not say
+ *   3. Conditions      — what the last two weeks of weather favoured
+ *   4. Why             — each line naming its own provenance
+ *   5. What to do      — one practical next action
+ *
+ * Sections 1 and 3 exist before any photo is taken, and survive the model
+ * failing entirely: they are computed by the Day 1 engines from weather, and
+ * the leaf checker is an addition to that advice, never a precondition for it.
+ *
+ * This component orchestrates and renders. It holds no model constants — the
  * threshold, temperature, class names and limitations all arrive from the
- * published card through `lib/grow/tea/`. It also reuses the EXISTING weather,
- * irrigation and risk results via `useGrowPlot` rather than recomputing them —
- * the Day 1 engines are untouched and simply read.
+ * published card through `lib/grow/tea/`. It reuses the EXISTING weather,
+ * irrigation and risk results via `useGrowPlot` rather than recomputing them,
+ * and a leaf result is never an input to any of them.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Leaf } from "lucide-react";
@@ -20,12 +29,16 @@ import PendingLink from "@/components/motion/PendingLink";
 import Reveal from "@/components/motion/Reveal";
 import { Skeleton } from "@/components/motion/Skeleton";
 import LeafCapture from "@/components/grow/LeafCapture";
-import DiagnosisResult from "@/components/grow/DiagnosisResult";
+import LeafAssessment from "@/components/grow/LeafAssessment";
+import AdvisoryExplanation from "@/components/grow/AdvisoryExplanation";
+import IrrigationCard from "@/components/grow/IrrigationCard";
+import RiskCard from "@/components/grow/RiskCard";
 import DiagnosticsPanel from "@/components/grow/DiagnosticsPanel";
 import { t, useLang } from "@/lib/i18n";
 import { listPlots } from "@/lib/intake/store";
 import { getGrowProfile } from "@/lib/grow/store";
 import { useGrowPlot } from "@/lib/grow/useGrowPlot";
+import { resolvePlotId, setSelectedPlotId, useSelectedPlotId } from "@/lib/grow/selection";
 import { MODEL_URL, loadTeaCard } from "@/lib/grow/tea/card";
 import { classifyLeaf } from "@/lib/grow/tea/infer";
 import { buildAdvisory } from "@/lib/grow/tea/evidence";
@@ -43,11 +56,18 @@ import type { LocalPlot } from "@/lib/intake/types";
 export default function DiagnosePage() {
   const lang = useLang();
   const [plots, setPlots] = useState<LocalPlot[] | null>(null);
-  const [plotId, setPlotId] = useState<string | null>(null);
   const [profile, setProfile] = useState<GrowProfile | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [card, setCard] = useState<TeaModelCard | null | "loading">("loading");
   const [busy, setBusy] = useState(false);
   const [prediction, setPrediction] = useState<TeaPrediction | null>(null);
+
+  // The plot is remembered across /grow <-> /grow/diagnose. Picking `plots[0]`
+  // independently on each page let a farmer select their second plot, tap
+  // "check the leaves", and be shown a leaf assessment composed against the
+  // FIRST plot's weather and soil — silently.
+  const remembered = useSelectedPlotId();
+  const plotId = resolvePlotId(plots ?? [], remembered);
 
   // --- diagnostics (?diag=1) ---------------------------------------------
   // Read in an effect, not during render: `location` does not exist on the
@@ -58,14 +78,43 @@ export default function DiagnosePage() {
 
   useEffect(() => {
     listPlots()
-      .then((p) => {
-        setPlots(p);
-        if (p.length > 0) setPlotId((cur) => cur ?? p[0].id);
-      })
+      .then(setPlots)
       .catch(() => setPlots([]));
     void loadTeaCard().then(setCard);
     setDiag(diagnosticsEnabled(window.location.search));
   }, []);
+
+  useEffect(() => {
+    if (!plotId) return;
+    // Clear first. Leaving the previous plot's profile in place while the new
+    // one loads would compute this plot's water balance from the LAST plot's
+    // crop and soil for a frame or two — briefly, silently, and wrongly.
+    setProfile(null);
+    setProfileLoaded(false);
+    let cancelled = false;
+    getGrowProfile(plotId)
+      .then((p) => {
+        if (cancelled) return;
+        setProfile(p ?? null);
+        setProfileLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProfile(null);
+        setProfileLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [plotId]);
+
+  // A leaf result belongs to the plot it was taken for. Switching plots must
+  // drop it rather than re-describe the last plot's leaf against this plot's
+  // weather — the same wrong-plot association, one step later.
+  useEffect(() => {
+    setPrediction(null);
+    setRuntime(null);
+  }, [plotId]);
 
   // Hash the bytes the browser actually received and compare them to the card.
   // Only under ?diag=1: it is a second full fetch of the model, which no farmer
@@ -75,13 +124,9 @@ export default function DiagnosePage() {
     void verifyPublishedModel(MODEL_URL, card).then(setArtifact);
   }, [diag, card]);
 
-  useEffect(() => {
-    if (!plotId) return;
-    getGrowProfile(plotId).then((p) => setProfile(p ?? null)).catch(() => setProfile(null));
-  }, [plotId]);
-
   const plot = plots?.find((p) => p.id === plotId) ?? null;
-  // Reads the existing engines. Nothing here recomputes weather, irrigation or risk.
+  // Reads the existing engines. Nothing here recomputes weather, irrigation or
+  // risk, and no leaf result is an input to any of them.
   const grow = useGrowPlot(plot, profile);
 
   const analyse = useCallback(async (img: HTMLImageElement) => {
@@ -109,10 +154,15 @@ export default function DiagnosePage() {
   const teaPlot = profile?.crop === "tea";
 
   const diagRows = useMemo(
-    () => (diag ? buildDiagnosticRows(card === "loading" ? null : card, prediction, runtime, artifact) : []),
+    () =>
+      diag
+        ? buildDiagnosticRows(card === "loading" ? null : card, prediction, runtime, artifact)
+        : [],
     [diag, card, prediction, runtime, artifact],
   );
   const diagFailures = diagRows.filter((r) => r.ok === false).length;
+
+  const ready = card && card !== "loading" && plots && plots.length > 0;
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 py-6 sm:px-8">
@@ -140,10 +190,10 @@ export default function DiagnosePage() {
             {t(lang, "tea_lede")}
           </p>
 
-          {/* The audit found that 47 of 60 tea_* strings fall back to English —
-              including every action line. That is the deliberate policy (D-016:
-              never machine-translate an instruction a farmer acts on), but it
-              was silent. A Sinhala or Tamil reader is now told so in their own
+          {/* Most tea_* advisory sentences fall back to English, including every
+              action line. That is the deliberate policy (D-016: never
+              machine-translate an instruction a farmer acts on), but it was
+              silent. A Sinhala or Tamil reader is now told so in their own
               language rather than simply meeting English text. */}
           {lang !== "en" && (
             <p className="mt-3 text-[0.82rem] faint" style={{ maxWidth: "54ch" }} lang={lang}>
@@ -179,8 +229,8 @@ export default function DiagnosePage() {
         </div>
       )}
 
-      {card && card !== "loading" && plots && plots.length > 0 && (
-        <div className="mt-8 space-y-6">
+      {ready && (
+        <div className="mt-8 space-y-8">
           {plots.length > 1 && (
             <section aria-labelledby="dx-plot-picker">
               <h2 id="dx-plot-picker" className="label">
@@ -191,7 +241,7 @@ export default function DiagnosePage() {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setPlotId(p.id)}
+                    onClick={() => setSelectedPlotId(p.id)}
                     aria-pressed={p.id === plotId}
                     className={p.id === plotId ? "chip chip-active" : "chip"}
                   >
@@ -202,48 +252,162 @@ export default function DiagnosePage() {
             </section>
           )}
 
-          {/* INVARIANT 7: an unsupported crop must not receive a tea diagnosis.
-              The audit found this was only a warning paragraph above a working
-              camera — a coconut grower could photograph a leaf and be handed a
-              confident Camellia sinensis disease. The capture control is now
-              withheld entirely, not merely captioned. */}
-          {profile && !teaPlot && (
-            <div
-              className="rounded-[var(--radius-sm)] px-4 py-3.5"
-              style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
-            >
-              <p className="text-[0.92rem]">
-                {t(lang, "tea_crop_unsupported", { crop: t(lang, `grow_crop_${profile.crop}`) })}
-              </p>
-              <PendingLink href="/grow" className="btn btn-ghost btn-sm mt-3">
-                {t(lang, "nav_grow")}
+          {/* No grow profile yet: the whole advisory rests on crop and soil, so
+              ask for them on /grow rather than guessing either. */}
+          {profileLoaded && !profile && (
+            <div className="glass-card p-6 text-center">
+              <p className="text-[0.95rem] muted">{t(lang, "grow_needs_profile")}</p>
+              <PendingLink href="/grow" className="btn btn-primary mt-4">
+                {t(lang, "grow_needs_profile_cta")}
               </PendingLink>
             </div>
           )}
 
-          {teaPlot && (
-            <LeafCapture
-              lang={lang}
-              busy={busy}
-              onAnalyse={analyse}
-              onError={(reason) => setPrediction({ state: "error", reason })}
-            />
+          {/* ============ 1. FIELD STATUS ============ */}
+          {profile && (
+            <section aria-labelledby="field-heading">
+              <h2 id="field-heading" className="eyebrow">
+                {t(lang, "tea_section_field")}
+              </h2>
+
+              {grow.state === "loading" && <Skeleton className="mt-3 h-40 w-full" />}
+
+              {grow.state === "unavailable" && (
+                <div
+                  className="mt-3 rounded-[var(--radius-sm)] px-4 py-3.5"
+                  style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
+                >
+                  <p className="text-[0.92rem]">{t(lang, "weather_unavailable")}</p>
+                  {grow.reason && <p className="mt-1.5 text-[0.82rem] muted">{grow.reason}</p>}
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm mt-3 min-h-[44px]"
+                    onClick={grow.refresh}
+                  >
+                    {t(lang, "weather_retry")}
+                  </button>
+                </div>
+              )}
+
+              {grow.state === "ready" && grow.irrigation && (
+                <div className="mt-3">
+                  <IrrigationCard advice={grow.irrigation} lang={lang} rainfed={!profile.irrigated} />
+                  {/* Cache age, stated where the number it qualifies is read.
+                      `useGrowPlot` refuses anything past its freshness bound, so
+                      this can only ever be a recent date. */}
+                  {grow.cachedAt && (
+                    <p className="mt-2 text-[0.78rem]" style={{ color: "var(--warn)" }}>
+                      {t(lang, "weather_cached", {
+                        date: new Date(grow.cachedAt).toLocaleDateString(),
+                      })}
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
           )}
 
-          {busy && <Skeleton className="h-48 w-full" />}
+          {/* ============ 2. LEAF ASSESSMENT ============ */}
+          {/* An unsupported crop must not receive a tea diagnosis. The capture
+              control is withheld entirely rather than merely captioned — a
+              warning paragraph above a working camera still lets a coconut
+              grower be handed a confident Camellia sinensis disease. */}
+          {profile && !teaPlot && (
+            <section aria-labelledby="leaf-unsupported-heading">
+              <h2 id="leaf-unsupported-heading" className="eyebrow">
+                {t(lang, "tea_section_leaf")}
+              </h2>
+              <div
+                className="mt-3 rounded-[var(--radius-sm)] px-4 py-3.5"
+                style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
+              >
+                <p className="text-[0.92rem]">
+                  {t(lang, "tea_crop_unsupported", { crop: t(lang, `grow_crop_${profile.crop}`) })}
+                </p>
+                <PendingLink href="/grow" className="btn btn-ghost btn-sm mt-3">
+                  {t(lang, "nav_grow")}
+                </PendingLink>
+              </div>
+            </section>
+          )}
 
+          {teaPlot && (
+            <div
+              // The result replaces the capture control in place, so a screen
+              // reader is told what happened rather than silently losing its
+              // context. Polite, not assertive: nothing here is an emergency.
+              aria-live="polite"
+              aria-busy={busy}
+              className="space-y-6"
+            >
+              {!prediction && !busy && (
+                <LeafCapture
+                  lang={lang}
+                  busy={busy}
+                  onAnalyse={analyse}
+                  onError={(reason) => setPrediction({ state: "error", reason })}
+                />
+              )}
+
+              {busy && (
+                <section className="glass-card p-5" aria-labelledby="leaf-busy-heading">
+                  <p className="eyebrow">{t(lang, "tea_section_leaf")}</p>
+                  <h2 id="leaf-busy-heading" className="mt-2 text-[1.1rem] font-semibold">
+                    {t(lang, "tea_analysing")}
+                  </h2>
+                  {/* The first run downloads the runtime and the model, which on
+                      a rural connection is slow enough that silence reads as a
+                      hang. Saying why costs nothing. */}
+                  <p className="mt-2 text-[0.85rem] muted">{t(lang, "tea_analysing_note")}</p>
+                  <Skeleton className="mt-4 h-24 w-full" />
+                </section>
+              )}
+
+              {prediction && !busy && (
+                <LeafAssessment
+                  prediction={prediction}
+                  lang={lang}
+                  onRetry={() => setPrediction(null)}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ============ 3. CONDITIONS ============ */}
+          {profile && grow.state === "ready" && grow.risks.length > 0 && (
+            <section aria-labelledby="conditions-heading">
+              <h2 id="conditions-heading" className="eyebrow">
+                {t(lang, "tea_section_conditions")}
+              </h2>
+              <p className="mt-2 text-[0.85rem] muted" style={{ maxWidth: "54ch" }}>
+                {t(lang, "risk_lede")}
+              </p>
+              <div className="mt-3 space-y-3">
+                {grow.risks.map((r) => (
+                  <RiskCard key={r.disease} risk={r} lang={lang} />
+                ))}
+              </div>
+              <p className="mt-3 text-[0.85rem]" style={{ color: "var(--warn)" }}>
+                {t(lang, "risk_not_diagnosis")}
+              </p>
+              {grow.observedThrough && (
+                <p className="mt-2 text-[0.75rem] faint">
+                  {t(lang, "weather_grid_note")}{" "}
+                  {t(lang, "weather_observed_through", { date: grow.observedThrough })}
+                </p>
+              )}
+            </section>
+          )}
+
+          {/* ============ 4-5. WHY, WHAT TO DO ============ */}
           {teaPlot && advisory && !busy && (
-            <DiagnosisResult
-              advisory={advisory}
-              card={card}
-              lang={lang}
-              onRetry={() => setPrediction(null)}
-            />
+            <AdvisoryExplanation advisory={advisory} card={card} lang={lang} />
           )}
         </div>
       )}
+
       {diag && card !== "loading" && (
-        <div className="mt-8">
+        <div className="mt-10">
           <DiagnosticsPanel rows={diagRows} failures={diagFailures} />
         </div>
       )}

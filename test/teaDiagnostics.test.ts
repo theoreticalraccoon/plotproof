@@ -197,7 +197,7 @@ test("an abstained run shows the decision and withholds the class", () => {
   assert.equal(row(rows, "Threshold used").ok, true);
   assert.ok(row(rows, "Class withheld").value.startsWith("yes"));
   // The panel names the leaning class for the tester; the ADVISORY still must
-  // not. Nothing here is rendered by DiagnosisResult.
+  // not. Nothing here is rendered by LeafAssessment.
   assert.equal(rows.some((r) => r.label === "Predicted class"), false);
 });
 

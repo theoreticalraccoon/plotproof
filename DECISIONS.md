@@ -634,3 +634,55 @@ Also removed six orphaned i18n keys across all three dictionaries, corrected the
 `/whats-real` claims about acoustic monitoring (which described a page that no
 longer exists), and added the tea model's honest limitations there instead.
 `/whats-real` is the one page where a stale claim is worse than no page.
+
+---
+
+## D-020 — The finished `/grow`: one advisory, five sections, no fused score
+
+`/grow/diagnose` was a leaf classifier with an evidence list under it. It is now
+the whole advisory for a plot, in the order a farmer thinks in: **field status →
+leaf assessment → conditions → why → what to do**. Field status and conditions
+render before any photograph is taken and survive the model failing outright,
+because they are computed by the Day 1 engines from weather — the leaf checker
+is an addition to that advice, never a precondition for it.
+
+The rejected alternative was a single combined confidence. It was rejected for
+the same reason `lib/grow/fusion.ts` was never written: a temperature-scaled
+posterior over six disease classes and a trapezoidal infection-pressure index
+are not commensurable, so any average of them is a number with no referent. When
+the photograph and the weather disagree, the app now says so and recommends
+inspection. The disagreement is the most useful thing on the screen and merging
+would have deleted it.
+
+Four defects were fixed on the way, all of them silent:
+
+- **Wrong-plot association.** `/grow` and `/grow/diagnose` each picked
+  `plots[0]` independently, so selecting a second plot and tapping "check the
+  leaves" produced a leaf assessment composed against the FIRST plot's weather,
+  soil and infection pressure, with nothing on screen revealing the swap. Both
+  pages now share `lib/grow/selection.ts`, and switching plots clears any leaf
+  result rather than re-describing it. The previous plot's profile is also
+  cleared before the new one loads, so the water balance is never computed from
+  the last plot's crop and soil.
+- **Engineering identifiers on a farmer's screen.** The evidence layer is pure
+  and calls no `t()`, so it was putting raw enum values into user-facing slots:
+  the advisory read "Conditions currently favour blister_blight" and "Watering
+  advice: water_now", in all three languages. `EvidenceItem.translatedSlots` now
+  names which slots carry i18n keys, `lib/grow/tea/display.ts` resolves them,
+  and a test renders every scenario in every language and fails on anything
+  matching the shape of an identifier.
+- **Invisible keyboard focus.** The capture control's real element is an
+  `sr-only` file input; a keyboard user tabbing to it saw no ring anywhere.
+- **Unreachable leaf check.** The link to `/grow/diagnose` lived inside the
+  weather-dependent risk block, so a tea grower with no signal could not reach
+  the one feature that does not need weather.
+
+Translation policy is unchanged and now enforced rather than assumed: labels,
+states, errors, buttons, bands, and disease names are translated in all three
+languages and a test fails on any English fallback among them; the advisory
+SENTENCES and action instructions stay English by choice (D-016 — a
+mistranslated instruction a farmer acts on is worse than an English one), and
+`tea_guidance_in_english` discloses that on screen in the reader's language.
+
+**Browser inference remains unverified on a real device.** Nothing in this entry
+changes that; see [BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md).

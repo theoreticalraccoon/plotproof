@@ -11,7 +11,7 @@ What is already verified, and why none of it counts:
 | --- | --- |
 | `public/models/*` serve 200 | A stale service worker, a proxy or a cached deploy also serve 200 |
 | `ml/tea/smoke_infer.py` runs the published `.onnx` | That is onnxruntime **for Python**, a different runtime and a different build |
-| 157 unit tests pass | They exercise the pure functions either side of the session, not the session |
+| 171 unit tests pass | They exercise the pure functions either side of the session, not the session |
 | `ml/tea/check_ts_parity.py` passes 56/56 | It proves the two preprocessing implementations agree; it runs the ONNX in Python |
 
 The untested span is exactly: **WASM instantiation → `InferenceSession.create`
@@ -26,7 +26,7 @@ One implementation. There is no browser-only variant of anything below; the
 
 | Step | Code | Source of its constants |
 | --- | --- | --- |
-| Route | [app/grow/diagnose/page.tsx](app/grow/diagnose/page.tsx) | — |
+| Route | [app/grow/diagnose/page.tsx](app/grow/diagnose/page.tsx) — field status, leaf, conditions, why, what to do | — |
 | Card fetch | [card.ts:`loadTeaCard`](lib/grow/tea/card.ts) → `CARD_URL = /models/tea-disease-mnv3s-card.json` | the published card |
 | Card validation | [card.ts:`isUsable`](lib/grow/tea/card.ts) | rejects a card missing/degenerate in threshold, temperature, mean/std, or class order |
 | Crop gate | [page.tsx](app/grow/diagnose/page.tsx) — `LeafCapture` rendered only when `profile.crop === "tea"` | Dexie grow profile |
@@ -38,7 +38,7 @@ One implementation. There is no browser-only variant of anything below; the
 | Calibration | [predict.ts:`calibratedSoftmax`](lib/grow/tea/predict.ts) | `card.calibration.temperature` |
 | Abstention | [predict.ts:`decide`](lib/grow/tea/predict.ts) | `card.abstention.threshold` |
 | Evidence | [evidence.ts:`buildAdvisory`](lib/grow/tea/evidence.ts) | prediction + Day-1 risk/irrigation, read-only |
-| Display | [DiagnosisResult.tsx](components/grow/DiagnosisResult.tsx) | card-derived; renders no model constant of its own |
+| Display | [LeafAssessment.tsx](components/grow/LeafAssessment.tsx), [AdvisoryExplanation.tsx](components/grow/AdvisoryExplanation.tsx) | card-derived; render no model constant of their own |
 
 ### Identity of the published artifact
 
@@ -155,7 +155,7 @@ CS-D test split — the split is deterministic, see `ml/tea/teadata.py`).
 | --- | --- | --- |
 | T-17 | Confident result | A class name, a confidence %, the model version, the "confidence is not the chance it is right" caveat, and — for blister blight or red rust — the amber "could not be checked against any independent dataset" block. Panel: Abstention decision = `accepted (>= threshold)`, PASS. |
 | T-18 | Uncertain result (from T-10/T-11/T-12) | No class anywhere in the advisory. Panel shows `abstained (< <threshold>)` and "Class withheld: yes (leaned …)" — the leaning class appears **only** in the diagnostics panel, never in the advisory. |
-| T-19 | Inference error (from T-04/T-06) | Red "The leaf checker could not run" block with a "Try again" button, distinct in wording and colour from the amber uncertain block. |
+| T-19 | Inference error (from T-04/T-06) | Red "The leaf checker could not run" block with a "Try again" button, distinct in wording and colour from the amber uncertain block. **Field status and Conditions must still render above and below it** — a failed model does not take the watering advice down with it. |
 
 ### D. Invariants to eyeball while you are in there
 
@@ -164,7 +164,8 @@ CS-D test split — the split is deterministic, see `ml/tea/teadata.py`).
 | T-20 | Note the watering advice on `/grow` for the tea plot, then run several diagnoses of different classes, then return | The irrigation verdict and deficit are **identical**. A diagnosis never feeds the water balance. |
 | T-21 | In a run where the evidence rows show a weather/conditions disagreement | The class heading is unchanged; the conditions row says the two disagree and the action line says to inspect and consult — it never substitutes the weather-favoured disease. |
 | T-22 | Compare the version in "Model 1.0.0" under the class heading with the panel's Model row and `public/models/tea-disease-mnv3s-card.json` | All three identical; panel's "Model version shown" = PASS. |
-| T-23 | Switch language to සිංහල / தமிழ் | The English-guidance disclosure appears in that language; the advisory still renders. |
+| T-23 | Switch language to සිංහල / தமிழ் | Every heading, button, state, error, band and disease name is in that language; the advisory SENTENCES stay English and the disclosure at the top says so. No screen shows a raw identifier such as `water_now` or `blister_blight`. |
+| T-24 | With two or more plots: select the second on `/grow`, tap "Check the leaves" | `/grow/diagnose` opens on **that same plot**. Switching plots on the diagnosis page clears any leaf result rather than re-describing it against the new plot. |
 
 ---
 

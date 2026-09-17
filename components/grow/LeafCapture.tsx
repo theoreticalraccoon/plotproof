@@ -19,8 +19,6 @@ import { t, type Lang } from "@/lib/i18n";
 export interface LeafCaptureProps {
   lang: Lang;
   busy: boolean;
-  /** Square crop side the model uses, from the card. Drives the preview overlay. */
-  cropHint?: number;
   onAnalyse: (img: HTMLImageElement) => void;
   onError: (reason: "bad_image") => void;
 }
@@ -93,9 +91,14 @@ export default function LeafCapture({ lang, busy, onAnalyse, onError }: LeafCapt
       />
 
       {!preview && (
+        // The real control is the sr-only input; the label is what is seen. A
+        // keyboard user tabbing here would otherwise land on an invisible
+        // element with no ring anywhere on screen, so the label mirrors the
+        // input's focus state.
         <label
           htmlFor="leaf-photo-input"
-          className="btn btn-primary mt-4 inline-flex min-h-[48px] cursor-pointer items-center gap-2"
+          className="btn btn-primary mt-4 inline-flex min-h-[48px] cursor-pointer items-center gap-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"
+          style={{ outlineColor: "var(--accent)" }}
         >
           <Camera size={16} aria-hidden="true" />
           {t(lang, "tea_take_photo")}

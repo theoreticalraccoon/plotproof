@@ -16,10 +16,14 @@
  *                                        so it DOES carry a transfer gap
  *   sensor   →  grid calibration       — corrects the weather grid to this site
  *
- * `lib/grow/fusion.ts` combines the first two; `lib/sensor/calibrate.ts` feeds
- * the third back into the first. Keeping them as separate, individually
- * inspectable stages is deliberate — it is the part an agronomist will question,
- * and it needs to be readable rather than buried in weights.
+ * `lib/grow/tea/evidence.ts` presents the first two SIDE BY SIDE and never
+ * merges them; `lib/sensor/calibrate.ts` feeds the third back into the first.
+ * There is deliberately no fusion step: a calibrated posterior over classes and
+ * a fuzzy index over weather conditions are not commensurable, and combining
+ * them would bury the disagreement that is the most useful thing on the screen.
+ * Keeping the stages separate and individually inspectable is the part an
+ * agronomist will question, so it needs to be readable rather than buried in
+ * weights.
  */
 
 // --- weather -------------------------------------------------------------

@@ -12,9 +12,9 @@ Submitted to YCS under Big Data / ML / AI / Data Science.
 The product is organised around what a farmer actually does across a season, not
 around what was built first.
 
-### 1. GROW — `/grow`
-Weather, watering and disease pressure for one plot, computed from that plot's
-own conditions.
+### 1. GROW — `/grow`, `/grow/diagnose`
+Weather, watering, disease pressure and leaf diagnosis for one plot, computed
+from that plot's own conditions.
 
 - **Watering** — FAO-56 soil-water balance. Deterministic, citable, every
   constant traceable to a published table. Anchored to the best soil evidence
@@ -23,8 +23,23 @@ own conditions.
 - **Disease pressure** — weather-driven infection risk for blister blight, brown
   blight and grey blight, with the specific conditions that produced the score.
   Infection *pressure*, never a diagnosis.
-- **Leaf diagnosis** — a MobileNetV3-Small CNN running in the browser. Trained,
-  evaluated, **not yet wired in**.
+- **Leaf diagnosis** — a MobileNetV3-Small CNN running in the browser on a
+  photograph, with temperature-scaled calibration and an abstention threshold
+  taken from the published card. Three disjoint outcomes: a class, *uncertain
+  with no class*, or an error. **Browser inference is not yet verified on a real
+  device** — see [BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md).
+
+`/grow/diagnose` composes all of the above into one screen, in the order a
+farmer thinks in: **field status → leaf assessment → conditions → why → what to
+do**. Each line of the "why" names its own provenance — measured here, outside
+estimate, calculated, or model inference — because the whole design rests on
+being able to tell an observation from an inference.
+
+There is deliberately **no fused score**. A calibrated posterior over disease
+classes and a fuzzy infection-pressure index are not commensurable; when the
+photograph and the weather disagree, the app reports the disagreement and
+recommends inspection rather than averaging it away or letting the weather
+rename the class.
 
 ### 2. EARN — `/sell`
 Four questions → HS code, a documents checklist, shipping options, and a world

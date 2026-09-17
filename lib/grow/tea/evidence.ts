@@ -93,10 +93,11 @@ export function buildAdvisory(input: EvidenceInput): TeaAdvisory {
           messageKey: favourable ? "tea_ev_env_supports" : "tea_ev_env_low",
           slots: {
             disease: prediction.displayName,
-            band: own.band,
+            band: `risk_band_${own.band}`,
             days: own.favourableDays,
             window: own.windowDays,
           },
+          translatedSlots: ["band"],
         });
 
         // Disagreement, stated plainly. The class is NOT changed.
@@ -106,7 +107,12 @@ export function buildAdvisory(input: EvidenceInput): TeaAdvisory {
             source: "environment",
             stance: "tension",
             messageKey: "tea_ev_env_conflict",
-            slots: { seen: prediction.displayName, favoured: topRisk.disease, band: topRisk.band },
+            slots: {
+              seen: prediction.displayName,
+              favoured: `risk_disease_${topRisk.disease}`,
+              band: `risk_band_${topRisk.band}`,
+            },
+            translatedSlots: ["favoured", "band"],
           });
         }
       }
@@ -125,7 +131,8 @@ export function buildAdvisory(input: EvidenceInput): TeaAdvisory {
           source: "environment",
           stance: "tension",
           messageKey: "tea_ev_env_healthy_but_pressure",
-          slots: { disease: topRisk.disease, band: topRisk.band },
+          slots: { disease: `risk_disease_${topRisk.disease}`, band: `risk_band_${topRisk.band}` },
+          translatedSlots: ["disease", "band"],
         });
       } else {
         evidence.push({ source: "environment", stance: "supports", messageKey: "tea_ev_env_healthy_calm", slots: {} });
@@ -144,7 +151,13 @@ export function buildAdvisory(input: EvidenceInput): TeaAdvisory {
       source: "environment",
       stance: FAVOURABLE_BANDS.has(topRisk.band) ? "supports" : "neutral",
       messageKey: "tea_ev_env_standalone",
-      slots: { disease: topRisk.disease, band: topRisk.band, days: topRisk.favourableDays, window: topRisk.windowDays },
+      slots: {
+        disease: `risk_disease_${topRisk.disease}`,
+        band: `risk_band_${topRisk.band}`,
+        days: topRisk.favourableDays,
+        window: topRisk.windowDays,
+      },
+      translatedSlots: ["disease", "band"],
     });
   }
 
@@ -174,7 +187,11 @@ export function buildAdvisory(input: EvidenceInput): TeaAdvisory {
           : irrigation.anchorSource === "grid"
             ? "tea_ev_soil_modelled"
             : "tea_ev_soil_balance",
-      slots: { verdict: irrigation.verdict, pct: Math.round((irrigation.reasonSlots.pct as number) ?? 0) },
+      slots: {
+        verdict: `irrigation_${irrigation.verdict}`,
+        pct: Math.round((irrigation.reasonSlots.pct as number) ?? 0),
+      },
+      translatedSlots: ["verdict"],
     });
   }
 

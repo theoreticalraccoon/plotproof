@@ -27,6 +27,7 @@ import { t, useLang } from "@/lib/i18n";
 import { listPlots } from "@/lib/intake/store";
 import { getGrowProfile, saveGrowProfile } from "@/lib/grow/store";
 import { useGrowPlot } from "@/lib/grow/useGrowPlot";
+import { resolvePlotId, setSelectedPlotId, useSelectedPlotId } from "@/lib/grow/selection";
 import { RISK_CAVEATS } from "@/lib/grow/risk";
 import type { GrowProfile } from "@/lib/grow/types";
 import type { LocalPlot } from "@/lib/intake/types";
@@ -34,7 +35,6 @@ import type { LocalPlot } from "@/lib/intake/types";
 export default function GrowPage() {
   const lang = useLang();
   const [plots, setPlots] = useState<LocalPlot[] | null>(null);
-  const [plotId, setPlotId] = useState<string | null>(null);
   const [profile, setProfile] = useState<GrowProfile | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
 
@@ -42,15 +42,20 @@ export default function GrowPage() {
   // "no plots" rather than an unhandled rejection.
   useEffect(() => {
     listPlots()
-      .then((p) => {
-        setPlots(p);
-        if (p.length > 0) setPlotId((cur) => cur ?? p[0].id);
-      })
+      .then(setPlots)
       .catch(() => setPlots([]));
   }, []);
 
+  // Shared with /grow/diagnose so the two pages cannot drift onto different
+  // plots. See lib/grow/selection.ts for why that mattered.
+  const remembered = useSelectedPlotId();
+  const plotId = resolvePlotId(plots ?? [], remembered);
+
   useEffect(() => {
     if (!plotId) return;
+    // Same reason as on /grow/diagnose: never let the previous plot's crop and
+    // soil drive this plot's numbers, not even for a frame.
+    setProfile(null);
     getGrowProfile(plotId)
       .then((p) => {
         setProfile(p ?? null);
@@ -120,7 +125,7 @@ export default function GrowPage() {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setPlotId(p.id)}
+                    onClick={() => setSelectedPlotId(p.id)}
                     aria-pressed={p.id === plotId}
                     className={p.id === plotId ? "chip chip-active" : "chip"}
                   >
@@ -165,6 +170,18 @@ export default function GrowPage() {
                   <Skeleton className="h-24 w-full" />
                   <Skeleton className="h-40 w-full" />
                 </div>
+              )}
+
+              {/* The bridge from "conditions favour this" to "look at an actual
+                  leaf". Deliberately OUTSIDE the weather-dependent block: the
+                  leaf checker runs on a photograph and does not need weather,
+                  so a tea grower with no signal must still be able to reach it.
+                  Weather pressure is not a diagnosis; this is the only thing in
+                  the lane that looks at a leaf. */}
+              {profile.crop === "tea" && (
+                <PendingLink href="/grow/diagnose" className="btn btn-primary min-h-[48px]">
+                  {t(lang, "risk_check_leaves")}
+                </PendingLink>
               )}
 
               {/* Weather down and nothing cached: say so, and show NOTHING below.
@@ -219,13 +236,6 @@ export default function GrowPage() {
                         {t(lang, "risk_not_diagnosis")}
                       </p>
 
-                      {/* The bridge from "conditions favour this" to "look at an
-                          actual leaf". Weather pressure is not a diagnosis, and
-                          this is the only thing on the page that looks at one. */}
-                      <PendingLink href="/grow/diagnose" className="btn btn-primary mt-4">
-                        {t(lang, "risk_check_leaves")}
-                      </PendingLink>
-
                       <details className="mt-4">
                         <summary className="cursor-pointer text-[0.85rem] font-medium muted">
                           {t(lang, "risk_caveats_title")}
@@ -247,9 +257,10 @@ export default function GrowPage() {
                       windows are Camellia sinensis pathogens. Say that rather
                       than scoring a rubber plot against tea biology. */}
                   {profile.crop !== "tea" && (
-                    <p className="text-[0.85rem] muted">
-                      Watering advice covers this crop. The disease model is tea-only so far, so no
-                      disease pressure is shown here.
+                    <p className="text-[0.85rem] muted" style={{ maxWidth: "54ch" }}>
+                      {t(lang, "grow_disease_tea_only", {
+                        crop: t(lang, `grow_crop_${profile.crop}`),
+                      })}
                     </p>
                   )}
                 </>
