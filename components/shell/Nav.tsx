@@ -139,15 +139,15 @@ export default function Nav() {
   return (
     <header className="glass-nav sticky top-0 z-40 print:hidden">
       <div className="mx-auto flex h-[var(--nav-h)] max-w-6xl items-center gap-5 px-5 sm:px-8">
-        {/* No `gap` on the anchor: PendingLink wraps its children in a single
-            flex span, so the badge carries its own spacing. */}
+        {/* No `gap` on the anchor: PendingLink's inner flex span already
+            spaces the badge from the wordmark. */}
         <PendingLink
           href="/"
           className="flex items-center text-[0.98rem] font-semibold transition-transform duration-150 active:scale-95"
           style={{ letterSpacing: "-0.02em" }}
         >
           <span
-            className="mr-2.5 flex h-7 w-7 items-center justify-center rounded-lg"
+            className="flex h-7 w-7 items-center justify-center rounded-lg"
             style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
           >
             <Leaf size={15} strokeWidth={2.25} aria-hidden="true" />

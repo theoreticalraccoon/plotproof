@@ -3,30 +3,77 @@
 /**
  * Where the officer is and what is left, in one column.
  *
- * Every entry is an anchor to a section on this page, with its own count of
- * what is missing — so the answer to "what do I still need for this
- * consignment?" is always on screen rather than found by scrolling.
+ * Every entry is an anchor to a section on this page. What each one reports is
+ * deliberately NOT the same number: a questionnaire section owes answers, the
+ * generated documents are either draft or final, and the authority documents
+ * are a tally of what has actually been obtained. Printing "11 left" beside
+ * three documents — which an earlier version did — reads as eleven missing
+ * documents, which is not a thing that exists.
  */
 import { CheckCircle2, Circle } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
-import { issuesBySection, needsEudr, saleIssues, saleRequirements, type SaleSection } from "@/lib/sale/model";
+import {
+  isSaleComplete,
+  issuesBySection,
+  needsEudr,
+  saleIssues,
+  saleRequirements,
+  type SaleSection,
+} from "@/lib/sale/model";
 import type { Sale } from "@/lib/sale/types";
 
 const FORM: SaleSection[] = ["exporter", "buyer", "product", "packing", "commercial", "shipment"];
 const PRODUCED_HERE = new Set(["commercial_invoice", "packing_list", "hs_classification"]);
 
+interface Item {
+  href: string;
+  label: string;
+  /** True when this entry needs nothing further. */
+  done: boolean;
+  /** What to print on the right, if anything. */
+  note?: string;
+}
+
 export default function SectionNav({ sale, lang }: { sale: Sale; lang: Lang }) {
   const by = issuesBySection(saleIssues(sale));
   const req = saleRequirements(sale);
   const authority = (req?.documents ?? []).filter((d) => !PRODUCED_HERE.has(d.documentTypeId));
-  const authorityLeft = authority.filter((d) => sale.authorityStatus[d.documentTypeId] !== "ready").length;
-  const formLeft = FORM.reduce((n, s) => n + by[s].length, 0);
+  const obtained = authority.filter((d) => sale.authorityStatus[d.documentTypeId] === "ready").length;
+  const complete = isSaleComplete(sale);
 
-  const items: { href: string; label: string; left: number }[] = [
-    ...FORM.map((s) => ({ href: `#sale-${s}`, label: t(lang, `sale_s_${s}`), left: by[s].length })),
-    ...(needsEudr(sale) ? [{ href: "#eudr", label: t(lang, "sale_s_eudr"), left: by.eudr.length }] : []),
-    { href: "#documents", label: t(lang, "sale_docs_title"), left: formLeft },
-    { href: "#authority", label: t(lang, "sale_auth_title"), left: authorityLeft },
+  const items: Item[] = [
+    ...FORM.map((s) => ({
+      href: `#sale-${s}`,
+      label: t(lang, `sale_s_${s}`),
+      done: by[s].length === 0,
+      note: by[s].length ? t(lang, "sale_s_left", { n: by[s].length }) : undefined,
+    })),
+    ...(needsEudr(sale)
+      ? [
+          {
+            href: "#eudr",
+            label: t(lang, "sale_s_eudr"),
+            done: by.eudr.length === 0,
+            note: by.eudr.length ? t(lang, "sale_s_left", { n: by.eudr.length }) : undefined,
+          },
+        ]
+      : []),
+    {
+      href: "#documents",
+      label: t(lang, "sale_docs_title"),
+      done: complete,
+      note: t(lang, complete ? "sale_ready" : "sale_draft"),
+    },
+    // No product or buyer yet means no requirements are known, so this entry
+    // reports nothing rather than a reassuring tick.
+    {
+      href: "#authority",
+      label: t(lang, "sale_auth_title"),
+      done: authority.length > 0 && obtained === authority.length,
+      note: authority.length
+        ? t(lang, "sale_auth_progress", { done: obtained, total: authority.length })
+        : undefined,
+    },
   ];
 
   return (
@@ -39,17 +86,15 @@ export default function SectionNav({ sale, lang }: { sale: Sale; lang: Lang }) {
               href={i.href}
               className="flex min-h-[36px] items-center justify-between gap-3 rounded-lg px-2 text-[0.86rem] hover:bg-[var(--bg-1)]"
             >
-              <span className="flex items-center gap-2">
-                {i.left === 0 ? (
+              <span className="flex min-w-0 items-center gap-2">
+                {i.done ? (
                   <CheckCircle2 size={14} aria-hidden="true" style={{ color: "var(--accent)" }} />
                 ) : (
-                  <Circle size={12} aria-hidden="true" className="faint" />
+                  <Circle size={12} aria-hidden="true" className="faint shrink-0" />
                 )}
-                {i.label}
+                <span className="truncate">{i.label}</span>
               </span>
-              {i.left > 0 && (
-                <span className="text-[0.72rem] tabular-nums faint">{t(lang, "sale_s_left", { n: i.left })}</span>
-              )}
+              {i.note && <span className="shrink-0 text-[0.72rem] tabular-nums faint">{i.note}</span>}
             </a>
           </li>
         ))}

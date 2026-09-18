@@ -19,7 +19,11 @@ import type { UrlObject } from "url";
 function PendingInner({ children }: { children: ReactNode }) {
   const { pending } = useLinkStatus();
   return (
-    <span className="inline-flex items-center" aria-busy={pending || undefined}>
+    // `gap-2`, not the whitespace between JSX children: this span is a flex
+    // container, and a flex container drops the anonymous whitespace between an
+    // icon and its label, so every icon+text link rendered here used to print
+    // its icon jammed against the first letter.
+    <span className="inline-flex items-center gap-2" aria-busy={pending || undefined}>
       {children}
       {/*
         The slot is always in the layout and only its CONTENTS toggle, so the

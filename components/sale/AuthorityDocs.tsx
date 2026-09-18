@@ -12,7 +12,7 @@
  * changes with the product and the buyer's market: tea gains the Tea Board, an
  * EU rubber consignment gains EUDR, a US one gains FDA prior notice.
  */
-import { ChevronDown, ExternalLink, ShieldCheck } from "lucide-react";
+import { ArrowDown, ChevronDown, ShieldCheck } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { t, type Lang } from "@/lib/i18n";
 import { CATALOG_VERIFIED_AT } from "@/lib/compliance/catalog";
@@ -114,7 +114,7 @@ export default function AuthorityDocs({ sale, lang }: { sale: Sale; lang: Lang }
                       href={d.actionHref!}
                       className="mt-2 inline-flex items-center gap-1 text-[0.82rem] font-medium underline underline-offset-4"
                     >
-                      {t(lang, "sale_auth_go_eudr")} <ExternalLink size={12} aria-hidden="true" />
+                      <ArrowDown size={13} aria-hidden="true" /> {t(lang, "sale_auth_go_eudr")}
                     </PendingLink>
                   )}
                 </div>

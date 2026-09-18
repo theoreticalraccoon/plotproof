@@ -493,7 +493,7 @@ const en: Dict = {
   sale_q_title: "Consignment details",
   sale_q_lede: "Fill these in any order. Every document on this page is written from them, so a change here appears on all of them at once.",
   sale_q_show_missing: "Show what is missing ({n})",
-  sale_q_complete: "Everything needed is filled in",
+  sale_q_complete: "Every question here is answered",
   sale_nav_label: "This consignment",
 
   sale_s_exporter: "Exporter and grower",

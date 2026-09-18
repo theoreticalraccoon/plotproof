@@ -122,23 +122,24 @@ export default function Home() {
             </Reveal>
 
             {/*
-              What this is, in one sentence, Sinhala first, always. The accent
-              rule marks it as the definition rather than as one more paragraph:
-              a reader who takes in nothing else on this page should take in
-              this line, in the language most of our users read fastest.
+              What this is, in one sentence, in the reader's own language, with
+              the accent rule marking it as the definition rather than one more
+              paragraph. Sinhala follows underneath for anyone who has landed on
+              the English default but reads Sinhala faster — it used to lead,
+              which made the English page look like a mistranslation of itself.
             */}
             <Reveal delay={0.09}>
               <div className="mt-9 border-l-2 pl-5 sm:pl-6" style={{ borderColor: "var(--accent)" }}>
                 <p
-                  className="max-w-[38ch] font-medium"
-                  lang="si"
+                  className="max-w-[46ch] font-medium"
+                  lang={lang}
                   style={{ fontSize: "clamp(1.15rem, 2vw, 1.4rem)", lineHeight: 1.52 }}
                 >
-                  {t("si", "landing_what_is")}
+                  {t(lang, "landing_what_is")}
                 </p>
                 {lang !== "si" && (
-                  <p className="mt-2.5 max-w-[62ch] text-[0.9rem] leading-relaxed muted" lang={lang}>
-                    {t(lang, "landing_what_is")}
+                  <p className="mt-2.5 max-w-[46ch] text-[0.9rem] leading-relaxed muted" lang="si">
+                    {t("si", "landing_what_is")}
                   </p>
                 )}
               </div>

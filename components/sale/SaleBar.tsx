@@ -44,7 +44,10 @@ export default function SaleBar({ sale, lang }: { sale: Sale | null; lang: Lang 
 
   return (
     <div className="flex flex-wrap items-center gap-2" ref={ref}>
-      <div className="relative min-w-0 flex-1">
+      {/* Full width on a phone: sharing one row with the New-sale button
+          squeezed the consignment name down to "Green c…", which is exactly
+          the one thing this bar exists to tell you. */}
+      <div className="relative w-full min-w-0 sm:w-auto sm:flex-1">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -129,7 +132,7 @@ export default function SaleBar({ sale, lang }: { sale: Sale | null; lang: Lang 
 
       <button
         type="button"
-        className="btn btn-primary min-h-[48px] inline-flex items-center gap-2"
+        className="btn btn-primary inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 sm:flex-none"
         onClick={() => createSale({ carryForward: true })}
       >
         <Plus size={16} aria-hidden="true" />
@@ -150,7 +153,7 @@ function SyncBadge({ state, lang }: { state: ReturnType<typeof useSyncState>; la
   }[state];
   return (
     <span
-      className="inline-flex min-h-[48px] items-center gap-1.5 text-[0.75rem]"
+      className="inline-flex min-h-[48px] shrink-0 items-center gap-1.5 whitespace-nowrap text-[0.75rem]"
       style={{ color: map.color }}
       role="status"
       aria-live="polite"

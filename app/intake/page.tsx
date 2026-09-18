@@ -43,6 +43,11 @@ export default function IntakePage() {
   const reduce = useReducedMotion();
   const [tab, setTab] = useState<Tab>("import");
   const [refresh, setRefresh] = useState(0);
+  // The panel below is server-rendered. Giving it an entrance on first mount
+  // ships HTML with opacity:0 that only becomes visible once Framer hydrates —
+  // invisible on a slow connection, and a hydration mismatch. So the entrance
+  // starts only once the officer has actually switched tabs.
+  const [switched, setSwitched] = useState(false);
   const bump = () => setRefresh((n) => n + 1);
 
   // Wake the serverless analysis routes early, so opening a pack later is warm.
@@ -98,13 +103,13 @@ export default function IntakePage() {
         >
           <PathButton
             active={tab === "import"}
-            onClick={() => setTab("import")}
+            onClick={() => { setSwitched(true); setTab("import"); }}
             label="Import"
             hint="CSV / registry"
           />
           <PathButton
             active={tab === "trace"}
-            onClick={() => setTab("trace")}
+            onClick={() => { setSwitched(true); setTab("trace"); }}
             label="Capture on map"
             hint="Trace, corners or walk"
           />
@@ -115,7 +120,7 @@ export default function IntakePage() {
             <motion.div
               key={tab}
               variants={reduce ? undefined : stepTransition}
-              initial={reduce ? false : "initial"}
+              initial={reduce || !switched ? false : "initial"}
               animate={reduce ? undefined : "enter"}
               exit={reduce ? undefined : "exit"}
             >

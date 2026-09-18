@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types test/geometry.test.ts && node --experimental-strip-types test/confidence.test.ts && node --experimental-strip-types test/compliance.test.ts && node --experimental-strip-types test/documents.test.ts && node --experimental-strip-types test/sale.test.ts && node --experimental-strip-types test/irrigation.test.ts && node --experimental-strip-types test/risk.test.ts && node --experimental-strip-types test/teaClasses.test.ts && node --experimental-strip-types test/tea.test.ts && node --experimental-strip-types test/teaDiagnostics.test.ts && node --experimental-strip-types test/sensor.test.ts && node --experimental-strip-types test/growFlow.test.ts && node --experimental-strip-types test/growAudit.test.ts"
+    "test": "node --experimental-strip-types test/geometry.test.ts && node --experimental-strip-types test/confidence.test.ts && node --experimental-strip-types test/compliance.test.ts && node --experimental-strip-types test/documents.test.ts && node --experimental-strip-types test/sale.test.ts && node --experimental-strip-types test/fields.test.ts && node --experimental-strip-types test/eudr.test.ts && node --experimental-strip-types test/irrigation.test.ts && node --experimental-strip-types test/risk.test.ts && node --experimental-strip-types test/teaClasses.test.ts && node --experimental-strip-types test/tea.test.ts && node --experimental-strip-types test/teaDiagnostics.test.ts && node --experimental-strip-types test/sensor.test.ts && node --experimental-strip-types test/growFlow.test.ts && node --experimental-strip-types test/growAudit.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",

@@ -5,7 +5,6 @@
  * anxiety moment in the product, so it is one column, one accent, generous
  * spacing, and nothing that moves except the thing you just pressed.
  */
-import { motion, useReducedMotion } from "framer-motion";
 import { Leaf, ShieldCheck } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import PendingLink from "@/components/motion/PendingLink";
@@ -21,15 +20,15 @@ export default function AuthShell({
   children: React.ReactNode;
 }) {
   const lang = useLang();
-  const reduce = useReducedMotion();
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[27rem] flex-col justify-center px-6 py-12">
-      <motion.div
-        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-      >
+      {/* A CSS entrance, not a JS one. The card is server-rendered, and a
+          Framer entrance meant the served HTML carried opacity:0 until
+          hydration — invisible to anyone on a slow connection, and a hydration
+          mismatch in the console. `.page-in` animates the same rise and is
+          already reduced-motion aware in globals.css. */}
+      <div className="page-in">
         <div className="mb-7 flex items-center justify-between gap-3">
           <PendingLink href="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <span
@@ -57,7 +56,7 @@ export default function AuthShell({
           <ShieldCheck size={13} className="mt-px shrink-0" aria-hidden="true" />
           <span>{t(lang, "auth_saved_note")}</span>
         </p>
-      </motion.div>
+      </div>
     </main>
   );
 }

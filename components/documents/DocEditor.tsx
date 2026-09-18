@@ -107,7 +107,10 @@ export default function DocEditor({ kind }: { kind: DocKind }) {
           <p className="mt-1 text-[0.82rem] faint" style={{ maxWidth: "44ch" }}>
             {t(lang, "doc_edit_lede")}
           </p>
-          <div className="glass-card mt-4 grid gap-4 p-5">
+          {/* A column, not a grid: `wide` fields carry `sm:col-span-2`, and in a
+              one-column grid that spills them into an implicit second column,
+              leaving every other field half-width. */}
+          <div className="glass-card mt-4 flex flex-col gap-4 p-5">
             {fieldsForDoc(kind).map((def) => (
               <SaleField key={def.path} def={def} sale={sale} lang={lang} errorKey={errorFor(def.path)} />
             ))}
