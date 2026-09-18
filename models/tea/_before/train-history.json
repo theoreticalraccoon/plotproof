@@ -1,0 +1,178 @@
+{
+  "config": {
+    "csd": "C:/Users/HP/tea-data/csd",
+    "epochs": 14,
+    "batch_size": 64,
+    "lr": 0.0008,
+    "weight_decay": 0.0001,
+    "samples_per_group": 1,
+    "workers": 4,
+    "img_size": 160,
+    "smoke": false,
+    "out": "C:\\Users\\HP\\OneDrive\\Desktop\\Projects\\PlotProof\\models\\tea"
+  },
+  "seed": 1337,
+  "preprocessing": {
+    "image_size": 160,
+    "resize_shorter_side_to": 182,
+    "crop": "center",
+    "channel_order": "RGB",
+    "scale": "divide by 255, then normalise",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "augmentation_train": [
+      "RandomResizedCrop(160, scale=0.55-1.0, ratio=0.8-1.25)",
+      "RandomHorizontalFlip",
+      "RandomVerticalFlip",
+      "RandomRotation(30)",
+      "ColorJitter(brightness=0.35, contrast=0.3, saturation=0.3, hue=0.04)",
+      "RandomApply(GaussianBlur(3, sigma=0.1-1.5), p=0.2)",
+      "RandomErasing(p=0.15, scale=0.02-0.1)"
+    ]
+  },
+  "class_keys": [
+    "healthy",
+    "blister_blight",
+    "brown_blight",
+    "red_rust",
+    "red_spider_mite",
+    "helopeltis"
+  ],
+  "history": [
+    {
+      "epoch": 0,
+      "train_loss": 0.5581911368232163,
+      "train_acc": 0.8817702508387921,
+      "val_acc": 0.9022945965951147,
+      "val_macro_f1": 0.9015270479279488,
+      "seconds": 209.1,
+      "lr": 0.0007899711648727294
+    },
+    {
+      "epoch": 1,
+      "train_loss": 0.34166506119935464,
+      "train_acc": 0.9690046333280077,
+      "val_acc": 0.9526276831976314,
+      "val_macro_f1": 0.952161251269335,
+      "seconds": 118.0,
+      "lr": 0.0007603875471609676
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.3100528214986874,
+      "train_acc": 0.9782712893433456,
+      "val_acc": 0.9851961509992598,
+      "val_macro_f1": 0.9848309690400443,
+      "seconds": 129.5,
+      "lr": 0.000712732592987212
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.2955054007726539,
+      "train_acc": 0.9825850774884167,
+      "val_acc": 0.9711324944485566,
+      "val_macro_f1": 0.9711651648628016,
+      "seconds": 185.9,
+      "lr": 0.0006493959207434935
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.2916750485646799,
+      "train_acc": 0.9849816264579007,
+      "val_acc": 0.9918578830495929,
+      "val_macro_f1": 0.991804474212355,
+      "seconds": 129.1,
+      "lr": 0.0005735534956470233
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.29017829781695476,
+      "train_acc": 0.9835436970762103,
+      "val_acc": 0.9896373056994818,
+      "val_macro_f1": 0.9895235994617361,
+      "seconds": 108.0,
+      "lr": 0.0004890083735825258
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.27814602885674433,
+      "train_acc": 0.9865793257708899,
+      "val_acc": 0.9955588452997779,
+      "val_macro_f1": 0.9955499036569518,
+      "seconds": 112.2,
+      "lr": 0.0004
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.27307924101158043,
+      "train_acc": 0.9897747243968685,
+      "val_acc": 0.997039230199852,
+      "val_macro_f1": 0.9971292540672744,
+      "seconds": 113.6,
+      "lr": 0.0003109916264174743
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.2689923639685263,
+      "train_acc": 0.99105288384726,
+      "val_acc": 0.996299037749815,
+      "val_macro_f1": 0.9963641122110353,
+      "seconds": 116.8,
+      "lr": 0.00022644650435297683
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.26398293361874847,
+      "train_acc": 0.9923310432976514,
+      "val_acc": 0.9948186528497409,
+      "val_macro_f1": 0.9948368483562963,
+      "seconds": 118.9,
+      "lr": 0.00015060407925650664
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.26240563122185107,
+      "train_acc": 0.9923310432976514,
+      "val_acc": 0.997779422649889,
+      "val_macro_f1": 0.9977415987862931,
+      "seconds": 126.2,
+      "lr": 8.726740701278824e-05
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.2573048641914414,
+      "train_acc": 0.9956862118549289,
+      "val_acc": 0.9955588452997779,
+      "val_macro_f1": 0.9955138917377826,
+      "seconds": 116.6,
+      "lr": 3.961245283903239e-05
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.25703393844469496,
+      "train_acc": 0.9961655216488257,
+      "val_acc": 0.997779422649889,
+      "val_macro_f1": 0.9977415987862931,
+      "seconds": 136.1,
+      "lr": 1.0028835127270509e-05
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.25889623147751084,
+      "train_acc": 0.9948873621984342,
+      "val_acc": 0.997779422649889,
+      "val_macro_f1": 0.9977415987862931,
+      "seconds": 115.3,
+      "lr": 0.0
+    }
+  ],
+  "best_val_macro_f1": 0.9977415987862931
+}

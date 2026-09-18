@@ -22,7 +22,7 @@ interface Turn {
   role: "user" | "assistant";
   content: string;
   /** How an assistant turn ended, when it did not end normally. */
-  ending?: "cut" | "refused" | "failed";
+  ending?: "cut" | "refused" | "failed" | "unavailable";
 }
 
 /** Per-sale threads for this session. */
@@ -103,9 +103,11 @@ export default function AssistantPanel({ sale, lang }: { sale: Sale; lang: Lang 
         ? "cut"
         : text.endsWith(END.refused)
           ? "refused"
-          : text.endsWith(END.failed)
-            ? "failed"
-            : undefined;
+          : text.endsWith(END.unavailable)
+            ? "unavailable"
+            : text.endsWith(END.failed)
+              ? "failed"
+              : undefined;
       const visible = text.split(String.fromCharCode(0))[0];
       setTurns([...history, { role: "assistant", content: visible, ending }]);
     } catch {

@@ -12,7 +12,19 @@
  * character, which cannot appear in the model's text.
  */
 const NUL = String.fromCharCode(0);
-export const END = { cut: NUL + "CUT", refused: NUL + "REFUSED", failed: NUL + "FAILED" } as const;
+export const END = {
+  cut: NUL + "CUT",
+  refused: NUL + "REFUSED",
+  /** Transient: the answer stopped part-way and trying again may work. */
+  failed: NUL + "FAILED",
+  /**
+   * Not transient: the deployment's API access is rejected outright — a bad key,
+   * a revoked key, or an account with no credit. Kept apart from `failed`
+   * because telling an officer to try again when nothing they do can help is
+   * just a slower way of not answering.
+   */
+  unavailable: NUL + "UNAVAILABLE",
+} as const;
 
 export const LIMITS = {
   /** Earlier turns sent back with each request. */

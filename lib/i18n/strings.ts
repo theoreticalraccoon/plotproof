@@ -678,6 +678,7 @@ const en: Dict = {
   assistant_end_cut: "The answer was cut short. Ask for the rest if you need it.",
   assistant_end_refused: "The assistant declined to answer that.",
   assistant_end_failed: "The answer stopped before it finished.",
+  assistant_end_unavailable: "The assistant is not working on this deployment — its API access was rejected. Trying again will not help; the deployment needs a working API key with credit.",
   assistant_err_sign_in_required: "Sign in to use the assistant.",
   assistant_err_not_configured: "The assistant is not configured for this deployment.",
   assistant_err_limits_unavailable: "The assistant is unavailable: its usage limits cannot be checked, so it will not run.",

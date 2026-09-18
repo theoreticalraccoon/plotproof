@@ -47,6 +47,7 @@ for _s in (sys.stdout, sys.stderr):
         pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fieldsim import SPEC as FIELD_SPEC, FieldSimulator  # noqa: E402
 from teadata import Taxonomy, load_csd  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
@@ -129,16 +130,26 @@ class TeaDataset(Dataset):
     seen across epochs while a group never spans a split.
     """
 
-    def __init__(self, samples, tf, samples_per_group: int | None = None, seed: int = SEED):
+    def __init__(self, samples, tf, samples_per_group: int | None = None, seed: int = SEED,
+                 field_sim: "FieldSimulator | None" = None, field_prob: float = 0.0):
         self.all = samples
         self.tf = tf
         self.spg = samples_per_group
         self.seed = seed
         self.items = samples
+        # The field simulation (ml/tea/fieldsim.py) runs BEFORE the tensor
+        # pipeline, because it is a photographic transformation of the scene,
+        # not a tensor augmentation: it needs the leaf matte and a full-colour
+        # canvas. The simulator's donors come from this dataset's own split, so
+        # no held-out leaf can appear in a training background.
+        self.field_sim = field_sim
+        self.field_prob = field_prob
+        self.epoch = 0
         if samples_per_group:
             self.resample(0)
 
     def resample(self, epoch: int) -> None:
+        self.epoch = epoch
         if not self.spg:
             return
         rng = random.Random(self.seed + epoch)
@@ -158,6 +169,12 @@ class TeaDataset(Dataset):
         s = self.items[i]
         with Image.open(s.path) as im:
             img = im.convert("RGB")
+        if self.field_sim is not None and self.field_prob > 0:
+            # Seeded from (epoch, index) rather than global state: DataLoader
+            # workers each fork their own RNG, and a run has to be reproducible.
+            rng = random.Random((self.seed * 1_000_003) ^ (self.epoch * 7919) ^ i)
+            if rng.random() < self.field_prob:
+                img = self.field_sim.apply(img, rng)
         return self.tf(img), s.model_index
 
 
@@ -202,6 +219,11 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--img-size", type=int, default=IMG_SIZE,
                     help="Training/eval resolution. Lower trades accuracy for CPU time.")
+    ap.add_argument("--field-prob", type=float, default=0.5,
+                    help="Fraction of training images rendered as field photographs "
+                         "(ml/tea/fieldsim.py). 0 disables the simulation.")
+    ap.add_argument("--field-backgrounds", type=int, default=192)
+    ap.add_argument("--field-donors", type=int, default=160)
     ap.add_argument("--smoke", action="store_true", help="tiny config to prove the pipeline runs")
     ap.add_argument("--out", default=str(OUT_DIR))
     a = ap.parse_args()
@@ -228,8 +250,26 @@ def main() -> None:
         va = [s for s in va if (s.source_label, s.group) in vkeep]
         a.epochs = 1
 
-    train_ds = TeaDataset(tr, train_tf, samples_per_group=a.samples_per_group)
-    val_ds = TeaDataset(va, eval_tf, samples_per_group=a.samples_per_group)
+    # Two simulators, each with donors from its own split. Validation is
+    # simulated too, at the same rate: selecting the epoch on clean studio
+    # images would pick the model that is best at the domain we are trying to
+    # stop depending on.
+    train_sim = val_sim = None
+    if a.field_prob > 0:
+        t0 = time.time()
+        train_sim = FieldSimulator([s.path for s in tr], size=a.img_size,
+                                   backgrounds=a.field_backgrounds, donors=a.field_donors, seed=SEED)
+        val_sim = FieldSimulator([s.path for s in va], size=a.img_size,
+                                 backgrounds=max(32, a.field_backgrounds // 3),
+                                 donors=max(32, a.field_donors // 3), seed=SEED + 1)
+        print(f"field simulation: p={a.field_prob} "
+              f"train donors={len(train_sim.donors)} backgrounds={len(train_sim.backgrounds)}; "
+              f"val donors={len(val_sim.donors)} ({time.time() - t0:.0f}s to build)", flush=True)
+
+    train_ds = TeaDataset(tr, train_tf, samples_per_group=a.samples_per_group,
+                          field_sim=train_sim, field_prob=a.field_prob)
+    val_ds = TeaDataset(va, eval_tf, samples_per_group=a.samples_per_group,
+                        field_sim=val_sim, field_prob=a.field_prob)
 
     train_ld = DataLoader(train_ds, batch_size=a.batch_size, shuffle=True,
                           num_workers=a.workers, persistent_workers=a.workers > 0)
@@ -287,11 +327,15 @@ def main() -> None:
             torch.save({"model": model.state_dict(), "epoch": epoch, "val_macro_f1": vf1,
                         "val_acc": vacc, "classes": tax.keys, "class_ids": tax.active_ids,
                         "taxonomy_version": tax.version, "seed": SEED,
-                        "preprocessing": prep_spec, "arch": "mobilenet_v3_small"}, ckpt_path)
+                        "preprocessing": prep_spec, "arch": "mobilenet_v3_small",
+                        "field_simulation": {"probability": a.field_prob, "steps": FIELD_SPEC}
+                        if a.field_prob > 0 else None}, ckpt_path)
             print(f"  saved checkpoint (best val_macro_f1={best:.4f})", flush=True)
 
     (out / ("train-history-smoke.json" if a.smoke else "train-history.json")).write_text(
         json.dumps({"config": vars(a), "seed": SEED, "preprocessing": prep_spec,
+                    "field_simulation": {"probability": a.field_prob, "steps": FIELD_SPEC}
+                    if a.field_prob > 0 else None,
                     "class_keys": tax.keys, "history": history,
                     "best_val_macro_f1": best}, indent=2), encoding="utf-8")
     print(f"\nbest val_macro_f1={best:.4f}  checkpoint={ckpt_path}")

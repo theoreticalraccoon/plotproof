@@ -1,0 +1,77 @@
+{
+  "config": {
+    "csd": "C:/Users/HP/tea-data/csd",
+    "epochs": 1,
+    "batch_size": 48,
+    "lr": 0.0006,
+    "weight_decay": 0.0001,
+    "samples_per_group": 2,
+    "workers": 2,
+    "img_size": 224,
+    "field_prob": 0.5,
+    "field_backgrounds": 24,
+    "field_donors": 30,
+    "smoke": true,
+    "out": "C:\\Users\\HP\\OneDrive\\Desktop\\Projects\\PlotProof\\models\\tea"
+  },
+  "seed": 1337,
+  "preprocessing": {
+    "image_size": 224,
+    "resize_shorter_side_to": 256,
+    "crop": "center",
+    "channel_order": "RGB",
+    "scale": "divide by 255, then normalise",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "augmentation_train": [
+      "RandomResizedCrop(224, scale=0.55-1.0, ratio=0.8-1.25)",
+      "RandomHorizontalFlip",
+      "RandomVerticalFlip",
+      "RandomRotation(30)",
+      "ColorJitter(brightness=0.35, contrast=0.3, saturation=0.3, hue=0.04)",
+      "RandomApply(GaussianBlur(3, sigma=0.1-1.5), p=0.2)",
+      "RandomErasing(p=0.15, scale=0.02-0.1)"
+    ]
+  },
+  "field_simulation": {
+    "probability": 0.5,
+    "steps": [
+      "leaf matted from the studio background (bright + unsaturated + border-connected), feathered",
+      "composited onto an out-of-focus canopy: 3-7 MATTED donor leaves per donor, blurred and darkened, over a mottled shade/litter base",
+      "0-2 distractor leaves behind the subject, 45% chance of one partly occluding in front",
+      "subject scaled to 45-95% of frame and randomly placed, so the leaf does not fill the image",
+      "directional shading gradient (depth 0.15-0.6) plus 1-4 blown-out sunflecks (65%)",
+      "per-channel white balance 0.84-1.20 (80%), gamma 0.62-1.60 (70%)",
+      "defocus/motion blur 0.5-2.0px (35%), downscale 0.35-0.8x then upscale (60%)",
+      "Gaussian sensor noise sigma 2-11 (50%), JPEG quality 28-80 (60%)"
+    ]
+  },
+  "class_keys": [
+    "healthy",
+    "blister_blight",
+    "brown_blight",
+    "red_rust",
+    "red_spider_mite",
+    "helopeltis"
+  ],
+  "history": [
+    {
+      "epoch": 0,
+      "train_loss": 1.6794406414031982,
+      "train_acc": 0.32916666666666666,
+      "val_acc": 0.3333333333333333,
+      "val_macro_f1": 0.23018902288308682,
+      "seconds": 50.7,
+      "lr": 0.0
+    }
+  ],
+  "best_val_macro_f1": 0.23018902288308682
+}

@@ -146,10 +146,24 @@ export async function POST(request: Request) {
         if (final.stop_reason === "refusal") controller.enqueue(encoder.encode(END.refused));
       } catch (e) {
         if (!request.signal.aborted) {
-          if (e instanceof Anthropic.RateLimitError) console.error("[assistant] upstream rate limit");
-          else if (e instanceof Anthropic.APIError) console.error(`[assistant] API ${e.status}: ${e.message}`);
-          else console.error("[assistant]", e instanceof Error ? e.message : e);
-          controller.enqueue(encoder.encode(END.failed));
+          // An answer that stopped part-way and one that was never going to
+          // start are different problems for the officer reading the screen.
+          // A rejected key, a revoked key or an account out of credit will
+          // fail identically on every retry, so it is reported as such and
+          // the deployment's logs carry the real reason.
+          let terminal = false;
+          if (e instanceof Anthropic.RateLimitError) {
+            console.error("[assistant] upstream rate limit");
+          } else if (e instanceof Anthropic.APIError) {
+            console.error(`[assistant] API ${e.status}: ${e.message}`);
+            terminal =
+              e.status === 401 ||
+              e.status === 403 ||
+              (e.status === 400 && /credit balance|billing/i.test(e.message));
+          } else {
+            console.error("[assistant]", e instanceof Error ? e.message : e);
+          }
+          controller.enqueue(encoder.encode(terminal ? END.unavailable : END.failed));
         }
       } finally {
         controller.close();
