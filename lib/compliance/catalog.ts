@@ -13,7 +13,7 @@ import type { DocumentType, Market, Product } from "./types";
  * Rendered on the checklist with a stale warning past 6 months — a legal
  * checklist that silently rots is worse than none.
  */
-export const CATALOG_VERIFIED_AT = "2026-07-27";
+export const CATALOG_VERIFIED_AT = "2026-09-18";
 
 export const PRODUCTS: Product[] = [
   { id: "coffee_green", name: "Green coffee beans", synonyms: ["coffee", "arabica", "robusta", "green coffee", "coffee beans"], category: "coffee", hsCode: "0901.11", perishability: "durable", eudrCovered: true, phytoTypical: true },
@@ -85,10 +85,11 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     id: "certificate_of_origin",
     name: "Certificate of origin",
     issuer: "authority",
-    what: "An official paper proving your goods were produced in your country.",
-    why: "It can lower or remove import duty for the buyer and is often required.",
-    howToObtain: "Prepare a draft here, then have your Chamber of Commerce certify it.",
-    source: "Chamber of Commerce / national trade authority",
+    what: "Official proof that the goods were produced in Sri Lanka.",
+    why: "Customs at the destination may require it, and preferential origin can reduce or remove the buyer's import duty.",
+    howToObtain:
+      "Prepare the draft here. Non-preferential certificates are issued by the Department of Commerce and by recognised chambers such as the National Chamber of Exporters. For EU GSP+ duty preference, an exporter registered in the EU REX system instead makes out a statement on origin on the commercial documents for each consignment — enter the REX number in the sale and the invoice carries it. Confirm which applies with the Department of Commerce.",
+    source: "Department of Commerce, Sri Lanka — doc.gov.lk (Certificates of Origin; REX system)",
     actionHref: "/documents/certificate-of-origin",
     applies: () => true,
   },
@@ -96,10 +97,11 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     id: "phytosanitary_certificate",
     name: "Phytosanitary certificate",
     issuer: "authority",
-    what: "A plant-health certificate saying your produce is pest- and disease-free.",
-    why: "Required for most raw plant products entering the EU, UK, and US.",
-    howToObtain: "Apply to your national plant protection organisation before shipping.",
-    source: "IPPC / destination plant-health rules",
+    what: "A plant-health certificate stating the consignment meets the importing country's pest requirements.",
+    why: "Required for most raw plant products entering the EU, UK and US.",
+    howToObtain:
+      "Issued by the National Plant Quarantine Service (NPQS), Department of Agriculture — Sri Lanka's national plant protection organisation. The exporter registers with NPQS first, then requests a certificate for each consignment before the shipping date.",
+    source: "National Plant Quarantine Service, Department of Agriculture — doa.gov.lk (NPQS export services); IPPC",
     applies: (ctx) => ctx.product.phytoTypical,
   },
   {
@@ -108,9 +110,10 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     issuer: "platform",
     what: "Proof, with satellite evidence, that your plot wasn't deforested after 31 Dec 2020.",
     why: "The EU bars coffee, cocoa, rubber and others unless this is provided.",
-    howToObtain: "Map your plot in the app; we generate the evidence pack.",
+    howToObtain:
+      "Attach the plots this consignment was grown on in the sale's EUDR section. Each plot is checked against the JRC Global Forest Cover 2020 map and Hansen tree-cover loss after 2020. The EU operator then files the due-diligence statement.",
     source: "EU Regulation 2023/1115 (EUDR)",
-    actionHref: "/intake",
+    actionHref: "/sell#eudr",
     applies: (ctx) => ctx.destination === "EU" && ctx.product.eudrCovered,
   },
   {
@@ -132,5 +135,27 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     howToObtain: "Get certified by an accredited body recognised by the destination market.",
     source: "EU/UK/US organic equivalence rules",
     applies: (ctx) => ctx.organicClaim,
+  },
+  {
+    id: "lk_cusdec",
+    name: "Customs declaration (CusDec)",
+    issuer: "authority",
+    what: "The export declaration lodged with Sri Lanka Customs for every consignment.",
+    why: "No goods leave Sri Lanka without it.",
+    howToObtain:
+      "Lodged in Sri Lanka Customs' ASYCUDA system by the exporter or a licensed customs house agent, after any required approvals such as the phytosanitary certificate. Export must take place within 30 days of the CusDec's registration date.",
+    source: "Sri Lanka Customs — customs.gov.lk (Exporting goods)",
+    applies: () => true,
+  },
+  {
+    id: "lk_tea_board",
+    name: "Sri Lanka Tea Board exporter registration",
+    issuer: "authority",
+    what: "Registration with the Sri Lanka Tea Board as a tea exporter.",
+    why: "Tea may only be exported by a registered exporter. Registration lasts one year and must be renewed.",
+    howToObtain:
+      "Apply to the Tea Export Division of the Sri Lanka Tea Board. The Board's published criteria include a business registration, a registered warehouse, a qualified tea taster with a tasting facility, and minimum paid-up capital — check the current year's application guideline.",
+    source: "Sri Lanka Tea Board — srilankateaboard.lk (Tea Export Division; exporter registration)",
+    applies: (ctx) => ctx.product.category === "tea",
   },
 ];

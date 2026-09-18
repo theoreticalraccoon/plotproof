@@ -9,7 +9,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase/client";
-import { clearLocalState, syncOnLogin } from "@/lib/supabase/userState";
+import { clearLocalSales, syncSalesOnSignIn } from "@/lib/sale/store";
 
 interface AuthResult {
   error?: string;
@@ -99,7 +99,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
         setUser(session?.user ?? null);
-        if (event === "SIGNED_IN" && session?.user) void syncOnLogin(session.user.id);
+        // INITIAL_SESSION as well as SIGNED_IN: a magic link is exchanged
+        // server-side by /auth/callback, so the browser never sees a SIGNED_IN
+        // for it — only a session that already exists on load. Without this a
+        // magic-link sign-in never pulls the account's sales down. The merge is
+        // idempotent, so running it on every load costs one small query.
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
+          void syncSalesOnSignIn(session.user.id);
+        }
       });
       unsub = () => sub.subscription.unsubscribe();
     })();
@@ -166,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     const sb = await getSupabaseBrowser();
     if (sb) await sb.auth.signOut();
-    clearLocalState();
+    clearLocalSales();
     setUser(null);
   }, []);
 
