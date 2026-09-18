@@ -458,6 +458,14 @@ const en: Dict = {
   sensor_stored_simulated: "Includes simulated readings.",
   sensor_clear_stored: "Delete them",
   sensor_open: "Soil probe",
+
+  // --- one-time email links ---------------------------------------------
+  auth_magic_cta_signup: "Email me a sign-up link instead",
+  auth_magic_sent_signup: "Check your email. Opening that link creates your account and signs you in.",
+  auth_magic_same_browser: "Open the link in this same browser — the link is tied to the browser that asked for it.",
+  auth_link_wrong_browser: "That link was opened in a different browser from the one that asked for it, so it could not be used. Ask for a new link and open it here.",
+  auth_link_expired: "That link has expired or was already used. Each link works once — ask for a new one.",
+  auth_no_such_account: "No account uses that email address. Create one instead.",
 };
 
 const si: Dict = {
@@ -841,6 +849,13 @@ const si: Dict = {
   sensor_stored_simulated: "අනුකරණය කළ කියවීම් ද ඇතුළත් වේ.",
   sensor_clear_stored: "ඒවා මකන්න",
   sensor_open: "පස් සංවේදකය",
+
+  auth_magic_cta_signup: "ඒ වෙනුවට ලියාපදිංචි සබැඳියක් එවන්න",
+  auth_magic_sent_signup: "ඔබේ විද්‍යුත් තැපෑල පරීක්ෂා කරන්න. එම සබැඳිය විවෘත කිරීමෙන් ඔබේ ගිණුම සෑදී පිවිසුම ද සිදුවේ.",
+  auth_magic_same_browser: "සබැඳිය මෙම බ්‍රව්සරයේම විවෘත කරන්න — සබැඳිය එය ඉල්ලූ බ්‍රව්සරයට බැඳී ඇත.",
+  auth_link_wrong_browser: "එම සබැඳිය ඉල්ලූ බ්‍රව්සරයට වඩා වෙනත් බ්‍රව්සරයක විවෘත කර ඇති බැවින් භාවිත කළ නොහැකි විය. නව සබැඳියක් ඉල්ලා එය මෙහිදී විවෘත කරන්න.",
+  auth_link_expired: "එම සබැඳියේ කාලය අවසන් වී ඇත, නැතහොත් එය දැනටමත් භාවිත කර ඇත. එක් සබැඳියක් වරක් පමණක් ක්‍රියා කරයි — නව එකක් ඉල්ලන්න.",
+  auth_no_such_account: "එම විද්‍යුත් තැපැල් ලිපිනය සහිත ගිණුමක් නැත. ඒ වෙනුවට එකක් සාදන්න.",
 };
 
 const ta: Dict = {
@@ -1222,6 +1237,13 @@ const ta: Dict = {
   sensor_stored_simulated: "உருவகப்படுத்திய அளவீடுகளும் அடங்கும்.",
   sensor_clear_stored: "அவற்றை நீக்கு",
   sensor_open: "மண் உணரி",
+
+  auth_magic_cta_signup: "பதிலாக பதிவு இணைப்பை மின்னஞ்சல் செய்யவும்",
+  auth_magic_sent_signup: "உங்கள் மின்னஞ்சலைப் பாருங்கள். அந்த இணைப்பைத் திறந்தால் உங்கள் கணக்கு உருவாகி உள்நுழைவும் நடக்கும்.",
+  auth_magic_same_browser: "இணைப்பை இதே உலாவியில் திறக்கவும் — இணைப்பு அதைக் கேட்ட உலாவியுடன் பிணைக்கப்பட்டுள்ளது.",
+  auth_link_wrong_browser: "அந்த இணைப்பு, அதைக் கேட்ட உலாவியிலிருந்து வேறு உலாவியில் திறக்கப்பட்டதால் பயன்படுத்த முடியவில்லை. புதிய இணைப்பைக் கேட்டு இங்கே திறக்கவும்.",
+  auth_link_expired: "அந்த இணைப்பின் காலம் முடிந்துவிட்டது அல்லது ஏற்கனவே பயன்படுத்தப்பட்டுவிட்டது. ஒவ்வொரு இணைப்பும் ஒருமுறை மட்டுமே வேலை செய்யும் — புதிது ஒன்றைக் கேளுங்கள்.",
+  auth_no_such_account: "அந்த மின்னஞ்சல் முகவரியில் கணக்கு எதுவும் இல்லை. அதற்குப் பதிலாக ஒன்றை உருவாக்குங்கள்.",
 };
 
 const DICTS: Record<Lang, Dict> = { en, si, ta };

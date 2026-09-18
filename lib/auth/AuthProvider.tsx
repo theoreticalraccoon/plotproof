@@ -30,8 +30,35 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string) => Promise<AuthResult>;
-  magicLink: (email: string) => Promise<AuthResult>;
+  /**
+   * Send a one-time sign-in link.
+   *
+   * `createAccount` is explicit rather than defaulted because Supabase's own
+   * default silently registers an unknown address. On /login that turns a typo
+   * into a new empty account; on /signup it is precisely the desired behaviour.
+   * The two callers want opposite things, so neither gets to inherit a default.
+   */
+  magicLink: (email: string, opts?: { createAccount?: boolean }) => Promise<AuthResult>;
   signOut: () => Promise<void>;
+}
+
+/**
+ * Where an emailed link should come back to.
+ *
+ * Always `/auth/callback`, never the bare origin. The callback spends the
+ * one-time code server-side before anything renders; sending links to `/` left
+ * the code to be redeemed by the browser client after first paint, which fails
+ * visibly on a slow connection and is unrecoverable on a refresh because the
+ * code is single-use.
+ *
+ * `next` is carried through so a link clicked from an email lands where the
+ * person was going, and the callback re-validates it rather than trusting it.
+ */
+function emailRedirect(next?: string): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const u = new URL("/auth/callback", window.location.origin);
+  if (next) u.searchParams.set("next", next);
+  return u.toString();
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -95,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await sb.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+      options: { emailRedirectTo: emailRedirect() },
     });
 
     // Someone signing up with an address they already registered is a person
@@ -120,15 +147,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsConfirmation: !data.session };
   }, []);
 
-  const magicLink = useCallback(async (email: string): Promise<AuthResult> => {
-    const sb = await getSupabaseBrowser();
-    if (!sb) return { error: "not_configured" };
-    const { error } = await sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
-    });
-    return error ? { error: error.message } : {};
-  }, []);
+  const magicLink = useCallback(
+    async (email: string, opts?: { createAccount?: boolean }): Promise<AuthResult> => {
+      const sb = await getSupabaseBrowser();
+      if (!sb) return { error: "not_configured" };
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: opts?.createAccount ?? false,
+          emailRedirectTo: emailRedirect(),
+        },
+      });
+      return error ? { error: error.message } : {};
+    },
+    [],
+  );
 
   const signOut = useCallback(async () => {
     const sb = await getSupabaseBrowser();

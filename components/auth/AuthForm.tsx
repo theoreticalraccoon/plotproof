@@ -56,6 +56,36 @@ function describe(lang: Lang, raw: string): Message {
   };
 }
 
+/**
+ * Why an emailed link did not work.
+ *
+ * Separate from `describe()` because the causes are different and so is the
+ * remedy. The commonest by far is opening the link in a different browser from
+ * the one that asked for it — the PKCE verifier lives in a cookie on the
+ * requesting browser, so the code cannot be redeemed anywhere else. Telling
+ * someone "invalid request" when the fix is "open it in the same browser" is a
+ * dead end.
+ */
+function describeLink(lang: Lang, raw: string): Message {
+  const wrongBrowser = /code verifier|both auth code|pkce/i.test(raw);
+  const spent = /expired|invalid|already|not found/i.test(raw);
+  if (wrongBrowser) return { ok: false, text: t(lang, "auth_link_wrong_browser"), detail: raw };
+  if (spent) return { ok: false, text: t(lang, "auth_link_expired"), detail: raw };
+  return { ok: false, text: t(lang, "auth_error"), detail: raw };
+}
+
+/**
+ * With `shouldCreateUser: false`, Supabase refuses an unknown address with
+ * "Signups not allowed for otp". That is not an error the reader caused — it is
+ * the answer to their question, and the next step is the sign-up page.
+ */
+function describeOtp(lang: Lang, mode: AuthMode, raw: string): Message {
+  if (mode === "signin" && /signups not allowed|not allowed for otp/i.test(raw)) {
+    return { ok: false, text: t(lang, "auth_no_such_account") };
+  }
+  return describe(lang, raw);
+}
+
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const lang = useLang();
   const router = useRouter();
@@ -75,9 +105,23 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   // Carried over from a sign-up that hit an existing address, so they do not
   // retype what they just typed.
   useEffect(() => {
-    const e = new URLSearchParams(window.location.search).get("email");
+    const params = new URLSearchParams(window.location.search);
+    const e = params.get("email");
     if (e) setEmail(e);
-  }, []);
+
+    // A refused email link redirects here with the provider's own reason. A
+    // dead link that silently returns you to a sign-in form is the single most
+    // confusing outcome in the whole flow, so it gets named.
+    const authError = params.get("auth_error");
+    if (authError) {
+      setMsg(
+        authError === "not_configured"
+          ? { ok: false, text: t(lang, "auth_not_configured"), detail: t(lang, "auth_not_configured_detail") }
+          : describeLink(lang, authError),
+      );
+      setStatus("failed");
+    }
+  }, [lang]);
 
   // Already signed in? Move along.
   useEffect(() => {
@@ -151,10 +195,17 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     setStatus("working");
     setMsg(null);
     try {
-      const r = await magicLink(email);
-      if (r.error) fail(describe(lang, r.error));
+      // On /signup the link must be allowed to register the address; on /login
+      // it must not, or a typo silently creates an empty account instead of
+      // saying "no account with that address".
+      const r = await magicLink(email, { createAccount: mode === "signup" });
+      if (r.error) fail(describeOtp(lang, mode, r.error));
       else {
-        setMsg({ ok: true, text: t(lang, "auth_magic_sent"), detail: email });
+        setMsg({
+          ok: true,
+          text: t(lang, mode === "signup" ? "auth_magic_sent_signup" : "auth_magic_sent"),
+          detail: email,
+        });
         setStatus("done");
       }
     } catch (err) {
@@ -287,21 +338,23 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         </button>
       </form>
 
-      {/* Sign-in gets the passwordless escape hatch; sign-up does not, because a
-          magic link on a brand-new address silently creates an account and that
-          would make the two routes mean the same thing again. */}
-      {mode === "signin" && (
-        <>
-          <div className="my-5 flex items-center gap-3" aria-hidden="true">
-            <span className="h-px flex-1" style={{ background: "var(--glass-hairline)" }} />
-            <span className="text-xs faint">{t(lang, "auth_or")}</span>
-            <span className="h-px flex-1" style={{ background: "var(--glass-hairline)" }} />
-          </div>
-          <button type="button" onClick={sendMagicLink} disabled={working} className="btn btn-ghost w-full">
-            <Mail size={15} aria-hidden="true" /> {t(lang, "auth_magic_cta")}
-          </button>
-        </>
-      )}
+      {/* Both routes get the passwordless option, and each asks for what that
+          route means: on /signup the link may register the address, on /login it
+          may not. The earlier objection — that a magic link would make the two
+          routes identical — is answered by `shouldCreateUser` rather than by
+          withholding the feature from people who came to sign up. */}
+      <div className="my-5 flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1" style={{ background: "var(--glass-hairline)" }} />
+        <span className="text-xs faint">{t(lang, "auth_or")}</span>
+        <span className="h-px flex-1" style={{ background: "var(--glass-hairline)" }} />
+      </div>
+      <button type="button" onClick={sendMagicLink} disabled={working} className="btn btn-ghost w-full">
+        <Mail size={15} aria-hidden="true" />{" "}
+        {t(lang, mode === "signup" ? "auth_magic_cta_signup" : "auth_magic_cta")}
+      </button>
+      <p className="mt-2 text-center text-xs faint" style={{ maxWidth: "44ch", marginInline: "auto" }}>
+        {t(lang, "auth_magic_same_browser")}
+      </p>
 
       <p className="mt-6 text-center text-sm muted">
         {t(lang, mode === "signin" ? "auth_no_account" : "auth_have_account")}{" "}
