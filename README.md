@@ -146,7 +146,11 @@ classifier is a static file. Supabase credentials are optional — without them 
 app runs as an anonymous prototype: sync says "on this device only" and
 `/verify/<id>` says verification is unavailable. Nothing is faked.
 
-Deployment (Vercel + Supabase) is in [DEPLOY.md](DEPLOY.md).
+**Deploying.** Vercel builds this repository directly; the only environment
+variables are `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+both public and both protected by row-level security. Apply the migrations in
+`supabase/migrations/` in order. Without either variable the app still runs, as
+an anonymous prototype.
 
 ### Retraining
 
@@ -161,10 +165,22 @@ python ml/tea/export.py
 
 ---
 
-## Testing
+## What is in this repository
+
+This tree is deliberately the code needed to **build and run the site**, plus the
+ML pipeline (`ml/`) and the evidence record (`models/`) that `/models` is built
+from. The project's narrative documents — the decision log, the dataset audit
+write-up, the deployment runbook, the device-test checklist — and the unit-test
+suite are kept with the working copy rather than published here.
+
+That means `npm test` will not run from a fresh clone of this repository: the
+`test/` directory is not part of the published tree. The suite is 196 cases
+across 13 files and runs with no test framework at all, directly under Node's
+`--experimental-strip-types`.
+
+## Testing and checks
 
 ```bash
-npm test         # unit tests, no framework — Node's --experimental-strip-types
 npm run typecheck
 npm run build
 ```
@@ -193,7 +209,9 @@ bench, which is the hardest class of bug to notice.
   languages, the decision logic is unit-tested and the assets serve — but the span
   from WebAssembly instantiation to `session.run` has never been observed on an
   actual phone. The checklist for closing that gap is in
-  [BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md).
+  a 24-step device checklist kept with the project's working notes. The gate
+  closes only when it has been walked on a real Android phone and a desktop
+  browser.
 - **The model is not a diagnosis.** It is a suggestion from an image, trained
   entirely on Assam imagery, and it can be confidently wrong on a farm unlike the
   ones it learned from. Every prediction is shown as a lead to confirm with a TRI
@@ -228,8 +246,8 @@ a per-device attestation hash chain; the price artifact; trilingual UI.
 
 **Planned, not built:** a border-rejection-risk model on FDA import-refusal data;
 a landed-cost and margin calculator for `/sell`. Each is recorded with its reasoning
-in [NEXT-STEPS.md](NEXT-STEPS.md), and the ideas deliberately *not* being built —
-with why — are in [PARKED.md](PARKED.md).
+in the project's working notes, along with the ideas deliberately *not* being
+built and the reason for each.
 
 ---
 
@@ -249,4 +267,5 @@ supabase/       SQL migrations
 ```
 
 Design decisions, with the reasoning and the rejected alternatives, are logged in
-[DECISIONS.md](DECISIONS.md). The ML story in detail is [ML.md](ML.md).
+a dated decision log kept with the project's working notes, which records the
+rejected alternatives as well as the chosen ones.

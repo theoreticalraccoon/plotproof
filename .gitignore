@@ -56,3 +56,25 @@ models/tea/data/
 models/tea/*.pt
 models/tea/*.onnx
 models/tea/*.onnx.data
+
+# --- kept local, not published to GitHub -----------------------------------
+# The published tree is deliberately what is needed to BUILD AND RUN the site,
+# plus README.md, plus the ML pipeline (ml/) and the evidence record (models/)
+# that /models is built from. Everything below still exists on the working
+# machine and in git history before this commit; it is excluded from the tree a
+# visitor clones, not deleted.
+#
+# Restore any of it with:  git rm --cached -r .gitignore && git add -A
+# or simply delete the line that excludes it and `git add` the path.
+/DECISIONS.md
+/DEPLOY.md
+/ML.md
+/NEXT-STEPS.md
+/PARKED.md
+/PROJECT.md
+/SCHEMA.md
+/BROWSER-SMOKE-TEST.md
+/test/
+/scripts/
+/design-system/
+/.mcp.json
