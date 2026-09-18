@@ -226,8 +226,10 @@ stray_weights = [t for t in tracked
                  if t.endswith((".pt", ".onnx", ".onnx.data")) and not t.startswith("public/models/")]
 check("no generated junk is committed", not junk, "; ".join(junk[:8]))
 check("no model weights committed outside public/models", not stray_weights, "; ".join(stray_weights))
-check("no stray __pycache__ on disk",
-      not list(pathlib.Path(".").glob("*/__pycache__")) and not list(pathlib.Path("ml").glob("*/__pycache__")))
+# Deliberately NOT checked on disk: running any ml/ script regenerates
+# __pycache__, so an on-disk assertion fails for anyone who runs the pipeline and
+# teaches people to ignore the audit. It is gitignored, and "is it committed?"
+# above is the question that actually matters.
 
 print("\nDOC AGREEMENT")
 for doc in ("PROJECT.md", "NEXT-STEPS.md", "DECISIONS.md", "ML.md", "BROWSER-SMOKE-TEST.md"):
