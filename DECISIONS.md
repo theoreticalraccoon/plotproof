@@ -534,7 +534,14 @@ model ships as a **static artifact consumed client-side**, following the pattern
 `ml/prices` already proved. No Python service, no inference server, no new API
 routes. `app/api/` still contains exactly one route. The CNN runs in the browser
 via ONNX; weather is Open-Meteo called directly (CORS-open, no key); the soil
-probe talks to the page over Web Serial.
+probe was to talk to the page over Web Serial.
+
+> **Correction, 2026-09-18.** That last clause described the plan, not the
+> build. The Web Serial reader was never written: `sensorReadings`, the
+> calibration store and the anchoring ladder all exist, but nothing writes a
+> reading, so the "sensor" tier is unreachable. Recorded here rather than edited
+> away, because this entry is a log of what was decided and the gap between a
+> decision and a shipped feature is exactly what a log is for. See D-022.
 
 **GROW lane built (deterministic half first, deliberately):** FAO-56 water
 balance and a weather-driven disease-risk engine, both pure and tested. No model

@@ -11,7 +11,8 @@
  * mathematics — those have their own suites and were not touched.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { buildAdvisory } from "../lib/grow/tea/evidence.ts";
 import { decide } from "../lib/grow/tea/predict.ts";
 import {
@@ -529,6 +530,51 @@ test("the source label names a source, not the kind of claim", () => {
       `[${lang}] source and kind labels must not be the same word`,
     );
   }
+});
+
+// ================= the honesty page must not outrun the code ============
+
+/** Walk a directory for TypeScript sources. */
+function tsFilesUnder(dir: string): string[] {
+  const out: string[] = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = `${dir}/${e.name}`;
+    if (e.isDirectory()) out.push(...tsFilesUnder(full));
+    else if (full.endsWith(".ts") || full.endsWith(".tsx")) out.push(full);
+  }
+  return out;
+}
+
+const REPO = fileURLToPath(new URL("..", import.meta.url));
+
+test("no shipped page claims the soil sensor is being read", () => {
+  // The sensor table, the calibration store, the plausibility guard and the
+  // anchoring ladder all exist and all READ, which is exactly why prose kept
+  // drifting into claiming the lane works. /whats-real carried "The app reads a
+  // soil probe over USB and the code path works" while nothing had ever written
+  // a reading. On the one page whose whole purpose is candour that is the worst
+  // possible defect, so it is pinned here as well as in the release audit.
+  const files = ["app", "components", "lib"].flatMap((r) => tsFilesUnder(`${REPO}${r}`));
+  const src = files.map((f) => readFileSync(f, "utf8"));
+
+  // A writer is what would make the claim true. Its own definition does not count.
+  const hasWriter = src.some(
+    (t) =>
+      (t.includes("addSensorReadings(") &&
+        !t.includes("export async function addSensorReadings")) ||
+      t.includes("navigator.serial"),
+  );
+  assert.equal(
+    hasWriter,
+    false,
+    "a sensor writer now exists — update this test and the docs in the same commit",
+  );
+
+  const whatsReal = readFileSync(`${REPO}app/whats-real/page.tsx`, "utf8").toLowerCase();
+  for (const claim of ["reads a soil probe", "probe talks to the page", "code path works"]) {
+    assert.ok(!whatsReal.includes(claim), `/whats-real claims the sensor works: "${claim}"`);
+  }
+  assert.ok(whatsReal.includes("not implemented"), "/whats-real must say so positively");
 });
 
 console.log(`\n${passed} passed`);

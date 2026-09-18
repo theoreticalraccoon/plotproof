@@ -47,6 +47,7 @@ dashboard SQL editor (see `supabase/README.md`). Four objects: `user_state`,
 
 ```bash
 curl -s https://<your-app>/api/health        # {"ok":true,...}
+curl -sI https://<your-app>/models/tea-disease-mnv3s.onnx | head -1   # 200
 ```
 
 Then walk the three lanes:
@@ -56,17 +57,23 @@ Then walk the three lanes:
 | GROW | `/grow` | plot picker → crop/soil → weather, watering verdict, disease pressure |
 | EARN | `/sell` | four questions → HS code, checklist, shipping, price card |
 | PROVE | `/documents`, `/intake` | checklist + generators; capture → attest → `/verify/<id>` |
+| — | `/models` | every model with its metrics, datasets, licences and limitations, read from the published artifacts |
 
 Kill your network on `/grow` and confirm it says weather is unavailable rather
 than spinning — every number on that page derives from weather, so it renders
 nothing rather than estimating.
+
+**One gate is not closed by any of the above.** In-browser ONNX inference has
+never been observed on a real device. Work through
+[BROWSER-SMOKE-TEST.md](BROWSER-SMOKE-TEST.md) on an Android phone and a desktop
+browser before treating `/grow/diagnose` as released.
 
 ## Local
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # 82 unit tests
+npm test             # 179 unit tests
 npm run typecheck
 npm run build
 ```

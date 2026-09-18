@@ -79,6 +79,13 @@ observation of the soil state beats an integration toward it, because a running
 balance accumulates every coefficient error and never forgets it. The UI names
 which tier produced the answer.
 
+**The top tier is currently unreachable.** The `sensorReadings` table, the
+calibration store, the plausibility guard and the ladder itself all exist and all
+read — but nothing writes a reading, because the Web Serial probe reader was never
+built. Every plot therefore runs on `grid` or `balance`, and the screen says so.
+Recorded here because a ladder whose best rung is unbuilt is exactly the kind of
+thing documentation quietly starts describing as working.
+
 ---
 
 ## 4. Price intelligence — `ml/prices/`

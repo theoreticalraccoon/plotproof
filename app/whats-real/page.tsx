@@ -184,10 +184,14 @@ export default function WhatsRealPage() {
                 Deleted. The hardware never existed, and the benchmark data it was built on is
                 licensed for research only, so the model could never have shipped.
               </Entry>
-              <Entry term="A soil sensor on a real farm.">
-                The app reads a soil probe over USB and the code path works, but no probe has been
-                deployed on a farm. Until one is, watering advice is anchored to a satellite-informed
-                soil model, and the screen says which of the two produced the number.
+              <Entry term="Reading a soil sensor.">
+                Not implemented. The app has the database table, the read path and the honesty
+                ladder that would prefer a real measurement over a model estimate &mdash; but nothing
+                writes a reading into it. There is no USB or Web Serial integration, so the
+                &ldquo;measured in this plot&rdquo; tier is unreachable today. Every watering
+                number you can currently see comes from a satellite-informed soil model or, failing
+                that, from rainfall and evaporation alone, and the screen names which of the two
+                produced it. Connecting a Magicbit probe is a future step, not a working feature.
               </Entry>
               <Entry term="Real plots.">
                 No real farmer plot has been captured yet. Any plot you see in a demonstration was

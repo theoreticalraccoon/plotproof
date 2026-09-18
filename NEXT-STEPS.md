@@ -42,10 +42,14 @@ to a real farmer unreviewed.
 
 ## Blocked on a decision
 
-- **Magicbit soil sensor.** The Dexie tables (`sensorReadings`,
-  `growProfiles`) and the three-tier anchoring ladder already exist and work; a
-  real probe would move `/grow` from "grid" to "sensor". Needs the hardware
-  plugged in and a two-point calibration.
+- **Magicbit soil sensor — NOT IMPLEMENTED.** The storage and read side exist:
+  the `sensorReadings` table, `ProbeCalibration`, the plausibility guard in
+  `lib/grow/sensorGuard.ts`, and the three-tier anchoring ladder that would
+  prefer a measurement over an estimate. What does not exist is anything that
+  WRITES a reading: there is no Web Serial reader, no firmware, and
+  `addSensorReadings()` has no caller. The "sensor" tier is therefore
+  unreachable, and every plot runs on "grid" or "balance". Building it needs
+  `lib/sensor/serial.ts`, an ESP32 sketch, and a two-point calibration.
 - **Sinhala LLM assistant** — needs an API key and a per-query cost decision.
 - **Colombo auction spice prices** — needs a real PDF digitisation pass.
 

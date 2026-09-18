@@ -33,6 +33,9 @@ const en: Dict = {
   nav_sell: "Sell",
   nav_documents: "Documents",
   nav_evidence: "EUDR evidence",
+  // Technical evidence page. "Models" reads the same in all three languages in
+  // practice, but the Sinhala and Tamil entries exist so the nav is not mixed.
+  nav_models: "Models",
   nav_menu: "Menu",
   nav_close_menu: "Close menu",
   skip_to_content: "Skip to content",
@@ -445,6 +448,7 @@ const si: Dict = {
   nav_sell: "විකුණන්න",
   nav_documents: "ලේඛන",
   nav_evidence: "EUDR සාක්ෂි",
+  nav_models: "ආකෘති",
   nav_menu: "මෙනුව",
   nav_close_menu: "මෙනුව වසන්න",
   skip_to_content: "අන්තර්ගතයට යන්න",
@@ -781,6 +785,7 @@ const ta: Dict = {
   nav_sell: "விற்பனை",
   nav_documents: "ஆவணங்கள்",
   nav_evidence: "EUDR சான்று",
+  nav_models: "மாதிரிகள்",
   nav_menu: "பட்டி",
   nav_close_menu: "பட்டியை மூடு",
   skip_to_content: "உள்ளடக்கத்திற்கு செல்லவும்",

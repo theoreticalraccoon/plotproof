@@ -67,6 +67,11 @@ authority. Every model ships its metric next to its baseline. Every number has a
 provenance. Where something cannot be determined, the app says so — an honest
 "we cannot tell you" is a usable answer; a confident wrong one is a liability.
 
+`/models` is the technical evidence page: every model with its architecture,
+datasets, licences, three separately-reported test sets, calibration, abstention
+threshold and known limitations — all read at build time from the published
+artifacts, so not one figure on it is typed into a component.
+
 `/whats-real` is the inventory of exactly what works and what does not, and it is
 updated in the same commit as the feature it describes.
 

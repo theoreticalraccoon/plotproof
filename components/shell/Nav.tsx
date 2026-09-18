@@ -10,14 +10,14 @@
  * change in the app passes through, so a tap that is waiting on a route bundle
  * has to say so inline rather than leaving the user to tap again.
  *
- * The desktop links are deliberately text-only. Four icons plus four labels in
- * a 68px bar is four decorations, not four affordances; the drawer keeps its
- * icons because a 52px touch row genuinely reads faster with a leading mark.
+ * The desktop links are deliberately text-only. An icon beside every label in
+ * a 68px bar is decoration, not affordance; the drawer keeps its icons because
+ * a 52px touch row genuinely reads faster with a leading mark.
  */
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Leaf, Menu, X, Search, Sprout, FileText, Satellite } from "lucide-react";
+import { Leaf, Menu, X, Search, Sprout, FileText, Satellite, FlaskConical } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import PendingLink from "@/components/motion/PendingLink";
 import { useCommandPalette } from "./CommandPalette";
@@ -34,6 +34,9 @@ const LINKS = [
   { href: "/sell", key: "nav_sell", Icon: Sprout },
   { href: "/documents", key: "nav_documents", Icon: FileText },
   { href: "/intake", key: "nav_evidence", Icon: Satellite },
+  // Last, and deliberately not in the farmer's year: /models is the technical
+  // evidence page, for someone checking whether the ML is real.
+  { href: "/models", key: "nav_models", Icon: FlaskConical },
 ] as const;
 
 /**

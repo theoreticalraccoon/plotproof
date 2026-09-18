@@ -27,6 +27,7 @@ const PRODUCT_LINKS = [
 ] as const;
 
 const RESOURCE_LINKS = [
+  { href: "/models", key: "nav_models" },
   { href: "/whats-real", key: "footer_whats_real" },
   { href: "/privacy", key: "footer_privacy" },
 ] as const;

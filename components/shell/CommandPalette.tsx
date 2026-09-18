@@ -16,7 +16,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Search, CornerDownLeft, Leaf, FileText, Satellite, Home, Languages } from "lucide-react";
+import { Search, CornerDownLeft, Leaf, FileText, Satellite, Home, Languages, Sprout, FlaskConical } from "lucide-react";
 import { t, useLang, LANGS, setLang } from "@/lib/i18n";
 import { EASE_OUT_2 } from "@/lib/motion/variants";
 import type { LucideIcon } from "lucide-react";
@@ -82,9 +82,13 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     const actionGroup = t(lang, "cmd_group_actions");
     const nav: Command[] = [
       { id: "home", label: t(lang, "nav_home"), group: navGroup, icon: Home, kind: "navigate", href: "/" },
+      // /grow was missing here while being the first link in the nav bar — an
+      // omission from before the GROW lane existed, caught by the release audit.
+      { id: "grow", label: t(lang, "nav_grow"), group: navGroup, icon: Sprout, kind: "navigate", href: "/grow" },
       { id: "sell", label: t(lang, "nav_sell"), group: navGroup, icon: Leaf, kind: "navigate", href: "/sell" },
       { id: "documents", label: t(lang, "nav_documents"), group: navGroup, icon: FileText, kind: "navigate", href: "/documents" },
       { id: "intake", label: t(lang, "nav_evidence"), group: navGroup, icon: Satellite, kind: "navigate", href: "/intake" },
+      { id: "models", label: t(lang, "nav_models"), group: navGroup, icon: FlaskConical, kind: "navigate", href: "/models" },
     ];
     const actions: Command[] = [
       { id: "start-sale", label: t(lang, "cmd_action_start_sale"), group: actionGroup, icon: Leaf, kind: "navigate", href: "/sell" },

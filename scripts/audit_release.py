@@ -108,6 +108,127 @@ joined = " ".join(lim).lower()
 for must in ("blister", "red rust", "tea"):
     check(f"limitations mention '{must}'", must in joined)
 
+# --------------------------------------------------------------------------
+# Hardware claims must match the hardware code that exists
+# --------------------------------------------------------------------------
+
+print("\nHARDWARE CLAIMS")
+
+# Establish what is actually built rather than trusting any document. The sensor
+# lane counts as implemented only if something WRITES a reading: the table, the
+# calibration store, the plausibility guard and the anchoring ladder all exist
+# and all READ, which is exactly why prose kept drifting into claiming it works.
+_TS = [q for d in ("app", "components", "lib", "test") for q in pathlib.Path(d).rglob("*")
+       if q.suffix in (".ts", ".tsx")]
+_code = {q: q.read_text(encoding="utf-8") for q in _TS}
+
+writes_readings = [
+    str(q) for q, txt in _code.items()
+    if "addSensorReadings(" in txt and "export async function addSensorReadings" not in txt
+]
+serial_api = [str(q) for q, txt in _code.items() if "navigator.serial" in txt]
+sensor_implemented = bool(writes_readings or serial_api)
+print("   addSensorReadings callers: %s" % (writes_readings or "none"))
+print("   navigator.serial usage:    %s" % (serial_api or "none"))
+print("   => sensor lane implemented: %s" % sensor_implemented)
+
+# Substrings that only appear in prose asserting a probe is actually being read.
+CLAIMS = [
+    "reads a soil probe",
+    "probe talks to the page",
+    "reads a probe over usb",
+    "soil probe over usb and the code path works",
+    "sensor lane is working",
+]
+# DECISIONS.md is excluded on purpose: it is a dated log, and its original
+# wording is kept beside a correction rather than rewritten.
+PROSE = [pathlib.Path(f) for f in (
+    "app/whats-real/page.tsx", "README.md", "PROJECT.md", "NEXT-STEPS.md",
+    "DEPLOY.md", "ML.md", "SCHEMA.md", "PARKED.md", "BROWSER-SMOKE-TEST.md",
+) if pathlib.Path(f).exists()]
+
+offenders = []
+for f in PROSE:
+    low = f.read_text(encoding="utf-8").lower()
+    for claim in CLAIMS:
+        if claim in low:
+            offenders.append("%s: '%s'" % (f, claim))
+
+if sensor_implemented:
+    check("sensor claims permitted (a writer now exists)", True)
+else:
+    check("no document claims the soil probe is being read",
+          not offenders, "; ".join(offenders))
+    # Silence is not enough on the honesty page: it must say so positively.
+    wr = pathlib.Path("app/whats-real/page.tsx").read_text(encoding="utf-8").lower()
+    check("/whats-real states the sensor is not implemented",
+          "not implemented" in wr and "no usb or web serial" in wr)
+
+# --------------------------------------------------------------------------
+# Repository hygiene: navigation, test counts, links, committed junk
+# --------------------------------------------------------------------------
+
+print("\nREPOSITORY")
+
+MD = sorted(pathlib.Path(".").glob("*.md")) + [
+    q for q in pathlib.Path("models").rglob("*.md")
+] + [q for q in pathlib.Path("ml").rglob("*.md")]
+
+# --- every route with a page is reachable from the nav --------------------
+nav = pathlib.Path("components/shell/Nav.tsx").read_text(encoding="utf-8")
+def _route(q):
+    rel = str(q.parent.relative_to("app")).replace("\\", "/")
+    return "/" if rel == "." else "/" + rel
+
+routes = sorted(_route(q) for q in pathlib.Path("app").rglob("page.tsx"))
+# Routes reached from inside a flow rather than the bar, by design.
+NAV_EXEMPT = {"/", "/login", "/signup", "/privacy", "/whats-real", "/grow/diagnose",
+              "/documents/invoice", "/documents/packing-list",
+              "/documents/certificate-of-origin", "/plot/[id]", "/verify/[id]"}
+unlinked = [r for r in routes if r not in NAV_EXEMPT and f'"{r}"' not in nav]
+check("every top-level route is in the nav", not unlinked, str(unlinked))
+check("/models exists and is linked",
+      pathlib.Path("app/models/page.tsx").exists() and '"/models"' in nav)
+
+# --- no document states a stale test count --------------------------------
+# Counted statically from the suites themselves: every `test(` call increments
+# the counter the runner prints, so the two cannot disagree.
+actual_tests = sum(
+    len([ln for ln in q.read_text(encoding="utf-8").splitlines() if ln.startswith("test(")])
+    for q in sorted(pathlib.Path("test").glob("*.test.ts"))
+)
+print(f"   test() declarations across test/: {actual_tests}")
+stale_counts = []
+for f in [x for x in MD if x.name != "DECISIONS.md"]:
+    for m in re.finditer(r"(\d{2,4})\s+(?:unit\s+)?tests\b", f.read_text(encoding="utf-8")):
+        if int(m.group(1)) != actual_tests:
+            stale_counts.append(f"{f}: '{m.group(0)}' (actual {actual_tests})")
+check("no document states a stale test count", not stale_counts, "; ".join(stale_counts))
+
+# --- internal markdown links resolve --------------------------------------
+broken = []
+for f in MD:
+    for m in re.finditer(r"\]\(([^)#:]+?)(?:#[^)]*)?\)", f.read_text(encoding="utf-8")):
+        target = m.group(1).strip()
+        if target.startswith(("http", "mailto:", "/")):
+            continue
+        if not (f.parent / target).exists():
+            broken.append(f"{f} -> {target}")
+check("every relative markdown link resolves", not broken, "; ".join(broken[:8]))
+
+# --- nothing generated is committed ---------------------------------------
+import subprocess
+tracked = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.split()
+JUNK = ("__pycache__", ".next/", "node_modules/", ".DS_Store")
+junk = [t for t in tracked if any(j in t for j in JUNK)]
+# Model binaries belong in public/ (the app serves them) and nowhere else.
+stray_weights = [t for t in tracked
+                 if t.endswith((".pt", ".onnx", ".onnx.data")) and not t.startswith("public/models/")]
+check("no generated junk is committed", not junk, "; ".join(junk[:8]))
+check("no model weights committed outside public/models", not stray_weights, "; ".join(stray_weights))
+check("no stray __pycache__ on disk",
+      not list(pathlib.Path(".").glob("*/__pycache__")) and not list(pathlib.Path("ml").glob("*/__pycache__")))
+
 print("\nDOC AGREEMENT")
 for doc in ("PROJECT.md", "NEXT-STEPS.md", "DECISIONS.md", "ML.md", "BROWSER-SMOKE-TEST.md"):
     text = pathlib.Path(doc).read_text(encoding="utf-8")

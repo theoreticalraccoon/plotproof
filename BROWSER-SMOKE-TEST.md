@@ -11,7 +11,7 @@ What is already verified, and why none of it counts:
 | --- | --- |
 | `public/models/*` serve 200 | A stale service worker, a proxy or a cached deploy also serve 200 |
 | `ml/tea/smoke_infer.py` runs the published `.onnx` | That is onnxruntime **for Python**, a different runtime and a different build |
-| 178 unit tests pass | They exercise the pure functions either side of the session, not the session |
+| 179 unit tests pass | They exercise the pure functions either side of the session, not the session |
 | `ml/tea/check_ts_parity.py` passes (37/37 confident at n=40) | It proves the two preprocessing implementations agree; it still runs the ONNX in Python |
 | `scripts/audit_release.py` passes | It proves the card, the artifact and the docs agree; it never touches a browser |
 
