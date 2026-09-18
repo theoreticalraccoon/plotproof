@@ -116,9 +116,32 @@ export default function WhatsRealPage() {
                 When it is not configured, the sync bar says so — records stay on the device and
                 nothing pretends otherwise.
               </Entry>
-              <Entry term="Export document generators.">
-                Commercial invoice, packing list, and certificate-of-origin drafts, plus a
-                compliance checklist derived from product, origin, and destination.
+              <Entry term="The consignment workspace.">
+                One record per sale holds every detail the paperwork needs, and the commercial
+                invoice, packing list and certificate-of-origin draft are all written from it — so
+                they cannot disagree with each other about quantity or value, which is a real reason
+                consignments are held at the border. Each document can be opened and corrected on
+                its own; the correction goes back to the record and appears on the others. An
+                incomplete sale still downloads, with every page marked DRAFT.
+              </Entry>
+              <Entry term="Documents we will not produce.">
+                The phytosanitary certificate, the customs declaration, the certificate of origin
+                once certified — these are issued by an authority, and a generated look-alike would
+                be a forgery. They appear as a checklist naming who issues each one and how to
+                apply, checked against the cited authorities on the date shown on the page.
+              </Entry>
+              <Entry term="Deforestation screening inside the sale.">
+                For the EUDR commodities bound for the EU, each attested plot is measured against
+                three published satellite products — JRC Global Forest Cover 2020, Hansen/UMD tree
+                cover loss, and the WRI/Google loss-driver model — and a stated rule reads the
+                result. Details below.
+              </Entry>
+              <Entry term="An export assistant that can see the consignment.">
+                A Claude Haiku assistant answering from the same sourced requirement catalog the
+                checklist is built from, with the open sale summarised into its context. It is
+                instructed never to invent a regulation, form number, fee or deadline, and to name
+                the authority to confirm with. Rate-limited per account. Where the deployment has no
+                API key it says so and refuses, rather than answering from general knowledge.
               </Entry>
               <Entry term="DDS geolocation export.">
                 Each plot exports its boundary as TRACES-shaped GeoJSON (WGS84) that an exporter or
@@ -165,12 +188,23 @@ export default function WhatsRealPage() {
               </h2>
             </div>
             <Entries className="mt-6">
-              <Entry term="Satellite deforestation verdicts.">
-                We deliberately do not run our own deforestation model. An earlier in-house analysis
-                service was removed after review: it could not be trained or validated honestly by
-                one developer, and inventing a verdict was worse than having none. For deforestation context, plots link to the authoritative public
-                datasets instead — JRC Tropical Moist Forest and Global Forest Watch (Hansen) — so
-                any verdict-shaped claim is theirs, not ours.
+              <Entry term="A deforestation model of our own.">
+                We still do not run one. An earlier in-house analysis service was removed after
+                review: it could not be trained or validated honestly by one developer, and
+                inventing a verdict was worse than having none. What the sale flow now shows is area
+                statistics over three products published and validated by other people — JRC Global
+                Forest Cover 2020, Hansen/UMD Global Forest Change, and the WRI/Google loss-driver
+                model — plus a rule, written down and tested, that reads them against the EUDR
+                question. The numbers are theirs; the reasoning is ours and is stated on screen.
+              </Entry>
+              <Entry term="An EUDR certificate.">
+                There is no such thing, and nothing in this app issues one. The EU operator files a
+                due diligence statement; our screening is a risk screening that says what the
+                satellite record supports and what evidence to go and gather where it does not. It
+                never says a consignment is compliant. A screening also cannot see the ground: the
+                two forest products regularly disagree over tree crops such as rubber, whose closed
+                canopy is often mapped as forest, and the panel reports that disagreement rather
+                than resolving it in either direction.
               </Entry>
 
               <Entry term="Tea disease detection outside its training domain.">
