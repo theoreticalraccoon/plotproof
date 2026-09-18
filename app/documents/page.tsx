@@ -1,129 +1,112 @@
 "use client";
 
 /**
- * Documents hub. Reads the sale intent saved by /sell and shows the full,
- * personalised checklist again, a durable return point, now with per-document
- * status the farmer controls ("Mark as done") and an overall progress bar.
- * Same checklist component the /sell results step uses, so the two never drift.
+ * /documents — just the documents.
+ *
+ * The checklist of what an authority must issue lives on /sell, next to the
+ * consignment it belongs to. This page is the other half: the three documents
+ * PlotProof produces, opened to correct the details inside one of them.
  */
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { DOCUMENT_TYPES, getProduct } from "@/lib/compliance/catalog";
-import { resolveRequirements } from "@/lib/compliance/resolver";
-import { loadIntent } from "@/lib/compliance/intent";
-import { getStatuses, progressSummary, setStatus, type StatusMap } from "@/lib/compliance/status";
-import { pushUserState } from "@/lib/supabase/userState";
-import { countryName } from "@/lib/geo/countries";
+import { Download, FileText, Loader2, Pencil } from "lucide-react";
+import { useState } from "react";
+import Breadcrumb from "@/components/shell/Breadcrumb";
+import DocPreview from "@/components/documents/DocPreview";
+import NoSale from "@/components/documents/NoSale";
 import { t, useLang } from "@/lib/i18n";
-import DocumentChecklist from "@/components/compliance/DocumentChecklist";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import Reveal from "@/components/motion/Reveal";
-import { hoverLift } from "@/lib/motion/variants";
-import type { DocStatus, RequirementResult, SaleIntent } from "@/lib/compliance/types";
+import { buildDoc, DOC_KINDS, docKey } from "@/lib/sale/documents";
+import { downloadDocs } from "@/lib/sale/download";
+import { isSaleComplete, saleTitle } from "@/lib/sale/model";
+import { useCurrentSale } from "@/lib/sale/store";
 
 export default function DocumentsPage() {
   const lang = useLang();
-  const [intent, setIntent] = useState<SaleIntent | null>(null);
-  const [result, setResult] = useState<RequirementResult | null>(null);
-  const [statuses, setStatuses] = useState<StatusMap>({});
+  const sale = useCurrentSale();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const i = loadIntent();
-    setIntent(i);
-    if (!i) return;
-    const product = getProduct(i.productId);
-    if (!product) return;
-    setResult(
-      resolveRequirements(
-        {
-          product,
-          originCountry: i.originCountry,
-          destination: i.destination,
-          organicClaim: i.organicClaim,
-        },
-        DOCUMENT_TYPES,
-      ),
-    );
-    setStatuses(getStatuses(i));
-  }, []);
+  if (!sale) return <NoSale />;
 
-  if (!intent || !result) {
-    return (
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center px-6 text-center">
-        <div className="glass-card w-full p-8">
-          <div className="mb-4 flex justify-center"><LanguageSwitcher /></div>
-          <h1 className="text-lg font-semibold">{t(lang, "documents_title")}</h1>
-          <p className="mt-2 text-sm muted">{t(lang, "documents_empty_body")}</p>
-          <motion.div {...hoverLift}>
-            <Link href="/sell" className="btn btn-primary mt-5">
-              {t(lang, "sell_cta")}
-            </Link>
-          </motion.div>
-        </div>
-      </main>
-    );
-  }
+  const complete = isSaleComplete(sale);
+  const today = new Date().toISOString().slice(0, 10);
+  const docs = DOC_KINDS.map((k) => buildDoc(k, sale, today, !complete));
 
-  const product = getProduct(intent.productId);
-  const requiredIds = result.documents.map((d) => d.documentTypeId);
-  const progress = progressSummary(statuses, requiredIds);
-
-  const onSetStatus = (documentTypeId: string, status: DocStatus) => {
-    setStatuses(setStatus(intent, documentTypeId, status));
-    pushUserState();
+  const downloadAll = async () => {
+    setBusy(true);
+    setError(false);
+    try {
+      await downloadDocs(docs, `${sale.numbers.invoice}-export-documents.pdf`);
+    } catch {
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const pct = progress.total ? (progress.ready / progress.total) * 100 : 0;
   return (
-    <main className="mx-auto min-h-dvh max-w-2xl px-5 py-6 sm:px-8">
-      <Reveal>
-        <header className="mb-5">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <h1 className="text-xl font-semibold tracking-tight">{t(lang, "documents_title")}</h1>
-            <LanguageSwitcher />
-          </div>
-          <p className="text-sm muted">
-            <strong>{product?.name ?? intent.productId}</strong> (HS {product?.hsCode ?? "-"}) ·{" "}
-            {countryName(intent.originCountry)} → {intent.destination}.{" "}
-            <Link href="/sell" className="underline underline-offset-2" style={{ color: "var(--accent)" }}>
-              {t(lang, "start_over")}
-            </Link>
+    <main className="mx-auto min-h-dvh w-full max-w-5xl px-5 pb-24 pt-6 sm:px-8">
+      <Breadcrumb items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_documents") }]} />
+
+      <header className="mt-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[2rem] leading-[1.06] sm:text-[2.4rem]">{t(lang, "docs_title")}</h1>
+          <p className="mt-2.5 text-[1rem] leading-relaxed muted" style={{ maxWidth: "58ch" }}>
+            {t(lang, "docs_lede")}
           </p>
-        </header>
-      </Reveal>
-
-      {/* progress */}
-      <Reveal delay={0.05}>
-        <div className="glass mb-5 p-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-semibold">
-              {t(lang, "progress", { ready: progress.ready, total: progress.total })}
-            </span>
-            <span className="text-xs faint tabular-nums">{Math.round(pct)}%</span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: "var(--glass-border-2)" }}>
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: "var(--accent)" }}
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
+          <p className="mt-2 text-[0.85rem] faint">{t(lang, "docs_for_sale", { name: saleTitle(sale) })}</p>
         </div>
-      </Reveal>
+        <button
+          type="button"
+          className="btn btn-primary inline-flex min-h-[48px] items-center gap-2"
+          onClick={() => void downloadAll()}
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {busy ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Download size={16} aria-hidden="true" />}
+          {t(lang, "sale_docs_download_all")}
+        </button>
+      </header>
 
-      <Reveal delay={0.1}>
-        <div className="flex flex-col gap-5">
-          <DocumentChecklist documents={result.documents} statuses={statuses} onSetStatus={onSetStatus} />
-        </div>
-      </Reveal>
-
-      <p className="tag tag-warn mt-5 !block !rounded-xl p-3 text-xs">{t(lang, "disclaimer")}</p>
-      {lang !== "en" && (
-        <p className="glass mt-2 p-3 text-xs muted">{t(lang, "docs_in_english")}</p>
+      {!complete && (
+        <p className="mt-4 rounded-[var(--radius-sm)] px-4 py-3 text-[0.85rem]" style={{ background: "var(--warn-soft)", color: "var(--warn)" }}>
+          {t(lang, "doc_draft_note")}
+        </p>
       )}
+      {error && (
+        <p className="mt-4 text-[0.85rem]" role="alert" style={{ color: "var(--danger)" }}>
+          {t(lang, "sale_docs_error")}
+        </p>
+      )}
+
+      <ul className="mt-8 space-y-10">
+        {docs.map((doc) => (
+          <li key={doc.kind}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2.5 text-[1.15rem] font-semibold">
+                <FileText size={18} aria-hidden="true" style={{ color: "var(--accent)" }} />
+                {t(lang, `${docKey(doc.kind)}_name`)}
+                <span className="font-mono text-[0.75rem] font-normal faint">{doc.number}</span>
+              </h2>
+              <Link
+                href={`/documents/${doc.kind}`}
+                className="btn btn-ghost btn-sm inline-flex min-h-[40px] items-center gap-1.5"
+              >
+                <Pencil size={14} aria-hidden="true" /> {t(lang, "docs_edit_this")}
+              </Link>
+            </div>
+            <div className="mt-3">
+              <DocPreview doc={doc} />
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-10 text-[0.85rem] muted">
+        {t(lang, "docs_authority_note")}{" "}
+        <Link href="/sell#authority" className="underline underline-offset-2">
+          {t(lang, "docs_authority_link")}
+        </Link>
+      </p>
     </main>
   );
 }

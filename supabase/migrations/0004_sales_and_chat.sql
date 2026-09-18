@@ -13,14 +13,17 @@ alter table public.user_state
 
 
 -- 2. Chat usage ledger -------------------------------------------------------
--- One row per assistant request, used to rate-limit per account. Holds counts and
--- token usage only — never the question or the answer.
+-- One row per assistant request, used to rate-limit per account. It records only
+-- that a request happened and when — never the question or the answer.
+--
+-- The row is inserted BEFORE the model is called, so an answer abandoned
+-- half-way still counts. That is also why there are no token columns: filling
+-- them in afterwards would need an UPDATE policy, and any update policy would let
+-- a client rewrite created_at and so escape its own rate limit.
 create table if not exists public.chat_usage (
-  id            bigint generated always as identity primary key,
-  user_id       uuid not null references auth.users (id) on delete cascade,
-  created_at    timestamptz not null default now(),
-  input_tokens  integer not null default 0,
-  output_tokens integer not null default 0
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
 );
 
 create index if not exists chat_usage_user_time
@@ -28,9 +31,10 @@ create index if not exists chat_usage_user_time
 
 alter table public.chat_usage enable row level security;
 
--- A user may see and add only their own rows. There is deliberately no update
--- or delete policy: a client that could delete its own ledger rows could reset
--- its own rate limit.
+-- A user may see and add only their own rows. There is deliberately no update or
+-- delete policy: a client that could change or remove its own ledger rows could
+-- reset its own rate limit. created_at is set by the database default; the
+-- insert policy below does not let the client choose it.
 drop policy if exists "chat_usage_select_own" on public.chat_usage;
 create policy "chat_usage_select_own"
   on public.chat_usage for select
@@ -39,4 +43,4 @@ create policy "chat_usage_select_own"
 drop policy if exists "chat_usage_insert_own" on public.chat_usage;
 create policy "chat_usage_insert_own"
   on public.chat_usage for insert
-  with check (auth.uid() = user_id);
+  with check (auth.uid() = user_id and created_at >= now() - interval '1 minute');

@@ -3,6 +3,7 @@
  * rules — the part that can lose an officer's work if it is wrong — are tested
  * under plain Node without a browser.
  */
+import { normalizeSale } from "./model.ts";
 import type { Sale } from "./types";
 
 export interface SaleBook {
@@ -69,9 +70,9 @@ export function parseBook(raw: unknown): SaleBook | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Partial<SaleBook>;
   if (!Array.isArray(r.sales)) return null;
-  const sales = r.sales.filter(
-    (s): s is Sale => !!s && typeof s === "object" && typeof (s as Sale).id === "string",
-  );
+  const sales = r.sales
+    .filter((s): s is Sale => !!s && typeof s === "object" && typeof (s as Sale).id === "string")
+    .map(normalizeSale);
   return {
     owner: typeof r.owner === "string" ? r.owner : null,
     currentId: typeof r.currentId === "string" ? r.currentId : null,

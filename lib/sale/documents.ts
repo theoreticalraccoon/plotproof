@@ -20,6 +20,14 @@ export type DocKind = "invoice" | "packing-list" | "certificate-of-origin";
 
 export const DOC_KINDS: DocKind[] = ["invoice", "packing-list", "certificate-of-origin"];
 
+/**
+ * The i18n stem for a document kind. The kinds are hyphenated because they are
+ * also URL segments; translation keys are identifiers, so they are not.
+ */
+export function docKey(kind: DocKind): string {
+  return "doc_" + kind.replace(/-/g, "_");
+}
+
 export interface DocHeader {
   kind: DocKind;
   /** i18n key for the document's title. */

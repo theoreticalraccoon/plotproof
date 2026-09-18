@@ -55,12 +55,36 @@ export function newSale(now: Date, id: string): Sale {
     vesselOrFlight: "",
     shipmentDate: "",
     plotIds: [],
+    eudrChecks: {},
     numbers: {
       invoice: docNumber("INV", at),
       packingList: docNumber("PL", at),
       certificateOfOrigin: docNumber("COO", at),
     },
     authorityStatus: {},
+  };
+}
+
+/**
+ * Fill in any field a stored sale is missing.
+ *
+ * Sales live in localStorage and in the account for months, and the record
+ * grows over time. A sale saved before `eudrChecks` existed would otherwise
+ * crash the first component that reads it. Every nested object is merged, so a
+ * party saved before `rexNumber` was added gains an empty one.
+ */
+export function normalizeSale(raw: Sale): Sale {
+  const base = newSale(new Date(raw.createdAt || Date.now()), raw.id);
+  return {
+    ...base,
+    ...raw,
+    exporter: { ...base.exporter, ...raw.exporter },
+    farmer: { ...base.farmer, ...raw.farmer },
+    buyer: { ...base.buyer, ...raw.buyer },
+    numbers: { ...base.numbers, ...raw.numbers },
+    plotIds: Array.isArray(raw.plotIds) ? raw.plotIds : [],
+    eudrChecks: raw.eudrChecks && typeof raw.eudrChecks === "object" ? raw.eudrChecks : {},
+    authorityStatus: raw.authorityStatus && typeof raw.authorityStatus === "object" ? raw.authorityStatus : {},
   };
 }
 

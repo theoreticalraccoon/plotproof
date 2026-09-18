@@ -19,6 +19,7 @@
  * requirement resolver's contract does not change.
  */
 import type { DocStatus, Market, ShipMode } from "../compliance/types";
+import type { ForestStats } from "../eudr/verdict";
 
 export const ORIGIN_COUNTRY = "LK" as const;
 
@@ -104,6 +105,12 @@ export interface Sale {
   // --- EUDR -----------------------------------------------------------
   /** Attested plots this consignment was grown on. EUDR crops to the EU only. */
   plotIds: string[];
+  /**
+   * The forest statistics fetched for each plot, keyed by plot id. Stored as
+   * the raw statistics rather than a verdict, so a change to the screening
+   * rules re-scores every saved plot instead of freezing yesterday's answer.
+   */
+  eudrChecks: Record<string, { stats: ForestStats; at: string }>;
 
   // --- documents ------------------------------------------------------
   /**
@@ -122,4 +129,4 @@ export interface Sale {
 }
 
 /** The fields the officer fills in; everything else is bookkeeping. */
-export type SaleInput = Omit<Sale, "id" | "createdAt" | "updatedAt" | "numbers" | "authorityStatus">;
+export type SaleInput = Omit<Sale, "id" | "createdAt" | "updatedAt" | "numbers" | "authorityStatus" | "eudrChecks">;
