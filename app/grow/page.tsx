@@ -178,11 +178,19 @@ export default function GrowPage() {
                   so a tea grower with no signal must still be able to reach it.
                   Weather pressure is not a diagnosis; this is the only thing in
                   the lane that looks at a leaf. */}
-              {profile.crop === "tea" && (
-                <PendingLink href="/grow/diagnose" className="btn btn-primary min-h-[48px]">
-                  {t(lang, "risk_check_leaves")}
+              <div className="flex flex-wrap gap-2">
+                {profile.crop === "tea" && (
+                  <PendingLink href="/grow/diagnose" className="btn btn-primary min-h-[48px]">
+                    {t(lang, "risk_check_leaves")}
+                  </PendingLink>
+                )}
+                {/* The only route that can move this plot from a modelled soil
+                    estimate to a measured one. Offered for every crop: the water
+                    balance is crop-general even though the leaf checker is not. */}
+                <PendingLink href="/grow/sensor" className="btn btn-ghost min-h-[48px]">
+                  {t(lang, "sensor_open")}
                 </PendingLink>
-              )}
+              </div>
 
               {/* Weather down and nothing cached: say so, and show NOTHING below.
                   Every number on this page is derived from weather, so rendering

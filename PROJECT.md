@@ -20,6 +20,9 @@ from that plot's own conditions.
   constant traceable to a published table. Anchored to the best soil evidence
   available: a sensor if one exists, otherwise a satellite-informed soil model,
   otherwise the accumulated balance. The UI names which.
+- **Soil probe** — `/grow/sensor` reads a Magicbit over Web Serial, calibrates it
+  against air and water, and stores readings that take the top rung of that
+  ladder. Built and unit-tested; never run against a real board.
 - **Disease pressure** — weather-driven infection risk for blister blight, brown
   blight and grey blight, with the specific conditions that produced the score.
   Infection *pressure*, never a diagnosis.

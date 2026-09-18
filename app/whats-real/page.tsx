@@ -184,14 +184,18 @@ export default function WhatsRealPage() {
                 Deleted. The hardware never existed, and the benchmark data it was built on is
                 licensed for research only, so the model could never have shipped.
               </Entry>
-              <Entry term="Reading a soil sensor.">
-                Not implemented. The app has the database table, the read path and the honesty
-                ladder that would prefer a real measurement over a model estimate &mdash; but nothing
-                writes a reading into it. There is no USB or Web Serial integration, so the
-                &ldquo;measured in this plot&rdquo; tier is unreachable today. Every watering
-                number you can currently see comes from a satellite-informed soil model or, failing
-                that, from rainfall and evaporation alone, and the screen names which of the two
-                produced it. Connecting a Magicbit probe is a future step, not a working feature.
+              <Entry term="A soil probe on a real farm.">
+                The software is built and the arithmetic is tested: Web Serial opens the USB port,
+                the frame parser rejects anything it cannot vouch for, two-point calibration turns
+                the probe&rsquo;s arbitrary count into a water content, and a saved reading takes the
+                top rung of the watering advice. What has <em>not</em> happened is any of it running
+                against an actual Magicbit. The firmware has never been flashed, the serial path has
+                never seen a real board, and no probe has been pushed into real soil. Until that
+                happens, treat the lane as untested hardware code, and note that the calibration is a
+                field one &mdash; air and water remove the probe&rsquo;s arbitrary scale, but a water
+                content that is accurate for a specific soil needs oven-dried samples. The simulated
+                probe on that screen is labelled as simulated everywhere it appears, including in
+                storage.
               </Entry>
               <Entry term="Real plots.">
                 No real farmer plot has been captured yet. Any plot you see in a demonstration was

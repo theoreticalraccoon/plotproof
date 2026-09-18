@@ -79,12 +79,18 @@ observation of the soil state beats an integration toward it, because a running
 balance accumulates every coefficient error and never forgets it. The UI names
 which tier produced the answer.
 
-**The top tier is currently unreachable.** The `sensorReadings` table, the
-calibration store, the plausibility guard and the ladder itself all exist and all
-read — but nothing writes a reading, because the Web Serial probe reader was never
-built. Every plot therefore runs on `grid` or `balance`, and the screen says so.
-Recorded here because a ladder whose best rung is unbuilt is exactly the kind of
-thing documentation quietly starts describing as working.
+**The top tier is now reachable, and untested against hardware.** `/grow/sensor`
+opens the USB port with Web Serial, parses the board's JSON frames, applies a
+two-point air/water calibration and writes readings that the ladder then prefers
+over the grid estimate. The parser and the calibration arithmetic are unit-tested;
+the serial path and the ESP32 sketch have never been run against a real Magicbit.
+
+Two honesty constraints ride with it. The calibration is a FIELD calibration —
+air and water remove the probe's arbitrary ADC scale, but a water content
+accurate for a specific soil needs oven-dried gravimetric samples, and the UI
+says so. And because Web Serial is Chromium-desktop-only, a labelled simulator
+exists for demonstrations; every reading it produces is stored with
+`source: "simulated"` so the label survives the screen that produced it.
 
 ---
 

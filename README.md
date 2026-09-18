@@ -33,6 +33,7 @@ calibration, limitations — at **`/models`**.
 | --- | --- |
 | `/grow` | Weather, a watering verdict and disease pressure for one plot, computed from that plot's own conditions. Says which tier of evidence set the soil state. |
 | `/grow/diagnose` | The full advisory: field status → leaf assessment (the CNN) → conditions → why → what to do. Each line of the "why" names its own provenance. |
+| `/grow/sensor` | Connect a Magicbit soil probe over USB (Web Serial), calibrate it against air and water, and store readings that outrank the satellite soil model. |
 | `/sell` | Four questions → an HS code, a documents checklist, shipping options, and a world reference price shown next to its own forecast error and a naive baseline. |
 | `/documents` | Which papers a shipment needs, with generators for the three we can legitimately produce: invoice, packing list, certificate-of-origin *draft*. |
 | `/intake` | Offline-first plot capture: draw or walk a boundary, photograph, attest with a signature. Everything persists on-device the instant it is captured. |
@@ -203,10 +204,12 @@ bench, which is the hardest class of bug to notice.
   verifiable one.
 - **No Sri Lankan tea imagery exists in any public dataset** we could find. The
   cross-dataset number *is* the measurement of that gap.
-- **The soil-sensor lane is not implemented.** The table, the calibration store and
-  the honesty ladder exist and read; nothing writes a reading. There is no USB or
-  Web Serial integration, so watering advice runs on a satellite-informed soil
-  model or a rainfall balance, and the screen names which.
+- **The soil probe has never been run against real hardware.** The software is
+  complete — Web Serial, frame parsing, two-point calibration, storage — and the
+  pure parts are unit-tested, but the ESP32 sketch has never been flashed and the
+  serial path has never seen a board. The calibration it performs is a field one:
+  air and water remove the probe's arbitrary scale, but a water content accurate
+  for a specific soil needs oven-dried samples.
 - **Sinhala and Tamil are unreviewed.** Labels, states, errors and names are
   translated; the advisory sentences stay English by policy, because a
   mistranslated treatment instruction is worse than an English one, and the app
@@ -223,9 +226,8 @@ tea classifier end to end (audit → split → train → calibrate → abstain �
 browser integration); the FAO-56 and disease-pressure engines; offline capture with
 a per-device attestation hash chain; the price artifact; trilingual UI.
 
-**Planned, not built:** the Magicbit soil-probe reader and its sensor↔grid
-calibration fit; a border-rejection-risk model on FDA import-refusal data; a
-landed-cost and margin calculator for `/sell`. Each is recorded with its reasoning
+**Planned, not built:** a border-rejection-risk model on FDA import-refusal data;
+a landed-cost and margin calculator for `/sell`. Each is recorded with its reasoning
 in [NEXT-STEPS.md](NEXT-STEPS.md), and the ideas deliberately *not* being built —
 with why — are in [PARKED.md](PARKED.md).
 
@@ -236,7 +238,8 @@ with why — are in [PARKED.md](PARKED.md).
 ```
 app/            routes (Next.js App Router)
 components/     UI, grouped by lane
-lib/            pure logic — grow/, intake/, compliance/, weather/, i18n/
+lib/            pure logic — grow/, sensor/, intake/, compliance/, weather/, i18n/
+hardware/       the ESP32 sketch for the soil node
 ml/tea/         the classifier pipeline: audit, split, train, evaluate, export, verify
 models/tea/     the evidence record: card, evaluation, taxonomy, provenance, audit
 public/models/  the artifacts the running app consumes

@@ -547,34 +547,61 @@ function tsFilesUnder(dir: string): string[] {
 
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 
-test("no shipped page claims the soil sensor is being read", () => {
-  // The sensor table, the calibration store, the plausibility guard and the
-  // anchoring ladder all exist and all READ, which is exactly why prose kept
-  // drifting into claiming the lane works. /whats-real carried "The app reads a
-  // soil probe over USB and the code path works" while nothing had ever written
-  // a reading. On the one page whose whole purpose is candour that is the worst
-  // possible defect, so it is pinned here as well as in the release audit.
+test("the sensor lane's claims match the sensor lane's code", () => {
+  // Version 1 of this test asserted that NO writer existed, because none did and
+  // /whats-real was claiming otherwise. A writer exists now, so the invariant
+  // moves rather than disappears: the claim that is still untrue is that any of
+  // it has run against real hardware. The firmware has never been flashed and the
+  // serial path has never seen a board.
   const files = ["app", "components", "lib"].flatMap((r) => tsFilesUnder(`${REPO}${r}`));
   const src = files.map((f) => readFileSync(f, "utf8"));
 
-  // A writer is what would make the claim true. Its own definition does not count.
   const hasWriter = src.some(
     (t) =>
       (t.includes("addSensorReadings(") &&
         !t.includes("export async function addSensorReadings")) ||
       t.includes("navigator.serial"),
   );
-  assert.equal(
-    hasWriter,
-    false,
-    "a sensor writer now exists — update this test and the docs in the same commit",
-  );
+  assert.equal(hasWriter, true, "the sensor lane should have a writer — did serial.ts move?");
 
   const whatsReal = readFileSync(`${REPO}app/whats-real/page.tsx`, "utf8").toLowerCase();
-  for (const claim of ["reads a soil probe", "probe talks to the page", "code path works"]) {
-    assert.ok(!whatsReal.includes(claim), `/whats-real claims the sensor works: "${claim}"`);
+
+  // Claims that would only become true after someone runs a real probe.
+  for (const unearned of [
+    "deployed on a farm",
+    "verified against a magicbit",
+    "tested with real hardware",
+    "measured in real soil",
+  ]) {
+    assert.ok(!whatsReal.includes(unearned), `/whats-real claims unverified hardware: "${unearned}"`);
   }
-  assert.ok(whatsReal.includes("not implemented"), "/whats-real must say so positively");
+  // And it must positively say the hardware side is untested, not merely omit it.
+  assert.ok(
+    whatsReal.includes("never been flashed") && whatsReal.includes("never seen a real board"),
+    "/whats-real must state that the hardware path is untested",
+  );
+});
+
+test("a simulated reading can never be mistaken for a measurement", () => {
+  // The simulator exists because Web Serial is Chromium-desktop-only and the app
+  // gets demonstrated on machines with no probe attached. That is only acceptable
+  // while the label is impossible to lose: it rides on the stored row, not just
+  // on the screen that was open at the time.
+  const panel = readFileSync(`${REPO}components/grow/SensorPanel.tsx`, "utf8");
+  assert.ok(panel.includes("source,"), "the stored row must carry its source");
+  assert.ok(
+    panel.includes("sensor_simulated_warning"),
+    "a running simulation must be labelled on screen",
+  );
+  const sensorPage = readFileSync(`${REPO}app/grow/sensor/page.tsx`, "utf8");
+  assert.ok(
+    sensorPage.includes("sensor_stored_simulated"),
+    "stored simulated readings must stay labelled after the fact",
+  );
+  for (const lang of LANG_CODES) {
+    const warn = t(lang, "sensor_simulated_warning");
+    assert.notEqual(warn, "sensor_simulated_warning", `[${lang}] missing`);
+  }
 });
 
 console.log(`\n${passed} passed`);

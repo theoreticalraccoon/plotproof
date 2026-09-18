@@ -42,14 +42,14 @@ to a real farmer unreviewed.
 
 ## Blocked on a decision
 
-- **Magicbit soil sensor — NOT IMPLEMENTED.** The storage and read side exist:
-  the `sensorReadings` table, `ProbeCalibration`, the plausibility guard in
-  `lib/grow/sensorGuard.ts`, and the three-tier anchoring ladder that would
-  prefer a measurement over an estimate. What does not exist is anything that
-  WRITES a reading: there is no Web Serial reader, no firmware, and
-  `addSensorReadings()` has no caller. The "sensor" tier is therefore
-  unreachable, and every plot runs on "grid" or "balance". Building it needs
-  `lib/sensor/serial.ts`, an ESP32 sketch, and a two-point calibration.
+- **Magicbit soil sensor — built, never run against hardware.** `/grow/sensor`,
+  `lib/sensor/{serial,protocol,calibrate}.ts` and
+  `hardware/magicbit/soil_node.ino` all exist, and the parser and calibration
+  arithmetic are covered by a 16-case suite. Nobody has flashed the sketch or plugged in a board.
+  Closing that needs a Magicbit, a capacitive probe on GPIO 32, and one session
+  on a Chromium desktop browser: flash, connect, capture the dry and wet anchors,
+  push the probe into soil, and check the reading against how the soil feels.
+  Until then it is untested hardware code and `/whats-real` says so.
 - **Sinhala LLM assistant** — needs an API key and a per-query cost decision.
 - **Colombo auction spice prices** — needs a real PDF digitisation pass.
 

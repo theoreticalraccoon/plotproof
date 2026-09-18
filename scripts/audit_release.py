@@ -154,15 +154,28 @@ for f in PROSE:
         if claim in low:
             offenders.append("%s: '%s'" % (f, claim))
 
-if sensor_implemented:
-    check("sensor claims permitted (a writer now exists)", True)
-else:
+wr = pathlib.Path("app/whats-real/page.tsx").read_text(encoding="utf-8").lower()
+
+if not sensor_implemented:
     check("no document claims the soil probe is being read",
           not offenders, "; ".join(offenders))
-    # Silence is not enough on the honesty page: it must say so positively.
-    wr = pathlib.Path("app/whats-real/page.tsx").read_text(encoding="utf-8").lower()
     check("/whats-real states the sensor is not implemented",
           "not implemented" in wr and "no usb or web serial" in wr)
+else:
+    # A writer exists, so "the app can read a probe" is now earned. What is still
+    # unearned is that any of it has run against real hardware, and that is the
+    # claim this check now defends.
+    UNEARNED = [
+        "deployed on a farm",
+        "verified against a magicbit",
+        "tested with real hardware",
+        "measured in real soil",
+    ]
+    unearned = [c for c in UNEARNED if c in wr]
+    check("no document claims the probe has been run against hardware",
+          not unearned, "; ".join(unearned))
+    check("/whats-real states the hardware path is untested",
+          "never been flashed" in wr and "never seen a real board" in wr)
 
 # --------------------------------------------------------------------------
 # Repository hygiene: navigation, test counts, links, committed junk
@@ -183,6 +196,7 @@ def _route(q):
 routes = sorted(_route(q) for q in pathlib.Path("app").rglob("page.tsx"))
 # Routes reached from inside a flow rather than the bar, by design.
 NAV_EXEMPT = {"/", "/login", "/signup", "/privacy", "/whats-real", "/grow/diagnose",
+              "/grow/sensor",
               "/documents/invoice", "/documents/packing-list",
               "/documents/certificate-of-origin", "/plot/[id]", "/verify/[id]"}
 unlinked = [r for r in routes if r not in NAV_EXEMPT and f'"{r}"' not in nav]

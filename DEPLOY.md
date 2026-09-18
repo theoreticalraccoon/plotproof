@@ -73,7 +73,7 @@ browser before treating `/grow/diagnose` as released.
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # 179 unit tests
+npm test             # 196 unit tests
 npm run typecheck
 npm run build
 ```
