@@ -16,6 +16,10 @@ import { getAttestationForPlot, getFarmer, getPlot, mediaBlob, mediaObjectUrl } 
 import { verifyAttestationIntegrity, type VerifyResult } from "@/lib/intake/integrity";
 import { captureConfidence } from "@/lib/intake/confidence";
 import type { LocalAttestation, LocalFarmer, LocalPlot } from "@/lib/intake/types";
+import { lossThresholdHa, screenPlot, type VerdictLevel } from "@/lib/eudr/verdict";
+import { latestCheck, requestCheck, saveCheck, type ForestCheck } from "@/lib/eudr/check";
+import { useSaleBook } from "@/lib/sale/store";
+import { t } from "@/lib/i18n";
 
 const CUTOFF = "2020-12-31";
 
@@ -190,16 +194,7 @@ export default function EvidencePackPage() {
           </Section>
 
           <Section title="Forest status at these coordinates">
-            <p className="text-[1.1rem] font-semibold leading-snug" style={{ maxWidth: "48ch" }}>
-              Not yet assessed for this plot.
-            </p>
-            <p className="doc-faint mt-2 text-[0.85rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
-              PlotProof runs no deforestation model of its own, deliberately. Forest status is a
-              question of published record, not of our inference, and it is answered against the
-              EU JRC Global Forest Cover 2020 layer and Hansen Global Forest Change. Until that
-              layer is attached to this pack, check the coordinates on Global Forest Watch using
-              the link above and record the result yourself.
-            </p>
+            <ForestStatus plot={plot} />
           </Section>
 
           <Section title="Plot geometry">
@@ -238,10 +233,17 @@ export default function EvidencePackPage() {
           <Section title="Methodology">
             <ul className="flex flex-col gap-2 text-[0.87rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
               <Bullet>
-                <strong>No in-house deforestation model.</strong> PlotProof does not infer forest
-                loss. Forest status is read from published record, the EU JRC Global Forest Cover
-                2020 layer and Hansen Global Forest Change (UMD/Google/USGS/NASA), so the claim
-                belongs to those datasets and is checkable against them, not to us.
+                <strong>Published data, fixed rules.</strong> The boundary is sent to the Global
+                Forest Watch Data API, which returns forest cover on 31 Dec 2020 (EU JRC Global
+                Forest Cover), tree-cover loss since 2021 (Hansen/UMD), the recorded cause of that
+                loss (WRI/Google drivers) and plantation overlap. Written rules turn those numbers
+                into the rating above. There is no trained deforestation model: no labelled Sri
+                Lankan ground truth exists to test one against, and every figure here can be
+                re-checked against the source datasets.
+              </Bullet>
+              <Bullet>
+                <strong>Screening threshold.</strong> Loss below 1% of the plot (minimum 0.05 ha)
+                is treated as edge noise, not a finding.
               </Bullet>
               <Bullet>
                 <strong>Geometry.</strong> Captured on-device in WGS84 (EPSG:4326); area is
@@ -269,9 +271,12 @@ export default function EvidencePackPage() {
               <Caveat term="Mature rubber and oil palm read as natural forest">
                 to optical sensors, so plantation can be misclassified either way.
               </Caveat>
-              <Caveat term="Plots below ~0.2 ha">
-                are at the edge of what 10 m imagery resolves; such plots return reduced confidence
-                or insufficient data.
+              <Caveat term="Small plots.">
+                Tree-cover loss is mapped at 30 m, about 0.09 ha a pixel, so on plots under about
+                0.5 ha a handful of pixels decides the result.
+              </Caveat>
+              <Caveat term="A screening, not a compliance decision.">
+                The EU operator files the due-diligence statement and may ask for more evidence.
               </Caveat>
             </dl>
           </Section>
@@ -316,6 +321,116 @@ export default function EvidencePackPage() {
 }
 
 // --- pieces ---------------------------------------------------------------
+
+const LEVEL_INK: Record<VerdictLevel, string> = {
+  low: INK_OK,
+  review: "#b45309",
+  high: INK_BAD,
+  unknown: "#4b5563",
+};
+
+const ha2 = (n: number) => `${n.toFixed(2)} ha`;
+const byArea = (m: Record<string, number>) =>
+  Object.entries(m)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${k} ${ha2(v)}`)
+    .join(", ");
+
+// The GFW screening for this plot. Reuses a check already run on /sell, or runs one on open.
+function ForestStatus({ plot }: { plot: LocalPlot }) {
+  const { sales } = useSaleBook();
+  const [check, setCheck] = useState<ForestCheck | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const tried = useRef(false);
+
+  const run = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    const result = await requestCheck(plot.ring);
+    if ("error" in result) setError(result.error);
+    else {
+      saveCheck(plot.id, result);
+      setCheck(result);
+    }
+    setBusy(false);
+  }, [plot.id, plot.ring]);
+
+  useEffect(() => {
+    const found = latestCheck(plot.id, sales);
+    if (found) setCheck((c) => (c && c.at >= found.at ? c : found));
+    else if (!tried.current) {
+      tried.current = true;
+      void run();
+    }
+  }, [plot.id, sales, run]);
+
+  const verdict = check ? screenPlot(check.stats) : null;
+  const s = check?.stats;
+  const errorText = error
+    ? t("en", `eudr_err_${error}`) === `eudr_err_${error}` ? t("en", "eudr_err_upstream_failed") : t("en", `eudr_err_${error}`)
+    : null;
+
+  return (
+    <div>
+      {verdict && s ? (
+        <>
+          <p className="text-[1.1rem] font-semibold leading-snug" style={{ color: LEVEL_INK[verdict.level] }}>
+            {t("en", `eudr_level_${verdict.level}`)}
+          </p>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[0.87rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
+            {verdict.reasons.map((r) => (
+              <Bullet key={r.key}>{t("en", r.key, r.slots)}</Bullet>
+            ))}
+          </ul>
+          <div className="mt-4">
+          <Grid>
+            <Field k="Plot area (GFW)" v={ha2(s.plotHa)} mono />
+            <Field k="Forest on 31 Dec 2020" v={ha2(s.forest2020Ha)} mono />
+            <Field k="Loss on that forest since 2021" v={ha2(s.lossOnForestAfterCutoffHa)} mono />
+            <Field k="Loss anywhere since 2021" v={ha2(s.lossAnyAfterCutoffHa)} mono />
+            <Field k="Screening threshold" v={ha2(lossThresholdHa(s.plotHa))} mono />
+            {byArea(s.lossOnForestByYear) && <Field k="Loss by year" v={byArea(s.lossOnForestByYear)} />}
+            {byArea(s.lossOnForestByDriver) && <Field k="Recorded cause" v={byArea(s.lossOnForestByDriver)} />}
+            {byArea(s.forestPlantationByType) && <Field k="Mapped as plantation" v={byArea(s.forestPlantationByType)} />}
+          </Grid>
+          </div>
+          {verdict.evidence.length > 0 && (
+            <>
+              <p className="mt-5 text-[0.8rem] font-semibold">What to keep with this pack</p>
+              <ul className="mt-1.5 flex flex-col gap-1.5 text-[0.85rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
+                {verdict.evidence.map((e) => (
+                  <Bullet key={e}>{t("en", e)}</Bullet>
+                ))}
+              </ul>
+            </>
+          )}
+          <p className="doc-faint mt-4 text-[0.75rem] leading-relaxed">
+            Checked {new Date(check.at).toISOString().slice(0, 16).replace("T", " ")} UTC via the Global Forest
+            Watch Data API · {s.versions.jrc} · {s.versions.hansen}
+          </p>
+        </>
+      ) : (
+        <p className="text-[1.05rem] font-semibold leading-snug">
+          {busy ? "Checking the boundary against Global Forest Watch…" : "Not yet checked."}
+        </p>
+      )}
+
+      {errorText && (
+        <p role="alert" className="mt-3 text-[0.85rem]" style={{ color: INK_BAD }}>
+          {errorText}
+        </p>
+      )}
+
+      <div className="mt-4 print:hidden">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => void run()} disabled={busy} aria-busy={busy}>
+          {busy ? "Checking…" : check ? "Re-run the check" : "Run the check"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /** A quiet tertiary action that leaves the app. */
 function ExternalAction({

@@ -584,7 +584,7 @@ const en: Dict = {
   eudr_r_loss_not_forest: "Tree cover was lost after 2020 ({ha} ha), but on land the 2020 forest map did not count as forest, consistent with replanting a tree crop rather than clearing forest.",
 
   eudr_e_retry: "Run the check for this plot.",
-  eudr_e_dated_imagery: "Dated satellite imagery of the plot from before and after the loss.",
+  eudr_e_dated_imagery: "Dated satellite imagery of the plot from late 2020 and from today.",
   eudr_e_land_use_records: "Records showing what the land was used for before 2021.",
   eudr_e_operator: "Send this to the EU operator early, they carry the due-diligence obligation and may refuse the consignment.",
   eudr_e_planting_records: "Planting or replanting records showing when the crop was established.",

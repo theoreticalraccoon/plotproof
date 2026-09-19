@@ -7,7 +7,8 @@ import { AlertTriangle, CheckCircle2, HelpCircle, Loader2, MapPinned, Plus, Sear
 import PendingLink from "@/components/motion/PendingLink";
 import { t, type Lang } from "@/lib/i18n";
 import { listPlots } from "@/lib/intake/store";
-import { consignmentLevel, lossThresholdHa, screenPlot, type ForestStats, type VerdictLevel } from "@/lib/eudr/verdict";
+import { consignmentLevel, lossThresholdHa, screenPlot, type VerdictLevel } from "@/lib/eudr/verdict";
+import { requestCheck, saveCheck } from "@/lib/eudr/check";
 import { updateSale } from "@/lib/sale/store";
 import type { Sale } from "@/lib/sale/types";
 import type { LocalPlot } from "@/lib/intake/types";
@@ -158,21 +159,13 @@ function PlotCheck({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/eudr/assess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ring: plot.ring }),
-      });
-      const body = (await res.json().catch(() => ({}))) as { stats?: ForestStats; at?: string; error?: string };
-      if (!res.ok || !body.stats) {
-        setError(body.error ?? "upstream_failed");
+      const result = await requestCheck(plot.ring);
+      if ("error" in result) {
+        setError(result.error);
         return;
       }
-      const stats = body.stats;
-      const at = body.at ?? new Date().toISOString();
-      updateSale(sale.id, (s) => ({ ...s, eudrChecks: { ...s.eudrChecks, [plot.id]: { stats, at } } }));
-    } catch {
-      setError("offline");
+      saveCheck(plot.id, result);
+      updateSale(sale.id, (s) => ({ ...s, eudrChecks: { ...s.eudrChecks, [plot.id]: result } }));
     } finally {
       setBusy(false);
     }

@@ -186,7 +186,7 @@ export default function WhatsRealPage() {
               <Entry term="A deforestation model of our own.">
                 We still do not run one. An earlier in-house analysis service was removed after
                 review: it could not be trained or validated honestly by one developer, and
-                inventing a verdict was worse than having none. What the sale flow now shows is area
+                inventing a verdict was worse than having none. What the sale flow and the evidence pack show is area
                 statistics over three products published and validated by other people, JRC Global
                 Forest Cover 2020, Hansen/UMD Global Forest Change, and the WRI/Google loss-driver
                 model, plus a rule, written down and tested, that reads them against the EUDR

@@ -122,7 +122,7 @@ export default function ModelsPage() {
 
       <Part title="Everything else">
         <P>
-          The rest is published formulas, not trained models: FAO-56 for irrigation, weather rules for
+          The rest is published formulas, not trained models: FAO-56 for irrigation, fixed rules over Global Forest Watch data for EUDR, weather rules for
           disease pressure, and word matching for HS codes. Prices are forecast from{" "}
           <a href={prices.source.url} className="underline underline-offset-4" rel="noreferrer noopener" target="_blank">
             {prices.source.name}
