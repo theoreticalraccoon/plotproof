@@ -78,3 +78,7 @@ models/tea/*.onnx.data
 /scripts/
 /design-system/
 /.mcp.json
+
+# Evaluation logits: large, regenerable, local only.
+models/tea/_logits-*.npz
+models/tea/_before/

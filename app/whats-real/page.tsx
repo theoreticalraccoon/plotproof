@@ -89,9 +89,13 @@ export default function WhatsRealPage() {
               </Entry>
               <Entry term="Leaf disease diagnosis from a photo.">
                 Photograph a leaf and a small neural network runs in your browser — the image never
-                leaves the phone. It declines to answer when it is not confident enough, which on
-                photographs from farms it has never seen means it declines roughly two times in
-                three. That is the intended behaviour, not a fault.
+                leaves the phone. It declines to answer when it is not confident enough. Version 1.1
+                is trained with half of every epoch re-rendered as a field photograph — the leaf cut
+                out and placed among other leaves, under uneven light, through a simulated phone
+                camera — because every public tea dataset is picked leaves on white paper. On
+                held-out leaves rendered that way it now answers about three photos in four and is
+                right on about 96% of those; the version before it answered one in twelve, and got
+                most of those wrong.
               </Entry>
               <Entry term="Offline plot capture.">
                 Trace on a map, walk the boundary, mark corners, or import a file. Geometry is
@@ -208,11 +212,16 @@ export default function WhatsRealPage() {
               </Entry>
 
               <Entry term="Tea disease detection outside its training domain.">
-                The model scores 99.8% on held-out data from the set it was trained on, and about
-                70% on photographs from farms it has never seen. That gap is the honest number.
-                It is trained entirely on Assam imagery; no Sri Lankan tea appears in any public
-                dataset we could find. Two classes — blister blight and red rust — appear in no
-                other dataset at all, so they have no independent check whatsoever.
+                The model scores 99.6% on held-out data from the set it was trained on, and about
+                70% on leaves photographed by other people in other countries. That gap is the
+                honest number. Every dataset we could find — Assam, Bangladesh, and a third from a
+                Bangladeshi university — photographs picked leaves on white paper; none contains a
+                leaf on a bush, and none contains Sri Lankan tea. The field performance quoted above
+                is measured on a simulation of field conditions, not on real field photographs,
+                because there are no real ones to measure against. An earlier version of this page
+                and of the model card called one of those studio datasets a field set. It is not.
+                Two classes — blister blight and red rust — appear in no other dataset at all, so
+                they have no independent check whatsoever.
               </Entry>
               <Entry term="Acoustic chainsaw detection.">
                 Deleted. The hardware never existed, and the benchmark data it was built on is

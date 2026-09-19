@@ -82,7 +82,11 @@ export default function GrowPage() {
         <Breadcrumb
           items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_grow") }]}
         />
-        <LanguageSwitcher />
+        {/* Phones only: on desktop the nav bar already carries the switcher, and
+            two of them side by side read as two different settings. */}
+        <div className="md:hidden">
+          <LanguageSwitcher />
+        </div>
       </div>
 
       <Reveal>

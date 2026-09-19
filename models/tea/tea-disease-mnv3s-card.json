@@ -7,19 +7,19 @@
   "schemaVersion": 1,
   "model": {
     "name": "tea-disease-mnv3s",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "architecture": "MobileNetV3-Small (ImageNet-pretrained backbone, new 6-class head)",
     "why_this_architecture": "Chosen for the deployment target, not the leaderboard: it runs in a browser on a mid-range Android phone, so ~2.5M parameters matter more than a point of accuracy.",
     "framework": "PyTorch 2.14.0+cpu",
     "export_format": "ONNX opset 17, dynamic batch",
-    "file": "tea-disease-mnv3s-1.0.0.onnx",
+    "file": "tea-disease-mnv3s-1.1.0.onnx",
     "bytes": 6370439,
-    "sha256": "7e55457cac1f9ef1983bb3b62360916f487262f9b812bf3ffc7f220776044fe4",
+    "sha256": "307e489bc71cb80edfdeebe8fb3a9ff0b92d67ec9ee66799a16bd03d89ebe240",
     "parameters": 1524006,
-    "trained_at": "2026-09-16T17:35:38.860165+00:00",
-    "git_rev": "9706850",
+    "trained_at": "2026-09-19T03:42:11.104301+00:00",
+    "git_rev": "37994b2",
     "seed": 1337,
-    "onnx_parity_max_abs_logit_delta": 1.341104507446289e-06
+    "onnx_parity_max_abs_logit_delta": 1.6689300537109375e-06
   },
   "taxonomy": {
     "taxonomy_version": 1,
@@ -152,137 +152,154 @@
       "samples_per_group": 1,
       "workers": 4,
       "img_size": 160,
+      "field_prob": 0.5,
+      "field_backgrounds": 192,
+      "field_donors": 160,
       "smoke": false,
       "out": "C:\\Users\\HP\\OneDrive\\Desktop\\Projects\\PlotProof\\models\\tea"
     },
+    "field_simulation": {
+      "probability": 0.5,
+      "steps": [
+        "leaf matted from the studio background (bright + unsaturated + border-connected), feathered",
+        "composited onto an out-of-focus canopy: 3-7 MATTED donor leaves per donor, blurred and darkened, over a mottled shade/litter base",
+        "0-2 distractor leaves behind the subject, 45% chance of one partly occluding in front",
+        "subject scaled to 45-95% of frame and randomly placed, so the leaf does not fill the image",
+        "directional shading gradient (depth 0.15-0.6) plus 1-4 blown-out sunflecks (65%)",
+        "per-channel white balance 0.84-1.20 (80%), gamma 0.62-1.60 (70%)",
+        "defocus/motion blur 0.5-2.0px (35%), downscale 0.35-0.8x then upscale (60%)",
+        "Gaussian sensor noise sigma 2-11 (50%), JPEG quality 28-80 (60%)"
+      ]
+    },
+    "field_simulation_rationale": "Every image in every dataset in the audited corpus is a detached leaf on white paper or cloth, evenly lit, filling the frame. A farmer photographs a leaf on the bush, among other leaves, under dappled light. Half of each training epoch is therefore rendered into field conditions by ml/tea/fieldsim.py: the leaf is matted off its studio background and composited onto an out-of-focus canopy built from other leaves of the same split, then relit and passed through a simulated phone camera. This is a simulation and is not evidence about real photographs.",
     "epochs_run": 14,
     "selection_metric": "validation macro-F1",
-    "selected_epoch": 10,
+    "selected_epoch": 11,
     "history": [
       {
         "epoch": 0,
-        "train_loss": 0.5581911368232163,
-        "train_acc": 0.8817702508387921,
-        "val_acc": 0.9022945965951147,
-        "val_macro_f1": 0.9015270479279488,
-        "seconds": 209.1,
+        "train_loss": 0.8910192407383136,
+        "train_acc": 0.7213612398146669,
+        "val_acc": 0.7809030347890451,
+        "val_macro_f1": 0.7812064062830265,
+        "seconds": 268.9,
         "lr": 0.0007899711648727294
       },
       {
         "epoch": 1,
-        "train_loss": 0.34166506119935464,
-        "train_acc": 0.9690046333280077,
-        "val_acc": 0.9526276831976314,
-        "val_macro_f1": 0.952161251269335,
-        "seconds": 118.0,
+        "train_loss": 0.6095114158429854,
+        "train_acc": 0.8506151142355008,
+        "val_acc": 0.8830495928941525,
+        "val_macro_f1": 0.8821708318818257,
+        "seconds": 188.1,
         "lr": 0.0007603875471609676
       },
       {
         "epoch": 2,
-        "train_loss": 0.3100528214986874,
-        "train_acc": 0.9782712893433456,
-        "val_acc": 0.9851961509992598,
-        "val_macro_f1": 0.9848309690400443,
-        "seconds": 129.5,
+        "train_loss": 0.5630030604497486,
+        "train_acc": 0.8710656654417639,
+        "val_acc": 0.8593634344929681,
+        "val_macro_f1": 0.8594162951331871,
+        "seconds": 188.6,
         "lr": 0.000712732592987212
       },
       {
         "epoch": 3,
-        "train_loss": 0.2955054007726539,
-        "train_acc": 0.9825850774884167,
-        "val_acc": 0.9711324944485566,
-        "val_macro_f1": 0.9711651648628016,
-        "seconds": 185.9,
+        "train_loss": 0.5127882647960021,
+        "train_acc": 0.8943920754114075,
+        "val_acc": 0.8934122871946706,
+        "val_macro_f1": 0.8929500663213604,
+        "seconds": 184.1,
         "lr": 0.0006493959207434935
       },
       {
         "epoch": 4,
-        "train_loss": 0.2916750485646799,
-        "train_acc": 0.9849816264579007,
-        "val_acc": 0.9918578830495929,
-        "val_macro_f1": 0.991804474212355,
-        "seconds": 129.1,
+        "train_loss": 0.49878696785660326,
+        "train_acc": 0.8998242530755711,
+        "val_acc": 0.9008142116950407,
+        "val_macro_f1": 0.9009496592387767,
+        "seconds": 183.5,
         "lr": 0.0005735534956470233
       },
       {
         "epoch": 5,
-        "train_loss": 0.29017829781695476,
-        "train_acc": 0.9835436970762103,
-        "val_acc": 0.9896373056994818,
-        "val_macro_f1": 0.9895235994617361,
-        "seconds": 108.0,
+        "train_loss": 0.4681374345234854,
+        "train_acc": 0.9108483783351973,
+        "val_acc": 0.8860103626943006,
+        "val_macro_f1": 0.8870002346768935,
+        "seconds": 181.7,
         "lr": 0.0004890083735825258
       },
       {
         "epoch": 6,
-        "train_loss": 0.27814602885674433,
-        "train_acc": 0.9865793257708899,
-        "val_acc": 0.9955588452997779,
-        "val_macro_f1": 0.9955499036569518,
-        "seconds": 112.2,
+        "train_loss": 0.43619301447111836,
+        "train_acc": 0.9228311231826171,
+        "val_acc": 0.8956328645447816,
+        "val_macro_f1": 0.8956434848746357,
+        "seconds": 180.6,
         "lr": 0.0004
       },
       {
         "epoch": 7,
-        "train_loss": 0.27307924101158043,
-        "train_acc": 0.9897747243968685,
-        "val_acc": 0.997039230199852,
-        "val_macro_f1": 0.9971292540672744,
-        "seconds": 113.6,
+        "train_loss": 0.4266861534705271,
+        "train_acc": 0.9277839910528839,
+        "val_acc": 0.9296817172464841,
+        "val_macro_f1": 0.9294837009962453,
+        "seconds": 180.2,
         "lr": 0.0003109916264174743
       },
       {
         "epoch": 8,
-        "train_loss": 0.2689923639685263,
-        "train_acc": 0.99105288384726,
-        "val_acc": 0.996299037749815,
-        "val_macro_f1": 0.9963641122110353,
-        "seconds": 116.8,
+        "train_loss": 0.4100169426365618,
+        "train_acc": 0.931938009266656,
+        "val_acc": 0.9259807549962991,
+        "val_macro_f1": 0.9261067004264566,
+        "seconds": 184.8,
         "lr": 0.00022644650435297683
       },
       {
         "epoch": 9,
-        "train_loss": 0.26398293361874847,
-        "train_acc": 0.9923310432976514,
-        "val_acc": 0.9948186528497409,
-        "val_macro_f1": 0.9948368483562963,
-        "seconds": 118.9,
+        "train_loss": 0.39585065425518395,
+        "train_acc": 0.9388081163125099,
+        "val_acc": 0.921539600296077,
+        "val_macro_f1": 0.9212796621303253,
+        "seconds": 174.6,
         "lr": 0.00015060407925650664
       },
       {
         "epoch": 10,
-        "train_loss": 0.26240563122185107,
-        "train_acc": 0.9923310432976514,
-        "val_acc": 0.997779422649889,
-        "val_macro_f1": 0.9977415987862931,
-        "seconds": 126.2,
+        "train_loss": 0.39180074752872224,
+        "train_acc": 0.94328167438888,
+        "val_acc": 0.930421909696521,
+        "val_macro_f1": 0.9303734994808095,
+        "seconds": 168.8,
         "lr": 8.726740701278824e-05
       },
       {
         "epoch": 11,
-        "train_loss": 0.2573048641914414,
-        "train_acc": 0.9956862118549289,
-        "val_acc": 0.9955588452997779,
-        "val_macro_f1": 0.9955138917377826,
-        "seconds": 116.6,
+        "train_loss": 0.3726949658870392,
+        "train_acc": 0.9469563828087554,
+        "val_acc": 0.9363434492968171,
+        "val_macro_f1": 0.9362361625566852,
+        "seconds": 169.4,
         "lr": 3.961245283903239e-05
       },
       {
         "epoch": 12,
-        "train_loss": 0.25703393844469496,
-        "train_acc": 0.9961655216488257,
-        "val_acc": 0.997779422649889,
-        "val_macro_f1": 0.9977415987862931,
-        "seconds": 136.1,
+        "train_loss": 0.36635572154370716,
+        "train_acc": 0.9519092506790222,
+        "val_acc": 0.9326424870466321,
+        "val_macro_f1": 0.9324302200365495,
+        "seconds": 174.5,
         "lr": 1.0028835127270509e-05
       },
       {
         "epoch": 13,
-        "train_loss": 0.25889623147751084,
-        "train_acc": 0.9948873621984342,
-        "val_acc": 0.997779422649889,
-        "val_macro_f1": 0.9977415987862931,
-        "seconds": 115.3,
+        "train_loss": 0.36442578438848594,
+        "train_acc": 0.9541460297172072,
+        "val_acc": 0.9282013323464101,
+        "val_macro_f1": 0.9280720914399265,
+        "seconds": 188.7,
         "lr": 0.0
       }
     ]
@@ -312,14 +329,22 @@
         "licence": "CC BY 4.0",
         "licence_url": "https://creativecommons.org/licenses/by/4.0/",
         "source_url": "https://data.mendeley.com/datasets/d2xybhfw59/2"
+      },
+      "test_4": {
+        "id": "cs_d",
+        "name": "CS-D: A dataset for disease in tea leaf (Camellia sinensis) from Assam",
+        "doi": "10.17632/94fzcdz8gz.1",
+        "licence": "CC BY 4.0",
+        "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+        "source_url": "https://data.mendeley.com/datasets/94fzcdz8gz/1"
       }
     },
     "key_metrics": {
-      "Test 1 \u2014 CS-D internal (in-distribution)": {
+      "Test 1 \u2014 CS-D internal (in-distribution, studio)": {
         "samples": 12410,
-        "accuracy": 0.9975,
-        "macro_f1": 0.9975,
-        "ece": 0.0006,
+        "accuracy": 0.9961,
+        "macro_f1": 0.9961,
+        "ece": 0.0013,
         "classes_present": [
           "healthy",
           "blister_blight",
@@ -330,11 +355,11 @@
         ],
         "classes_absent": []
       },
-      "Test 2 \u2014 EWU cross-dataset (detached leaf)": {
+      "Test 2 \u2014 EWU cross-dataset (studio, detached leaf)": {
         "samples": 2831,
-        "accuracy": 0.7061,
-        "macro_f1": 0.7346,
-        "ece": 0.1972,
+        "accuracy": 0.7132,
+        "macro_f1": 0.7735,
+        "ece": 0.1913,
         "classes_present": [
           "healthy",
           "brown_blight",
@@ -346,11 +371,11 @@
           "red_spider_mite"
         ]
       },
-      "Test 3 \u2014 TLD-BD cross-dataset (field)": {
+      "Test 3 \u2014 TLD-BD cross-dataset (studio, detached leaf)": {
         "samples": 1073,
-        "accuracy": 0.6999,
-        "macro_f1": 0.7959,
-        "ece": 0.2447,
+        "accuracy": 0.6943,
+        "macro_f1": 0.7976,
+        "ece": 0.2276,
         "classes_present": [
           "healthy",
           "red_spider_mite",
@@ -361,41 +386,75 @@
           "brown_blight",
           "red_rust"
         ]
+      },
+      "Test 4 \u2014 CS-D test groups, SIMULATED field conditions": {
+        "samples": 12410,
+        "accuracy": 0.8735,
+        "macro_f1": 0.8731,
+        "ece": 0.0679,
+        "classes_present": [
+          "healthy",
+          "blister_blight",
+          "brown_blight",
+          "red_rust",
+          "red_spider_mite",
+          "helopeltis"
+        ],
+        "classes_absent": []
       }
     },
-    "never_pool_note": "The three test sets measure different things and are never combined into a single headline metric.",
+    "domain_note": "CS-D, EWU and TLD-BD are all studio sets: a detached leaf on white paper or cloth, evenly lit, filling the frame. None of them is field imagery, and an earlier version of this report described TLD-BD as a field set, which was wrong. Test 4 is simulated and is not evidence about real photographs; the real-field number is unmeasured.",
+    "field_simulation": {
+      "probability": 1.0,
+      "steps": [
+        "leaf matted from the studio background (bright + unsaturated + border-connected), feathered",
+        "composited onto an out-of-focus canopy: 3-7 MATTED donor leaves per donor, blurred and darkened, over a mottled shade/litter base",
+        "0-2 distractor leaves behind the subject, 45% chance of one partly occluding in front",
+        "subject scaled to 45-95% of frame and randomly placed, so the leaf does not fill the image",
+        "directional shading gradient (depth 0.15-0.6) plus 1-4 blown-out sunflecks (65%)",
+        "per-channel white balance 0.84-1.20 (80%), gamma 0.62-1.60 (70%)",
+        "defocus/motion blur 0.5-2.0px (35%), downscale 0.35-0.8x then upscale (60%)",
+        "Gaussian sensor noise sigma 2-11 (50%), JPEG quality 28-80 (60%)"
+      ]
+    },
+    "never_pool_note": "The test sets measure different things and are never combined into a single headline metric.",
     "full_report": "models/tea/evaluation.json",
     "reliability_diagram": "models/tea/reliability.png"
   },
   "calibration": {
     "method": "temperature scaling (Guo et al. 2017)",
-    "temperature": 0.5355,
+    "temperature": 0.5304,
     "fitted_on": "CS-D validation split only",
     "note": "Does not change argmax, so accuracy is unaffected and only confidence is corrected."
   },
   "abstention": {
-    "threshold": 0.9976,
-    "selection_rule": "The 5% quantile of validation confidence. The model abstains on inputs less confident than the bottom 5% of in-distribution predictions.",
-    "selected_on": "CS-D validation split only",
-    "validation_coverage": 0.95,
-    "validation_accuracy_on_accepted": 0.9997,
-    "rejected_rule": {
-      "rule": "lowest threshold reaching 95% accuracy-on-accepted",
-      "would_have_chosen": 0.0,
-      "why_rejected": "Validation accuracy is 0.9964 at threshold 0.0, above the target, so the rule selects 0.0 and the abstention mechanism can never fire. The validation set contains no out-of-distribution inputs, so it cannot locate the confidence at which the model becomes unreliable on them."
+    "threshold": 0.9532,
+    "selection_rule": "Lowest threshold whose accuracy-on-accepted reaches 95% on a validation set that includes simulated field photographs, floored at the 1.25% quantile of validation confidence so abstention can never be disabled outright.",
+    "selected_on": "CS-D validation split rendered as simulated field photographs",
+    "validation_coverage": 0.7702,
+    "validation_accuracy_on_accepted": 0.95,
+    "target_accuracy": 0.95,
+    "quantile_floor": 0.4913,
+    "superseded_rule": {
+      "rule": "the 5% quantile of in-distribution validation confidence",
+      "why_superseded": "It was chosen when validation contained only studio photographs, where the accuracy-target rule degenerated to 0. It answers 'how confident is this model normally?' rather than 'when is this model wrong?'. On studio confidences it produced a floor of 0.9976, which rejected roughly two thirds of both cross-dataset sets, including images the model had in fact classified correctly."
     },
     "coverage_by_test_set": {
-      "Test 1 \u2014 CS-D internal (in-distribution)": {
-        "coverage": 0.955,
-        "accuracy_on_accepted": 1.0
+      "Test 1 \u2014 CS-D internal (in-distribution, studio)": {
+        "coverage": 0.9853,
+        "accuracy_on_accepted": 0.9992
       },
-      "Test 2 \u2014 EWU cross-dataset (detached leaf)": {
-        "coverage": 0.3501,
-        "accuracy_on_accepted": 0.9566
+      "Test 2 \u2014 EWU cross-dataset (studio, detached leaf)": {
+        "coverage": 0.645,
+        "accuracy_on_accepted": 0.8434
       },
-      "Test 3 \u2014 TLD-BD cross-dataset (field)": {
-        "coverage": 0.3747,
-        "accuracy_on_accepted": 0.7587
+      "Test 3 \u2014 TLD-BD cross-dataset (studio, detached leaf)": {
+        "coverage": 0.671,
+        "accuracy_on_accepted": 0.7347
+      },
+      "Test 4 \u2014 CS-D test groups, SIMULATED field conditions": {
+        "coverage": 0.7731,
+        "accuracy_on_accepted": 0.9577
       }
     },
     "behaviour": "Below the threshold the app must show 'uncertain \u2014 retake the photo' rather than a class. A farmer photographing a hand, a shoe or a badly-lit leaf should get an abstention, never a confident wrong label."
@@ -405,6 +464,8 @@
     "NO CROSS-DATASET EVIDENCE FOR BLISTER BLIGHT OR RED RUST. Neither class appears in any external dataset in the audited corpus, so their only numbers come from Test 1, which shares CS-D's domain. They are not cross-dataset validated.",
     "Blister blight is simultaneously the most important class in the product (it is the disease lib/grow/risk.ts models) and the least externally verifiable.",
     "Training images are 256x256, publisher-resized and median-filtered. The model inherits that preprocessing and has never seen a full-resolution photograph.",
+    "NO DATASET IN THE CORPUS CONTAINS FIELD IMAGERY. CS-D, EWU and TLD-BD are all detached leaves on white paper or cloth, evenly lit, filling the frame. An earlier version of this card described TLD-BD as a field set; that was wrong and is corrected here. Test 4 substitutes a SIMULATED field domain (ml/tea/fieldsim.py) so the gap can be measured and trained against at all.",
+    "THE REAL-FIELD ACCURACY IS UNMEASURED. Test 4 says the model handles synthetic canopy, occlusion and dappled light; it does not say the simulation resembles a Sri Lankan tea field. Only photographs from one would show that, and there are none.",
     "Trained from 9,000 distinct photographs, not 80,329 images \u2014 the published set is 8.93x augmented.",
     "Two of the six classes are PESTS (red spider mite, tea mosquito bug), not pathogens. lib/grow/risk.ts has no weather-driven infection window for them, so fusion must not attach an environmental prior to those predictions.",
     "Open-set behaviour is handled by the abstention threshold only. There is no trained 'not a tea leaf' class, so a confident-looking non-leaf photo may still be labelled.",

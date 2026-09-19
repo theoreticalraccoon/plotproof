@@ -45,7 +45,7 @@ export default function AccountControl({ full = false }: { full?: boolean }) {
 
   if (!user) {
     return (
-      <PendingLink href="/login" className={`btn btn-ghost btn-sm ${full ? "w-full" : ""}`}>
+      <PendingLink href="/login" className={`btn btn-ghost btn-sm whitespace-nowrap ${full ? "w-full" : ""}`}>
         <span className="inline-flex items-center gap-2">
           <LogIn size={15} aria-hidden="true" /> {t(lang, "nav_signin")}
         </span>

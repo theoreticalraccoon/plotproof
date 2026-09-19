@@ -315,7 +315,8 @@ def main() -> None:
     ap.add_argument("--tld", required=True)
     ap.add_argument("--checkpoint", default=str(OUT / "tea-mnv3s-best.pt"))
     ap.add_argument("--workers", type=int, default=4)
-    ap.add_argument("--target-accuracy", type=float, default=0.95)
+    ap.add_argument("--target-accuracy", type=float, default=0.95,
+                    help="Accuracy-on-accepted the abstention threshold must reach on validation.")
     ap.add_argument("--abstain-rate", type=float, default=0.05,
                     help="Sets the quantile FLOOR under the accuracy-target rule.")
     ap.add_argument("--field-prob", type=float, default=1.0,
@@ -361,19 +362,29 @@ def main() -> None:
     v_ece_before, _ = expected_calibration_error(softmax(vlog, 1.0).max(1), vcorrect)
     v_ece_after, v_bins = expected_calibration_error(vconf, vcorrect)
 
-    # The threshold is chosen on clean AND simulated-field validation together.
-    # Choosing it on clean validation alone is what produced 0.9976 and an app
-    # that refused to answer two photographs in three: a floor set by how
-    # confident the model is on studio images says nothing about when it is
-    # WRONG on the images it will actually be shown.
+    # The threshold is chosen on the SIMULATED-FIELD validation images alone.
+    #
+    # Two earlier choices both failed, in opposite directions, and the record of
+    # why is the reason for this one:
+    #   - Clean validation alone gave 0.9976: a floor set by how confident the
+    #     model is on studio photographs, which refused two real photos in three.
+    #   - Clean and simulated validation POOLED gave 0.53: the clean half is right
+    #     ~99.6% of the time, so it carried the pooled accuracy over the target
+    #     at almost any threshold and the rule fell through to its floor. The
+    #     model then answered ~95% of cross-dataset photos and was wrong on ~28%
+    #     of the answers — confident wrong labels, the one outcome abstention
+    #     exists to prevent.
+    # The hard half is the only half that can say where the model becomes
+    # unreliable, so it alone is asked.
     if val_sim is not None:
         print(f"  + {len(val)} simulated-field validation images for the abstention rule…")
         fvlog, fvy = collect_logits(model, val, eval_tf, workers=a.workers,
                                     field_sim=val_sim, field_prob=a.field_prob)
         fvprobs = softmax(fvlog, T)
-        sel_conf = np.concatenate([vconf, fvprobs.max(1)])
-        sel_correct = np.concatenate([vcorrect, (fvprobs.argmax(1) == fvy).astype(float)])
-        selected_on = "CS-D validation split, clean and simulated-field (50/50)"
+        sel_conf = fvprobs.max(1)
+        sel_correct = (fvprobs.argmax(1) == fvy).astype(float)
+        selected_on = "CS-D validation split rendered as simulated field photographs"
+        np.savez_compressed(OUT / "_logits-val.npz", clean=vlog, clean_y=vy, field=fvlog, field_y=fvy, T=T)
     else:
         sel_conf, sel_correct = vconf, vcorrect
         selected_on = "CS-D validation split only (clean)"
@@ -401,6 +412,7 @@ def main() -> None:
         print(f"\nscoring: {name}  ({len(samples)} images)")
         lg, yy = collect_logits(model, samples, eval_tf, workers=a.workers,
                                 field_sim=sim, field_prob=a.field_prob if sim else 0.0)
+        np.savez_compressed(OUT / f"_logits-test{len(results) + 1}.npz", logits=lg, y=yy)
         res = evaluate_set(name, lg, yy, T, tax, abst["threshold"])
         results.append(res)
         print(f"  acc={res['accuracy']:.4f} macroF1={res['macro_f1']:.4f} "

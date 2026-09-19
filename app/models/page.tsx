@@ -237,9 +237,12 @@ export default function ModelsPage() {
             />
             <h4 className="mt-6 text-[0.85rem] font-semibold muted">Training augmentation</h4>
             <P small>
-              Chosen for what actually varies when a farmer photographs a leaf, not for what looks
-              impressive in a config. Illumination is weighted heaviest: the same lesion under noon
-              sun and under shade is the largest appearance shift in the field.
+              Geometric and colour augmentation on every image. On top of that, half of each epoch
+              is re-rendered as a field photograph, because every image in every available dataset is
+              a picked leaf on white paper — and a farmer photographs one still on the bush. The leaf
+              is cut off its studio background and placed into an out-of-focus canopy built from
+              other leaves, then relit with shade and sunflecks and passed through a simulated phone
+              camera (white balance, exposure, blur, noise, JPEG).
             </P>
             <ul className="mt-3 flex flex-wrap gap-2">
               {card.preprocessing.augmentation_train.map((a) => (
@@ -354,9 +357,10 @@ export default function ModelsPage() {
           {/* ============ 04 RESULTS ============ */}
           <Part id="results" n="04" title="Measured results">
             <Callout tone="warn">
-              <strong>{card.evaluation.never_pool_note}</strong> One measures memorisation of a
-              domain, one measures transfer to a lab domain, one measures transfer to a field domain.
-              An average of the three would describe none of them. There is deliberately no single
+              <strong>{card.evaluation.never_pool_note}</strong> Tests 1–3 are all studio
+              photographs of detached leaves — one from the training source, two from other
+              countries and cameras. Test 4 is the training source&apos;s held-out leaves rendered
+              into simulated field conditions. An average would describe none of them. There is deliberately no single
               headline accuracy anywhere in this project.
             </Callout>
 
@@ -472,13 +476,15 @@ export default function ModelsPage() {
             />
 
             <Callout>
-              <strong>The rule that was rejected, kept on the record.</strong>{" "}
-              {card.abstention.rejected_rule.rule} would have chosen{" "}
-              <Code>{String(card.abstention.rejected_rule.would_have_chosen)}</Code>.{" "}
-              {card.abstention.rejected_rule.why_rejected} The failure is instructive rather than a
-              mere bug: an abstention threshold exists to catch inputs unlike the training
-              distribution, and the validation set contains none by construction, so it cannot be
-              asked where accuracy falls away. A quantile rule asks a question validation can answer.
+              <strong>How this threshold was arrived at, including the two that failed.</strong>{" "}
+              The first rule, the 5% quantile of confidence on studio validation images, gave 0.9976
+              and refused about two real photographs in three. {card.abstention.superseded_rule.why_superseded}{" "}
+              The second, an accuracy target on clean and simulated-field validation pooled, gave
+              0.53: the clean half is right nearly every time, so it carried the average past the
+              target at almost any threshold, and the model answered 95% of cross-dataset photos
+              while getting more than a quarter of those wrong. The threshold above is chosen on the
+              simulated-field half alone, because only the hard half can say where the model stops
+              being reliable.
             </Callout>
 
             <h3 className="mt-8 text-[0.95rem] font-semibold">
@@ -502,12 +508,11 @@ export default function ModelsPage() {
             />
 
             <Callout tone="warn">
-              <strong>Abstention is a mitigation, not proof of correctness.</strong> On field
-              photographs from an unfamiliar farm the model declines roughly two answers in three,
-              and what it does answer is right about three quarters of the time — better than
-              answering everything, and a long way from a diagnosis. The product states the decline
-              rate on screen so that repeated refusals read as a model that knows its limits rather
-              than a broken app.
+              <strong>Abstention is a mitigation, not proof of correctness.</strong> No dataset
+              in existence contains photographs of tea leaves on Sri Lankan bushes, so the accuracy
+              on a real farmer&apos;s photograph is unmeasured. Test 4 is the closest available
+              stand-in, and it is simulated. The product states its decline rate on screen so that a
+              refusal reads as a model that knows its limits rather than a broken app.
             </Callout>
           </Part>
 
@@ -745,7 +750,7 @@ python scripts/audit_release.py                                  # card vs artif
 function roleOf(id: string): string {
   if (id === "cs_d") return "Training, validation and Test 1 (in-distribution)";
   if (id === "ewu_tea_leaf_disease") return "Test 2 — cross-dataset, detached leaf. Never seen in training.";
-  if (id === "tld_bd") return "Test 3 — cross-dataset, field photographs. Never seen in training.";
+  if (id === "tld_bd") return "Test 3 — cross-dataset, detached leaf (studio). Never seen in training.";
   return "Examined during the audit; not used. See provenance.json for why.";
 }
 

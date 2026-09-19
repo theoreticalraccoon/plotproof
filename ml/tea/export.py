@@ -43,7 +43,7 @@ OUT = REPO / "models" / "tea"
 PUBLIC = REPO / "public" / "models"
 
 MODEL_NAME = "tea-disease-mnv3s"
-MODEL_VERSION = "1.0.0"
+MODEL_VERSION = "1.1.0"
 
 
 def git_rev() -> str | None:
@@ -194,6 +194,15 @@ def main() -> None:
                 "Training counts run 8,881-9,504 per class (max/min = 1.07). Weighting a "
                 "distribution this balanced adds a knob without addressing a problem."),
             "config": hist["config"],
+            "field_simulation": hist.get("field_simulation"),
+            "field_simulation_rationale": (
+                "Every image in every dataset in the audited corpus is a detached leaf on white "
+                "paper or cloth, evenly lit, filling the frame. A farmer photographs a leaf on the "
+                "bush, among other leaves, under dappled light. Half of each training epoch is "
+                "therefore rendered into field conditions by ml/tea/fieldsim.py: the leaf is matted "
+                "off its studio background and composited onto an out-of-focus canopy built from "
+                "other leaves of the same split, then relit and passed through a simulated phone "
+                "camera. This is a simulation and is not evidence about real photographs."),
             "epochs_run": len(hist["history"]),
             "selection_metric": "validation macro-F1",
             "selected_epoch": ev["selected_epoch"],
@@ -201,8 +210,10 @@ def main() -> None:
         },
         "evaluation": {
             "datasets": {"test_1": prov_ref("cs_d"), "test_2": prov_ref("ewu_tea_leaf_disease"),
-                         "test_3": prov_ref("tld_bd")},
+                         "test_3": prov_ref("tld_bd"), "test_4": prov_ref("cs_d")},
             "key_metrics": key_metrics,
+            "domain_note": ev.get("domain_note"),
+            "field_simulation": ev.get("field_simulation"),
             "never_pool_note": ev["never_pool_note"],
             "full_report": "models/tea/evaluation.json",
             "reliability_diagram": "models/tea/reliability.png",
@@ -214,7 +225,9 @@ def main() -> None:
             "selected_on": ev["abstention"]["selected_on"],
             "validation_coverage": ev["abstention"]["validation_coverage"],
             "validation_accuracy_on_accepted": ev["abstention"]["validation_accuracy_on_accepted"],
-            "rejected_rule": ev["abstention"]["rejected_rule"],
+            "target_accuracy": ev["abstention"].get("target_accuracy"),
+            "quantile_floor": ev["abstention"].get("quantile_floor"),
+            "superseded_rule": ev["abstention"].get("superseded_rule") or ev["abstention"].get("rejected_rule"),
             "coverage_by_test_set": {
                 t["test_set"]: {"coverage": t["abstention"]["coverage"],
                                 "accuracy_on_accepted": t["abstention"]["accuracy_on_accepted"]}
@@ -233,6 +246,14 @@ def main() -> None:
             "disease lib/grow/risk.ts models) and the least externally verifiable.",
             "Training images are 256x256, publisher-resized and median-filtered. The model inherits "
             "that preprocessing and has never seen a full-resolution photograph.",
+            "NO DATASET IN THE CORPUS CONTAINS FIELD IMAGERY. CS-D, EWU and TLD-BD are all "
+            "detached leaves on white paper or cloth, evenly lit, filling the frame. An earlier "
+            "version of this card described TLD-BD as a field set; that was wrong and is corrected "
+            "here. Test 4 substitutes a SIMULATED field domain (ml/tea/fieldsim.py) so the gap can "
+            "be measured and trained against at all.",
+            "THE REAL-FIELD ACCURACY IS UNMEASURED. Test 4 says the model handles synthetic "
+            "canopy, occlusion and dappled light; it does not say the simulation resembles a Sri "
+            "Lankan tea field. Only photographs from one would show that, and there are none.",
             "Trained from 9,000 distinct photographs, not 80,329 images — the published set is "
             "8.93x augmented.",
             "Two of the six classes are PESTS (red spider mite, tea mosquito bug), not pathogens. "

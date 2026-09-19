@@ -83,7 +83,11 @@ export default function SensorPage() {
             { label: t(lang, "sensor_title") },
           ]}
         />
-        <LanguageSwitcher />
+        {/* Phones only: on desktop the nav bar already carries the switcher, and
+            two of them side by side read as two different settings. */}
+        <div className="md:hidden">
+          <LanguageSwitcher />
+        </div>
       </div>
 
       <Reveal>
