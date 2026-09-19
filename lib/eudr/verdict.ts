@@ -80,7 +80,9 @@ export const FOREST_SHARE_REVIEW = 0.1;
  * Driver categories that mean the land was turned to farming. After the
  * cut-off, that on 2020 forest is precisely what EUDR calls deforestation.
  */
-const CONVERSION_DRIVERS = /agricultur|commodit|shifting|crop/i;
+// Names as published by WRI/Google (see DRIVER_NAMES in gfw.ts). Settlements
+// and infrastructure replace forest permanently, so they count as conversion.
+const CONVERSION_DRIVERS = /agricultur|commodit|shifting|crop|settlement|infrastructure/i;
 /** Drivers that remove trees without necessarily converting the land. */
 const NON_CONVERSION_DRIVERS = /logging|forestry|wildfire|fire|natural|disturb/i;
 

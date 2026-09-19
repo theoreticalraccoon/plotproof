@@ -7,18 +7,39 @@
  * `statsFromRows`) so the parsing is tested with fixtures and the route handler
  * stays a thin wrapper around `fetch`.
  *
- * Two queries, both against JRC Global Forest Cover 2020 plus one against
+ * Five queries. Four are against JRC Global Forest Cover 2020, one against
  * Hansen:
  *
- *   A. JRC ∩ loss year ∩ driver — every JRC forest pixel in the plot, with the
- *      Hansen loss year and the WRI/Google driver attached. Rows with no loss
- *      year are forest that is still standing; rows from 2021 on are loss on
- *      2020 forest, which is the EUDR question itself.
- *   B. JRC ∩ plantation type — how much of that "forest" GFW maps as a
- *      plantation. For rubber this is the difference between "deforestation
- *      risk" and "the crop was mapped as forest".
- *   C. Hansen alone, 2021 on — loss anywhere on the plot, forest or not, so a
+ *   A. Forest total — plain SUM over the JRC forest layer, NO grouping. This is
+ *      the 2020 forest area.
+ *   B. Loss on forest by year — JRC pixels that also carry a Hansen loss year
+ *      from 2021 on. That is the EUDR question itself.
+ *   C. The same loss split by the WRI/Google driver — used ONLY to attribute
+ *      a cause. Any loss B has and C does not is reported as unattributed.
+ *   D. Plantation type on the forest — for rubber, the difference between
+ *      "deforestation risk" and "the crop was mapped as forest".
+ *   E. Hansen alone, 2021 on — loss anywhere on the plot, forest or not, so a
  *      disagreement between the two maps is reported rather than hidden.
+ *
+ * WHY FIVE AND NOT THREE. The Data API only returns pixels that have a value
+ * in EVERY layer a query names. An earlier version measured forest area as the
+ * sum of a query grouped by loss year and driver, so every forest pixel with
+ * no loss and no driver — which is to say intact forest, the common case —
+ * fell out of the result. Checked against a 1.2 ha plot inside Sinharaja
+ * rainforest it reported 0 ha of forest and a "low" verdict, while a plain
+ * SUM over the same layer and plot gave 1.22 ha. Each quantity is therefore
+ * measured by a query that names only the layers it needs, and a cause is
+ * never allowed to decide whether a loss is counted.
+ *
+ * CODES, NOT VALUES. Queried through the JRC dataset, the joined layers come
+ * back as raster codes, not as the values they stand for: loss year 21 means
+ * 2021, driver 1 means permanent agriculture, plantation 8 means rubber. The
+ * Hansen dataset queried on its own returns real years. An earlier version
+ * filtered JRC loss on `>= 2021`, which no code ever reaches, so loss on 2020
+ * forest was invisible everywhere; on a 12,000 ha test box in Uva it reported
+ * 0 ha where the data holds 21.7 ha. Every code is decoded below from the
+ * publisher's own table, and a code with no entry is reported as such rather
+ * than guessed.
  */
 import type { ForestStats } from "./verdict.ts";
 
@@ -29,6 +50,45 @@ export const HANSEN = { dataset: "umd_tree_cover_loss", version: "v1.13" } as co
 /** EUDR cut-off: 31 December 2020. Loss counts from the first year after it. */
 export const FIRST_YEAR_AFTER_CUTOFF = 2021;
 
+/**
+ * `umd_tree_cover_loss__year` as a raster code: 1 = 2001 … 25 = 2025, per the
+ * values table the Data API publishes for the field. This is the form it takes
+ * when joined onto the JRC dataset.
+ */
+const LOSS_YEAR_CODE_BASE = 2000;
+const FIRST_CODE_AFTER_CUTOFF = FIRST_YEAR_AFTER_CUTOFF - LOSS_YEAR_CODE_BASE;
+
+/**
+ * WRI/Google DeepMind drivers of tree cover loss, 1 km (Sims et al. 2025),
+ * classification band. Source: the dataset's class table in the Google Earth
+ * Engine catalogue (projects/landandcarbon/assets/wri_gdm_drivers_forest_loss_1km).
+ */
+export const DRIVER_NAMES: Record<number, string> = {
+  1: "Permanent agriculture",
+  2: "Hard commodities",
+  3: "Shifting cultivation",
+  4: "Logging",
+  5: "Wildfire",
+  6: "Settlements and infrastructure",
+  7: "Other natural disturbances",
+};
+
+/** `gfw_plantations__type`, per the values table the Data API publishes. */
+export const PLANTATION_TYPES: Record<number, string> = {
+  1: "Fruit",
+  2: "Fruit mix",
+  3: "Oil palm",
+  4: "Oil palm mix",
+  5: "Other",
+  6: "Other mix",
+  7: "Recently cleared",
+  8: "Rubber",
+  9: "Rubber mix",
+  10: "Unknown",
+  11: "Wood fiber / timber",
+  12: "Wood fiber / timber mix",
+};
+
 export type LngLat = [number, number];
 
 export interface GfwQuery {
@@ -37,13 +97,31 @@ export interface GfwQuery {
   sql: string;
 }
 
-export function plotQueries(): { forest: GfwQuery; plantation: GfwQuery; hansen: GfwQuery } {
+export interface PlotQueries {
+  forestTotal: GfwQuery;
+  lossOnForest: GfwQuery;
+  lossDrivers: GfwQuery;
+  plantation: GfwQuery;
+  hansen: GfwQuery;
+}
+
+export function plotQueries(): PlotQueries {
+  // Through JRC the loss year is a code (21 = 2021); through Hansen it is a year.
+  const sinceCode = `umd_tree_cover_loss__year >= ${FIRST_CODE_AFTER_CUTOFF}`;
+  const sinceYear = `umd_tree_cover_loss__year >= ${FIRST_YEAR_AFTER_CUTOFF}`;
   return {
-    forest: {
+    forestTotal: { ...JRC, sql: "SELECT SUM(area__ha) FROM results" },
+    lossOnForest: {
       ...JRC,
       sql:
-        "SELECT umd_tree_cover_loss__year, wri_google_tree_cover_loss_drivers__category, SUM(area__ha) " +
-        "FROM results GROUP BY umd_tree_cover_loss__year, wri_google_tree_cover_loss_drivers__category",
+        `SELECT umd_tree_cover_loss__year, SUM(area__ha) FROM results ` +
+        `WHERE ${sinceCode} GROUP BY umd_tree_cover_loss__year`,
+    },
+    lossDrivers: {
+      ...JRC,
+      sql:
+        `SELECT wri_google_tree_cover_loss_drivers__category, SUM(area__ha) FROM results ` +
+        `WHERE ${sinceCode} GROUP BY wri_google_tree_cover_loss_drivers__category`,
     },
     plantation: {
       ...JRC,
@@ -53,7 +131,7 @@ export function plotQueries(): { forest: GfwQuery; plantation: GfwQuery; hansen:
       ...HANSEN,
       sql:
         `SELECT umd_tree_cover_loss__year, SUM(area__ha) FROM results ` +
-        `WHERE umd_tree_cover_loss__year >= ${FIRST_YEAR_AFTER_CUTOFF} GROUP BY umd_tree_cover_loss__year`,
+        `WHERE ${sinceYear} GROUP BY umd_tree_cover_loss__year`,
     },
   };
 }
@@ -111,55 +189,79 @@ const areaOf = (r: Row): number => {
   return Number.isFinite(n) && n > 0 ? n : 0;
 };
 
+/** A loss year from either form: a code (1-99, meaning 2001-2099) or a year. */
 const yearOf = (r: Row): number | null => {
   const v = r["umd_tree_cover_loss__year"];
   const n = typeof v === "number" ? v : Number(v);
-  return Number.isFinite(n) && n > 1990 ? n : null;
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n < 100) return LOSS_YEAR_CODE_BASE + n;
+  return n > 1990 ? n : null;
 };
+
+/** A coded category as its published name; a name passes through unchanged. */
+function decode(v: unknown, table: Record<number, string>, what: string): string | null {
+  if (typeof v === "string") return v.trim() || null;
+  if (typeof v === "number" && Number.isFinite(v)) return table[v] ?? `${what} code ${v}`;
+  return null;
+}
 
 const add = (m: Record<string, number>, k: string, v: number) => {
   m[k] = (m[k] ?? 0) + v;
 };
 
-export function statsFromRows(
-  plotHa: number,
-  forestRows: Row[],
-  plantationRows: Row[],
-  hansenRows: Row[],
-): ForestStats {
-  let forest2020Ha = 0;
+export interface PlotRows {
+  forestTotal: Row[];
+  lossOnForest: Row[];
+  lossDrivers: Row[];
+  plantation: Row[];
+  hansen: Row[];
+}
+
+export function statsFromRows(plotHa: number, rows: PlotRows): ForestStats {
+  // Zonal area can exceed the polygon area slightly at the edges; never report
+  // more forest than there is plot.
+  const forest2020Ha = Math.min(
+    rows.forestTotal.reduce((n, r) => n + areaOf(r), 0),
+    plotHa,
+  );
+
   let lossOnForestAfterCutoffHa = 0;
   const lossOnForestByYear: Record<string, number> = {};
-  const lossOnForestByDriver: Record<string, number> = {};
-
-  for (const r of forestRows) {
-    const a = areaOf(r);
-    forest2020Ha += a;
+  for (const r of rows.lossOnForest) {
     const y = yearOf(r);
-    if (y !== null && y >= FIRST_YEAR_AFTER_CUTOFF) {
-      lossOnForestAfterCutoffHa += a;
-      add(lossOnForestByYear, String(y), a);
-      const d = r["wri_google_tree_cover_loss_drivers__category"];
-      add(lossOnForestByDriver, typeof d === "string" && d ? d : "unattributed", a);
-    }
+    if (y === null || y < FIRST_YEAR_AFTER_CUTOFF) continue;
+    const a = areaOf(r);
+    lossOnForestAfterCutoffHa += a;
+    add(lossOnForestByYear, String(y), a);
   }
 
+  // Drivers attribute a cause to loss already counted above; they never add to
+  // it. Whatever the driver layer does not cover is named "unattributed", so
+  // the officer sees that a cause is missing rather than a smaller loss.
+  const lossOnForestByDriver: Record<string, number> = {};
+  let attributed = 0;
+  for (const r of rows.lossDrivers) {
+    const d = decode(r["wri_google_tree_cover_loss_drivers__category"], DRIVER_NAMES, "driver");
+    const a = areaOf(r);
+    if (d) {
+      add(lossOnForestByDriver, d, a);
+      attributed += a;
+    }
+  }
+  const unattributed = lossOnForestAfterCutoffHa - attributed;
+  if (unattributed > 1e-6) add(lossOnForestByDriver, "unattributed", unattributed);
+
   const forestPlantationByType: Record<string, number> = {};
-  for (const r of plantationRows) {
-    const t = r["gfw_plantations__type"];
-    // A null type is forest that is NOT a mapped plantation.
-    if (typeof t === "string" && t) add(forestPlantationByType, t, areaOf(r));
+  for (const r of rows.plantation) {
+    const t = decode(r["gfw_plantations__type"], PLANTATION_TYPES, "plantation type");
+    if (t) add(forestPlantationByType, t, areaOf(r));
   }
 
   let lossAnyAfterCutoffHa = 0;
-  for (const r of hansenRows) {
+  for (const r of rows.hansen) {
     const y = yearOf(r);
     if (y !== null && y >= FIRST_YEAR_AFTER_CUTOFF) lossAnyAfterCutoffHa += areaOf(r);
   }
-
-  // Zonal area can exceed the polygon area slightly at the edges; never report
-  // more forest than there is plot.
-  forest2020Ha = Math.min(forest2020Ha, plotHa);
 
   return {
     plotHa,

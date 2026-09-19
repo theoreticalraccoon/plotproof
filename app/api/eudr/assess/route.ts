@@ -77,13 +77,15 @@ export async function POST(request: Request) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const [forest, plantation, hansen] = await Promise.all([
-      runQuery(q.forest, coords, key, controller.signal),
+    const [forestTotal, lossOnForest, lossDrivers, plantation, hansen] = await Promise.all([
+      runQuery(q.forestTotal, coords, key, controller.signal),
+      runQuery(q.lossOnForest, coords, key, controller.signal),
+      runQuery(q.lossDrivers, coords, key, controller.signal),
       runQuery(q.plantation, coords, key, controller.signal),
       runQuery(q.hansen, coords, key, controller.signal),
     ]);
     return NextResponse.json({
-      stats: statsFromRows(plotHa, forest, plantation, hansen),
+      stats: statsFromRows(plotHa, { forestTotal, lossOnForest, lossDrivers, plantation, hansen }),
       at: new Date().toISOString(),
     });
   } catch (e) {
