@@ -1,11 +1,5 @@
-/**
- * Price intelligence artifact, produced by ml/prices/PlotProof_Price_Intelligence.ipynb
- * from the World Bank Pink Sheet and committed to public/models/prices.json.
- *
- * Every number in the file is a measured value (latest published price,
- * cross-validated backtest error, empirical forecast band). The app renders it
- * or renders nothing — it never invents a price.
- */
+// Price intelligence artifact, produced by ml/prices/PlotProof_Price_Intelligence.ipynb from
+// the World Bank Pink Sheet and committed to public/models/prices.json.
 
 export interface PricePoint {
   month: string; // "2026-06"

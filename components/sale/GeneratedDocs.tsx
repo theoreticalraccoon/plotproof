@@ -1,13 +1,7 @@
 "use client";
 
-/**
- * The documents this app produces for the open sale: download all of them as
- * one file, download each alone, or open one to edit.
- *
- * An incomplete sale still downloads — an officer often needs to send a draft
- * to the exporter to check — but every page then carries a DRAFT watermark, so
- * a half-filled invoice can never be mistaken for a final one.
- */
+// The documents this app produces for the open sale: download all of them as one file, download
+// each alone, or open one to edit.
 import { useState } from "react";
 import { Download, FileText, Pencil, Loader2 } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";

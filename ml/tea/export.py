@@ -1,18 +1,4 @@
-"""
-Export the frozen model to ONNX and write the published artifact + model card.
-
-    python ml/tea/export.py
-
-Follows the pattern already proven by ml/prices: a notebook/script produces a
-static artifact under public/models/, a typed loader reads it, and the component
-renders it OR RENDERS NOTHING. No inference server, no new API route — the model
-runs in the browser via onnxruntime-web.
-
-Everything the UI needs to describe the model lives in the card, never in the
-UI. Class names, preprocessing constants, the abstention threshold, metrics and
-caveats are all data, so correcting a caveat is a JSON edit rather than a
-component change.
-"""
+"""Export the frozen model to ONNX and write the published artifact + model card."""
 
 from __future__ import annotations
 
@@ -81,16 +67,13 @@ def main() -> None:
     # ---- ONNX export ----
     onnx_path = OUT / f"{MODEL_NAME}-{MODEL_VERSION}.onnx"
     dummy = torch.randn(1, 3, size, size)
-    # external_data=False is NOT optional here. torch 2.14's exporter defaults to
-    # writing weights into a sibling .onnx.data file, which produced a 0.29 MB
-    # "model" that was really just a graph stub -- it loaded fine next to its
-    # sidecar and failed the moment the .onnx was published on its own. The
-    # browser fetches ONE file, so the weights must live inside it.
+    # external_data=False is NOT optional here. torch 2.14's exporter defaults to writing weights
+    # into a sibling .onnx.data file.
     torch.onnx.export(
         model, dummy, str(onnx_path),
         input_names=["input"], output_names=["logits"],
-        # Dynamic batch so the same artifact serves a single photo in the browser
-        # and a batched check in CI without re-exporting.
+        # Dynamic batch so the same artifact serves a single photo in the browser and a batched
+        # check in CI without re-exporting.
         dynamic_axes={"input": {0: "batch"}, "logits": {0: "batch"}},
         opset_version=a.opset,
         external_data=False,
@@ -98,8 +81,8 @@ def main() -> None:
     for stray in onnx_path.parent.glob(onnx_path.name + ".data"):
         stray.unlink()
 
-    # A graph stub is ~0.3 MB; the real model is several MB. Refuse to publish
-    # something too small to contain 1.5M float32 parameters.
+    # A graph stub is ~0.3 MB; the real model is several MB. Refuse to publish something too small
+    # to contain 1.5M float32 parameters.
     min_bytes = int(sum(p.numel() for p in model.parameters()) * 3)
     if onnx_path.stat().st_size < min_bytes:
         sys.exit(f"ONNX file is {onnx_path.stat().st_size} bytes, too small to hold the weights "
@@ -117,7 +100,7 @@ def main() -> None:
     agree = bool((torch_out.argmax(1) == onnx_out.argmax(1)).all())
     print(f"ONNX parity: max|Δlogit|={max_abs:.3e}  argmax agrees={agree}")
     if not agree or max_abs > 1e-3:
-        sys.exit("ONNX export does not match the PyTorch model — refusing to publish")
+        sys.exit("ONNX export does not match the PyTorch model, refusing to publish")
 
     # ---- assemble the card from the artifacts, never by hand ----
     ev = json.loads((OUT / "evaluation.json").read_text(encoding="utf-8"))
@@ -233,7 +216,7 @@ def main() -> None:
                                 "accuracy_on_accepted": t["abstention"]["accuracy_on_accepted"]}
                 for t in ev["tests"]},
             "behaviour": (
-                "Below the threshold the app must show 'uncertain — retake the photo' rather than "
+                "Below the threshold the app must show 'uncertain, retake the photo' rather than "
                 "a class. A farmer photographing a hand, a shoe or a badly-lit leaf should get an "
                 "abstention, never a confident wrong label."),
         },
@@ -254,7 +237,7 @@ def main() -> None:
             "THE REAL-FIELD ACCURACY IS UNMEASURED. Test 4 says the model handles synthetic "
             "canopy, occlusion and dappled light; it does not say the simulation resembles a Sri "
             "Lankan tea field. Only photographs from one would show that, and there are none.",
-            "Trained from 9,000 distinct photographs, not 80,329 images — the published set is "
+            "Trained from 9,000 distinct photographs, not 80,329 images, the published set is "
             "8.93x augmented.",
             "Two of the six classes are PESTS (red spider mite, tea mosquito bug), not pathogens. "
             "lib/grow/risk.ts has no weather-driven infection window for them, so fusion must not "
@@ -275,10 +258,10 @@ def main() -> None:
                         "models/tea/dataset-audit.md", "models/tea/leakage-report.json"],
         },
         "attribution": [
-            "CS-D tea leaf disease dataset — DOI 10.17632/94fzcdz8gz.1, CC BY 4.0. Images modified "
+            "CS-D tea leaf disease dataset, DOI 10.17632/94fzcdz8gz.1, CC BY 4.0. Images modified "
             "(de-duplicated, re-split, augmented).",
-            "Tea leaf disease Dataset (East West University) — DOI 10.17632/mz598gxfw9.1, CC BY 4.0.",
-            "TLD-BD / GreenPulse-T — DOI 10.17632/d2xybhfw59.2, CC BY 4.0.",
+            "Tea leaf disease Dataset (East West University), DOI 10.17632/mz598gxfw9.1, CC BY 4.0.",
+            "TLD-BD / GreenPulse-T, DOI 10.17632/d2xybhfw59.2, CC BY 4.0.",
         ],
     }
 

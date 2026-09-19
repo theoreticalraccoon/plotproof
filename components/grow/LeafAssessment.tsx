@@ -1,19 +1,6 @@
 "use client";
 
-/**
- * Section 2 of the advisory: what the photograph says, and nothing else.
- *
- * Split out of the old single `DiagnosisResult` so the result screen can read
- * in the order a farmer thinks in — field status, then the leaf, then the
- * conditions, then why, then what to do — instead of putting the model first
- * and the field last.
- *
- * Presentation only. Every model fact — class name, confidence, threshold,
- * version, cross-dataset status — arrives already resolved from the published
- * card via `lib/grow/tea/`. Nothing here knows the threshold's value, and
- * nothing here *can* bypass it: the "uncertain" branch carries no class to
- * render even if the markup asked for one.
- */
+/** Section 2 of the advisory: what the photograph says, and nothing else. */
 import { AlertTriangle, Camera, HelpCircle } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { localisedClassName } from "@/lib/grow/tea/display";
@@ -127,7 +114,7 @@ export default function LeafAssessment({
             field photographs, so a farmer will meet this screen far more often
             than an answer. The rate is read off the card, never written here,
             and the sentence is omitted entirely if the card does not publish
-            coverage — saying less rather than inventing a number. */}
+            coverage, saying less rather than inventing a number. */}
         {declineRate !== null && (
           <p className="mt-2.5 text-[0.85rem]" style={{ maxWidth: "58ch" }}>
             {t(lang, "tea_uncertain_expected", { pct: Math.round(declineRate * 100) })}

@@ -1,33 +1,12 @@
 "use client";
 
-/**
- * Sections 4 and 5 of the advisory: **why**, then **what to do**.
- *
- * The "why" is the part that makes the rest legitimate. Each line names where
- * it came from — a photograph, a weather model, a calculation, or something
- * actually measured in the soil — because the whole design rests on the farmer
- * being able to tell an observation from an inference. Losing that distinction
- * would turn four honest statements into one unaccountable verdict.
- *
- * There is deliberately no combined score anywhere in this component. A CNN
- * posterior over classes and a fuzzy infection-pressure index are not
- * commensurable; averaging them produces a number that means nothing and hides
- * the disagreement that is the most useful thing on the screen.
- */
+/** Sections 4 and 5 of the advisory: why, then what to do. */
 import { Calculator, Camera, CloudSun, Ruler } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { fallbackLang, renderEvidence } from "@/lib/grow/tea/display";
 import type { EvidenceSource, TeaAdvisory, TeaModelCard } from "@/lib/grow/tea/types";
 
-/**
- * The four provenance tiers: the SOURCE the line came from, and the KIND of
- * claim it is.
- *
- * Both are needed and neither repeats the other. "Soil sensor · measured here"
- * and "Weather model · outside estimate" are the difference between a probe in
- * this plot and a land-surface model for the district, and a farmer deciding
- * whether to irrigate deserves to know which one is talking.
- */
+/** The four provenance tiers: the SOURCE the line came from, and the KIND of claim it is. */
 const SOURCE_META: Record<
   EvidenceSource,
   { Icon: typeof Camera; labelKey: string; kindKey: string }
@@ -124,7 +103,7 @@ export default function AdvisoryExplanation({
             className="mt-3 space-y-2 border-l-2 pl-4 text-[0.82rem] muted"
             style={{ borderColor: "var(--glass-hairline)" }}
           >
-            {/* Card prose, English in every language — it is the model card's
+            {/* Card prose, English in every language, it is the model card's
                 own wording and translating it would be restating the card. */}
             {card.known_limitations.map((l) => (
               <li key={l} lang="en">

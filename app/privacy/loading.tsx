@@ -1,8 +1,4 @@
-/**
- * Route skeleton for the privacy notice. Same two-column document shape as the
- * page itself, so the contents rail and the measure of the prose column are
- * already in place when the text lands.
- */
+/** Route skeleton for the privacy notice. */
 import { Skeleton } from "@/components/motion/Skeleton";
 
 function ClauseLines({ paras = [3, 2] }: { paras?: number[] }) {

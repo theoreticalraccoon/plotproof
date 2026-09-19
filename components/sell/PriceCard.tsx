@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * The information-asymmetry breaker. Shows the farmer their product's current
- * world reference price, its 5-year context, what THEIR stated quantity is
- * worth at that reference, and an honest forecast band — all read from the
- * published prices.json artifact. Renders nothing invented: no artifact or no
- * series for this product means an honest absence, never a made-up number.
- */
+/** The information-asymmetry breaker. */
 import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { loadPrices, type CommodityPrices, type PriceIntelligence } from "@/lib/prices/types";
@@ -36,8 +30,8 @@ export default function PriceCard({ productId, quantityKg }: Props) {
     );
   }
 
-  // Staleness gate: a reference price older than 3 months must never be shown
-  // as "your price today". Say what we have and that it is out of date, only.
+  // Staleness gate: a reference price older than 3 months must never be shown as "your price
+  // today". Say what we have and that it is out of date, only.
   const [ly, lm] = c.latest.month.split("-").map(Number);
   const now = new Date();
   const ageMonths = (now.getFullYear() - ly) * 12 + (now.getMonth() + 1 - lm);

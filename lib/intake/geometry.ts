@@ -1,19 +1,5 @@
-/**
- * Plot geometry validation. Pure functions, no browser/DB dependency, so this
- * module is unit-testable in Node (see test/geometry.test.ts).
- *
- * The four rules PROJECT.md requires before a plot may save:
- *   1. auto-order tapped corners            -> autoOrderRing
- *   2. reject self-intersecting polygons    -> isSelfIntersecting (blocking)
- *   3. equal-area area + warn on divergence -> computeAreaHa / areaMismatch
- *   4. detect overlap with existing plots   -> findOverlaps
- *
- * Area note: turf `area` returns geodesic area in m², an equal-area measure
- * that needs no projection choice, correct in any UTM zone or hemisphere. It is
- * the right tool for the immediate on-device "does this match the claim?" check.
- * The AUTHORITATIVE figure for the legal PDF is recomputed server-side in
- * PostGIS in the country profile's declared equal-area CRS (SCHEMA.md §A).
- */
+// Plot geometry validation. Pure functions, no browser/DB dependency, so this module is
+// unit-testable in Node (see test/geometry.test.ts).
 import {
   area as turfArea,
   booleanIntersects,
@@ -30,17 +16,8 @@ export const AREA_MISMATCH_RATIO = 0.2; // ±20%
 /** Overlaps below this many hectares are treated as boundary-touch noise. */
 export const OVERLAP_MIN_HA = 0.001; // ~10 m²
 
-/**
- * Centre of a plot as [lng, lat], for anything that needs a POINT rather than a
- * boundary — the weather grid cell, a sensor's registered position, a map pin.
- *
- * DERIVED, never stored: `LocalPlot` holds the captured ring and nothing else,
- * so the attested record keeps exactly the shape it was signed with. Recomputing
- * this is cheap and cannot drift out of sync with the boundary.
- *
- * Uses centre-of-mass rather than the bounding-box centre so a concave or
- * L-shaped plot still yields a point inside its own land.
- */
+// Centre of a plot as [lng, lat], for anything that needs a POINT rather than a boundary, the
+// weather grid cell, a sensor's registered position, a map pin.
 export function plotCentre(ring: LngLat[]): { lng: number; lat: number } | null {
   const closed = closeRing(dedupeConsecutive(ring));
   if (closed.length < 4) return null;
@@ -70,16 +47,8 @@ export function dedupeConsecutive(points: LngLat[]): LngLat[] {
   return out;
 }
 
-/**
- * Order points into a simple polygon by angle around the centroid. Used for
- * CORNER CAPTURE, where corners are tapped out of order. Not used for tracing
- * (there the tap order is the intended boundary) or walking.
- *
- * Caveat: an angular sort yields a simple polygon for convex / star-shaped
- * plots, the overwhelming majority of smallholdings. Deeply concave shapes can
- * still come out wrong; the self-intersection check is the backstop that
- * refuses to save those. Does not handle antimeridian-spanning plots.
- */
+// Order points into a simple polygon by angle around the centroid. Used for CORNER CAPTURE,
+// where corners are tapped out of order.
 export function autoOrderRing(points: LngLat[]): LngLat[] {
   const pts = dedupeConsecutive(points);
   if (pts.length < 3) return pts;
@@ -124,12 +93,7 @@ export interface ExistingPlot {
   ring: LngLat[];
 }
 
-/**
- * Ids of existing plots whose INTERIOR overlaps the candidate. Uses the
- * intersection AREA (not mere boundary touch), so legitimately adjacent plots
- * sharing an edge don't false-positive, while containment (one plot inside
- * another) is still caught, the case `booleanOverlap` would miss.
- */
+/** Ids of existing plots whose INTERIOR overlaps the candidate. */
 export function findOverlaps(ring: LngLat[], existing: ExistingPlot[]): string[] {
   const closed = closeRing(ring);
   if (closed.length < 4) return [];
@@ -146,8 +110,8 @@ export function findOverlaps(ring: LngLat[], existing: ExistingPlot[]): string[]
       const inter = intersect(featureCollection([candidate, otherPoly]));
       if (inter && turfArea(inter) / 10_000 > OVERLAP_MIN_HA) hits.push(other.id);
     } catch {
-      // If intersect fails on a pathological geometry, fall back to the
-      // conservative signal that they intersect at all.
+      // If intersect fails on a pathological geometry, fall back to the conservative signal that
+      // they intersect at all.
       hits.push(other.id);
     }
   }
@@ -169,11 +133,8 @@ export interface ValidateOptions {
   areaMismatchRatio?: number;
 }
 
-/**
- * Full pre-save pipeline. Orders (for corner capture), validates, measures,
- * and flags overlaps and area mismatch. `canSave` is false only for BLOCKING
- * errors; warnings are surfaced for the officer to acknowledge.
- */
+// Full pre-save pipeline. Orders (for corner capture), validates, measures, and flags overlaps
+// and area mismatch.
 export function validatePlot(points: LngLat[], opts: ValidateOptions): PlotValidation {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];

@@ -1,7 +1,7 @@
 import { Skeleton, SkeletonList } from "@/components/motion/Skeleton";
 
-/** Root route-transition fallback, shown by Next while a route's code/data
- *  loads. A calm skeleton, not a spinner, so navigation feels instant + premium. */
+// Root route-transition fallback, shown by Next while a route's code/data loads. A calm
+// skeleton, not a spinner, so navigation feels instant + premium.
 export default function Loading() {
   return (
     <main className="mx-auto min-h-dvh max-w-3xl px-5 py-6 sm:px-8">

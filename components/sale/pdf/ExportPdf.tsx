@@ -1,15 +1,4 @@
-/**
- * The export documents as real PDF files.
- *
- * Loaded only when the officer presses download (see `lib/sale/download.ts`):
- * the renderer is several hundred kilobytes and nobody who only fills in the
- * questionnaire should pay for it.
- *
- * Renders the models from `lib/sale/documents.ts` and nothing else — the same
- * data the on-screen preview shows — so the file that is sent is the file that
- * was checked. Documents are in English on purpose: customs authorities and
- * banks expect it, whatever language the officer works in.
- */
+/** The export documents as real PDF files. */
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type {
   ExportDoc,
@@ -22,7 +11,7 @@ import type {
 const TITLES: Record<ExportDoc["kind"], string> = {
   invoice: "COMMERCIAL INVOICE",
   "packing-list": "PACKING LIST",
-  "certificate-of-origin": "CERTIFICATE OF ORIGIN — DRAFT FOR CERTIFICATION",
+  "certificate-of-origin": "CERTIFICATE OF ORIGIN, DRAFT FOR CERTIFICATION",
 };
 
 const s = StyleSheet.create({
@@ -63,7 +52,7 @@ function Party({ label, party }: { label: string; party: PartyBlock }) {
   return (
     <View style={s.col}>
       <Text style={s.label}>{label}</Text>
-      <Text style={s.bold}>{party.name || "—"}</Text>
+      <Text style={s.bold}>{party.name || "-"}</Text>
       {party.lines.map((l) => (
         <Text key={l}>{l}</Text>
       ))}
@@ -98,15 +87,15 @@ function Route({ from, to, vessel }: { from: string; to: string; vessel: string 
     <View style={s.row}>
       <View style={s.col}>
         <Text style={s.label}>Port of loading</Text>
-        <Text>{from || "—"}</Text>
+        <Text>{from || "-"}</Text>
       </View>
       <View style={s.col}>
         <Text style={s.label}>Port of discharge</Text>
-        <Text>{to || "—"}</Text>
+        <Text>{to || "-"}</Text>
       </View>
       <View style={s.col}>
         <Text style={s.label}>Vessel / flight</Text>
-        <Text>{vessel || "—"}</Text>
+        <Text>{vessel || "-"}</Text>
       </View>
     </View>
   );
@@ -131,7 +120,7 @@ function InvoicePage({ doc }: { doc: InvoiceDoc }) {
         </View>
         <View style={s.col}>
           <Text style={s.label}>Payment terms</Text>
-          <Text>{doc.paymentTerms || "—"}</Text>
+          <Text>{doc.paymentTerms || "-"}</Text>
         </View>
         <View style={s.col}>
           <Text style={s.label}>Country of origin</Text>
@@ -148,7 +137,7 @@ function InvoicePage({ doc }: { doc: InvoiceDoc }) {
           <Text style={[s.th, { flex: 1.2 }, s.right]}>Amount ({doc.currency})</Text>
         </View>
         <View style={s.tr}>
-          <Text style={[s.td, { flex: 3 }]}>{doc.line.description || "—"}</Text>
+          <Text style={[s.td, { flex: 3 }]}>{doc.line.description || "-"}</Text>
           <Text style={[s.td, { flex: 1 }]}>{doc.line.hsCode}</Text>
           <Text style={[s.td, { flex: 1 }, s.right]}>{num(doc.line.quantityKg)}</Text>
           <Text style={[s.td, { flex: 1 }, s.right]}>{num(doc.line.unitPrice)}</Text>
@@ -201,7 +190,7 @@ function PackingPage({ doc }: { doc: PackingListDoc }) {
         </View>
         <View style={s.col}>
           <Text style={s.label}>Shipping marks</Text>
-          <Text>{doc.marks || "—"}</Text>
+          <Text>{doc.marks || "-"}</Text>
         </View>
       </View>
 
@@ -215,7 +204,7 @@ function PackingPage({ doc }: { doc: PackingListDoc }) {
           <Text style={[s.th, { flex: 1 }, s.right]}>Gross kg each</Text>
         </View>
         <View style={s.tr}>
-          <Text style={[s.td, { flex: 3 }]}>{doc.description || "—"}</Text>
+          <Text style={[s.td, { flex: 3 }]}>{doc.description || "-"}</Text>
           <Text style={[s.td, { flex: 1 }]}>{doc.hsCode}</Text>
           <Text style={[s.td, { flex: 1.4 }]}>{doc.packageType}</Text>
           <Text style={[s.td, { flex: 0.8 }, s.right]}>{doc.packages}</Text>
@@ -255,11 +244,11 @@ function OriginPage({ doc }: { doc: OriginDoc }) {
         </View>
         <View style={s.col}>
           <Text style={s.label}>4. Country of destination</Text>
-          <Text>{doc.destinationCountry || "—"}</Text>
+          <Text>{doc.destinationCountry || "-"}</Text>
         </View>
         <View style={s.col}>
           <Text style={s.label}>5. Producer</Text>
-          <Text>{doc.producer || "—"}</Text>
+          <Text>{doc.producer || "-"}</Text>
         </View>
       </View>
       <View style={[s.thin]} />
@@ -274,11 +263,11 @@ function OriginPage({ doc }: { doc: OriginDoc }) {
           <Text style={[s.th, { flex: 1 }, s.right]}>Gross kg</Text>
         </View>
         <View style={[s.tr, { borderBottomWidth: 0 }]}>
-          <Text style={[s.td, { flex: 1.4 }]}>{doc.marks || "—"}</Text>
+          <Text style={[s.td, { flex: 1.4 }]}>{doc.marks || "-"}</Text>
           <Text style={[s.td, { flex: 1.4 }]}>
             {doc.packages} × {doc.packageType}
           </Text>
-          <Text style={[s.td, { flex: 3 }]}>{doc.description || "—"}</Text>
+          <Text style={[s.td, { flex: 3 }]}>{doc.description || "-"}</Text>
           <Text style={[s.td, { flex: 1 }]}>{doc.hsCode}</Text>
           <Text style={[s.td, { flex: 1 }, s.right]}>{num(doc.grossKg)}</Text>
         </View>
@@ -292,7 +281,7 @@ function OriginPage({ doc }: { doc: OriginDoc }) {
       </Text>
       <View style={s.row}>
         <Text style={s.sign}>Exporter&apos;s signature and date</Text>
-        <Text style={[s.sign, { marginLeft: 40 }]}>Certifying authority — stamp and signature</Text>
+        <Text style={[s.sign, { marginLeft: 40 }]}>Certifying authority, stamp and signature</Text>
       </View>
     </Page>
   );

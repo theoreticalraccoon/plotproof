@@ -1,10 +1,4 @@
-/**
- * Route skeleton for the public verification page. It mirrors the document's
- * real shape — masthead stroke, headline, record rows, three ladder rungs —
- * so the page does not jump when the lot arrives. The accent stroke and the
- * hairlines are drawn for real rather than as placeholders: they are chrome,
- * not data, and pretending we do not know them yet would be theatre.
- */
+/** Route skeleton for the public verification page. */
 import { Skeleton } from "@/components/motion/Skeleton";
 
 export default function Loading() {

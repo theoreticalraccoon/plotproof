@@ -1,25 +1,4 @@
-/**
- * The wire format between the ESP32 soil node and the browser, as a pure parser.
- *
- * Split from `serial.ts` for the same reason `preprocess.ts` is split from
- * `infer.ts` in the tea lane: everything that can be tested under plain Node
- * should be, and a serial read loop cannot be. This file is the half that can.
- *
- * The board emits one JSON object per line, newline-terminated:
- *
- *     {"raw":2431,"ms":184023}
- *
- * `raw` is required: it is the measurement. `ms` (board uptime) is optional.
- * The node measures soil moisture only — air temperature and humidity come from
- * the weather grid for the plot — so any other field an older sketch might send
- * (`soilT`, `airT`, `rh`) is ignored rather than stored.
- *
- * The parser is deliberately strict and total: it never throws, and it returns
- * `null` for anything it cannot vouch for. A serial line is untrusted input —
- * it can be a boot message, a partial frame from plugging the cable in
- * mid-transmission, or noise — and the one thing that must never happen is a
- * garbled frame becoming a confident soil reading.
- */
+/** The wire format between the ESP32 soil node and the browser, as a pure parser. */
 
 /** Raw ADC range of an ESP32 on a 12-bit read. Anything outside is not a reading. */
 export const ADC_MIN = 0;
@@ -36,14 +15,12 @@ function finiteOrNull(v: unknown, lo: number, hi: number): number | null {
   return typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi ? v : null;
 }
 
-/**
- * Parse one line. Returns null for anything that is not a complete, plausible
- * frame — including the sketch's own boot banner, which is plain text.
- */
+// Parse one line. Returns null for anything that is not a complete, plausible frame, including
+// the sketch's own boot banner, which is plain text.
 export function parseFrame(line: string): SensorFrame | null {
   const trimmed = line.trim();
-  // Cheap reject before attempting JSON: the overwhelming majority of junk
-  // lines (boot messages, ESP32 ROM output) do not start with a brace.
+  // Cheap reject before attempting JSON: the overwhelming majority of junk lines (boot messages,
+  // ESP32 ROM output) do not start with a brace.
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return null;
 
   let obj: unknown;
@@ -65,14 +42,7 @@ export function parseFrame(line: string): SensorFrame | null {
   };
 }
 
-/**
- * Accumulate bytes into whole lines.
- *
- * Serial delivers arbitrary chunks, not lines: one `read()` can carry half a
- * frame, three frames, or a frame split across two reads. Without buffering,
- * every chunk boundary that falls mid-JSON silently drops a reading. Returns
- * the complete lines found and keeps the remainder for next time.
- */
+/** Accumulate bytes into whole lines. */
 export class LineBuffer {
   private buf = "";
   /** Guard against a board that never sends a newline filling memory. */
@@ -81,8 +51,8 @@ export class LineBuffer {
   push(chunk: string): string[] {
     this.buf += chunk;
     if (this.buf.length > LineBuffer.MAX) {
-      // Something is wrong with the stream. Drop what we have rather than grow
-      // without bound; the next newline resynchronises us.
+      // Something is wrong with the stream. Drop what we have rather than grow without bound;
+      // the next newline resynchronises us.
       this.buf = this.buf.slice(-1024);
     }
     const parts = this.buf.split(/\r?\n/);

@@ -1,18 +1,4 @@
-/**
- * Tamper-evidence for attestations.
- *
- * What this is: every attestation is canonically serialised and SHA-256 hashed
- * on the officer's device at save time. The hash covers the plot geometry, the
- * photo bytes, the signature bytes, the farmer/officer identity snapshot and
- * the consent timestamp, plus the hash of the PREVIOUS attestation on this
- * device — a per-device hash chain. Any later edit to any of those breaks the
- * hash; deleting or reordering a record breaks the chain.
- *
- * What this is NOT (stated on screen, not just here): the chain is computed
- * client-side by the same device that captured the data. It proves the record
- * has not changed since capture; it does not prove the capture itself was
- * honest, and it is not yet anchored to any external timestamping service.
- */
+/** Tamper-evidence for attestations. */
 import type { LngLat } from "./types";
 
 export const INTEGRITY_ALGO = "SHA-256" as const;
@@ -59,8 +45,8 @@ export function ringSha256(ring: LngLat[]): Promise<string> {
   return sha256Hex(canonicalJson(canonical));
 }
 
-/** The exact fields the content hash commits to. Adding a field is a breaking
- *  change for verification, so keep this list explicit, never spread. */
+// The exact fields the content hash commits to. Adding a field is a breaking change for
+// verification, so keep this list explicit, never spread.
 export interface AttestationHashInput {
   plotId: string;
   officerId: string;
@@ -87,11 +73,7 @@ export interface VerifyResult {
   checks: { label: string; ok: boolean; detail?: string }[];
 }
 
-/**
- * Recompute every hash from the stored bytes and compare. A purged media blob
- * (uploaded, then dropped to save space) can no longer be re-hashed locally;
- * that check reports as passed-by-record with a note, not as a failure.
- */
+/** Recompute every hash from the stored bytes and compare. */
 export async function verifyAttestationIntegrity(args: {
   integrity: AttestationIntegrity;
   hashInput: Omit<AttestationHashInput, "photoSha256" | "signatureSha256" | "ringSha256" | "prevHash">;

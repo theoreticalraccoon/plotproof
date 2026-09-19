@@ -1,15 +1,7 @@
 "use client";
 
-/**
- * Captured plots on this device. Shows capture method, measured vs claimed
- * area, any acknowledged warnings, and sync state, the officer's running
- * tally for the day's work.
- *
- * The list is read from IndexedDB, which is fast but not instant on a cheap
- * device. Until that read resolves we must NOT render "No plots yet": an
- * officer who sees that after a day of capture reasonably concludes the work is
- * gone. Hence the explicit loading / error / empty / ready split below.
- */
+// Captured plots on this device. Shows capture method, measured vs claimed area, any
+// acknowledged warnings, and sync state, the officer's running tally for the day's work.
 import { useCallback, useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPinned, RotateCcw, TriangleAlert } from "lucide-react";
@@ -36,9 +28,8 @@ const SYNC_STYLE: Record<SyncStatus, string> = {
   error: "tag-warn",
 };
 
-/* The status words are the raw lifecycle values an auditor will also see in the
-   record, so they stay verbatim rather than being prettified; the hint carries
-   the meaning instead. */
+// The status words are the raw lifecycle values an auditor will also see in the record, so they
+// stay verbatim rather than being prettified; the hint carries the meaning instead.
 const SYNC_HINT: Record<SyncStatus, string> = {
   local: "Saved on this device only. Not queued for sending yet.",
   queued: "Waiting in the outbox for the next successful sync.",
@@ -56,8 +47,8 @@ export default function PlotList({ refreshSignal }: { refreshSignal: number }) {
   const [farmers, setFarmers] = useState<Map<string, LocalFarmer>>(new Map());
   const [state, setState] = useState<LoadState>("loading");
 
-  // Rejects on failure, so the retry button can surface a real error state
-  // instead of leaving the officer looking at a falsely empty list.
+  // Rejects on failure, so the retry button can surface a real error state instead of leaving
+  // the officer looking at a falsely empty list.
   const load = useCallback(async () => {
     const [ps, fs] = await Promise.all([listPlots(), listFarmers()]);
     setPlots(ps);

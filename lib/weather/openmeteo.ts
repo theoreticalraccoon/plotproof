@@ -1,23 +1,6 @@
-/**
- * Open-Meteo client — the weather half of the GROW lane.
- *
- * Why Open-Meteo: free, no API key, CORS-open (so it is called straight from the
- * browser with no proxy route of our own), CC-BY, and it serves the exact
- * variables an FAO-56 water balance and a foliar-disease risk model need —
- * including `et0_fao_evapotranspiration`, which saves us implementing
- * Penman-Monteith ourselves and getting it subtly wrong.
- *
- * Two endpoints, because they cover different time ranges:
- *   - forecast API  — past 92 days + 16 days ahead. The day-to-day product.
- *   - archive API   — ERA5 reanalysis back to 1940. Used for the sensor↔grid
- *                     calibration fit and for backtesting risk thresholds.
- *
- * Everything here returns a `WeatherResult`, never throws, and never invents a
- * day. A failed load renders as an honest "weather unavailable", matching the
- * `PriceCard` contract (no artifact → render nothing, never a guess).
- */
-// Relative, not "@/…": keeps this module loadable by the plain-Node test runner,
-// the same reason lib/compliance/catalog.ts avoids the alias.
+/** Open-Meteo client, the weather half of the GROW lane. */
+// Relative, not "@/…": keeps this module loadable by the plain-Node test runner, the same reason
+// lib/compliance/catalog.ts avoids the alias.
 import { fetchJson, NetError } from "../net.ts";
 import type { DailyWeather, WeatherResult } from "../grow/types.ts";
 import { toDailyWeather, type OpenMeteoResponse } from "./derive.ts";
@@ -29,10 +12,8 @@ export type { OpenMeteoResponse } from "./derive.ts";
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive";
 
-/**
- * Hourly variables. `relative_humidity_2m` and `precipitation` are what the
- * leaf-wetness estimator runs on, so they are not optional.
- */
+// Hourly variables. `relative_humidity_2m` and `precipitation` are what the leaf-wetness
+// estimator runs on, so they are not optional.
 const HOURLY = [
   "temperature_2m",
   "relative_humidity_2m",
@@ -60,12 +41,7 @@ function failureReason(e: unknown): string {
   return "Weather data could not be loaded.";
 }
 
-/**
- * The day-to-day load: recent history plus the forecast horizon.
- *
- * `pastDays` defaults to 30 — enough trailing context for a 14-day disease
- * window and a month of water balance, without pulling data we will not draw.
- */
+/** The day-to-day load: recent history plus the forecast horizon. */
 export async function loadRecentWeather(
   latitude: number,
   longitude: number,
@@ -94,13 +70,7 @@ export async function loadRecentWeather(
   }
 }
 
-/**
- * ERA5 archive load, for the sensor↔grid calibration fit and risk backtests.
- *
- * Note the reanalysis lag: ERA5 is roughly five days behind real time, so the
- * archive will not return the last few days. Callers that need "now" use
- * `loadRecentWeather`.
- */
+/** ERA5 archive load, for the sensor↔grid calibration fit and risk backtests. */
 export async function loadArchiveWeather(
   latitude: number,
   longitude: number,

@@ -1,37 +1,10 @@
-"""
-Pre-training leakage gate. Training MUST NOT start unless this exits 0.
-
-    python ml/tea/check_leakage.py --csd <dir> --ewu <dir> --tld <dir>
-
-Six checks, each of which has a real failure mode behind it rather than being
-defensive box-ticking:
-
-  1. GROUP OVERLAP     — the same source photograph in two splits. CS-D ships
-                         9 near-identical copies of every photo; if a group
-                         straddles train/test the test score is memorisation.
-  2. PATH OVERLAP      — the same file in two splits. Cheap, catches loader bugs.
-  3. NEAR-DUPLICATES   — images that are near-identical across train/val despite
-                         being in different groups. Catches the case where the
-                         recovered grouping rule is wrong, which no amount of
-                         careful partitioning would save us from.
-  4. CLASS MAPPING     — every folder resolves to a canonical class, CS-D maps
-                         only to ACTIVE classes, and no inactive class leaked in.
-  5. TRAIN PURITY      — only cs_d appears in train/val. EWU and TLD-BD are
-                         test-only, and the whole value of their numbers depends
-                         on that being true.
-  6. DETERMINISM       — the split is reproducible and agrees with the
-                         independent implementation in scripts/audit_tea_datasets.py.
-
-Writes models/tea/leakage-report.json.
-"""
+"""Pre-training leakage gate. Training MUST NOT start unless this exits 0."""
 
 from __future__ import annotations
 
 import sys as _sys
 
-# Windows consoles default to cp1252 and these scripts print em-dashes and
-# arrows. A gate must not be able to fail because of a character in its own
-# status line, so force UTF-8 on the streams before anything writes to them.
+# Windows consoles default to cp1252 and these scripts print em-dashes and arrows.
 for _s in (_sys.stdout, _sys.stderr):
     try:
         _s.reconfigure(encoding="utf-8")
@@ -94,16 +67,7 @@ def check_path_overlap(samples) -> dict:
 
 
 def check_near_duplicates(samples, sample_n: int = 1200, threshold: float = 0.9999, seed: int = 1337) -> dict:
-    """Hunt for near-identical images spanning train and val.
-
-    This is the check that would catch a WRONG grouping rule. The stride rule was
-    recovered empirically, so it deserves an independent test rather than trust.
-
-    The threshold is deliberately extreme (0.9999). CS-D images are all tea
-    leaves at 256x256, so ordinary cross-pair similarity is already ~0.96-0.99;
-    flagging at 0.99 would report thousands of meaningless "duplicates". Only a
-    near-exact match indicates the same photograph.
-    """
+    """Hunt for near-identical images spanning train and val."""
     rng = random.Random(seed)
     tr = [s for s in samples if s.split == "train" and s.dataset == "cs_d"]
     va = [s for s in samples if s.split == "val" and s.dataset == "cs_d"]
@@ -183,8 +147,8 @@ def check_train_purity(samples) -> dict:
 
 
 def check_determinism(samples) -> dict:
-    """Recomputing the split must give the same answer, and must agree with the
-    independent implementation used during the audit."""
+    """Recomputing the split must give the same answer, and must agree with the independent
+    implementation used during the audit."""
     sys.path.insert(0, str(REPO / "scripts"))
     from audit_tea_datasets import assign_split as audit_assign  # noqa
 
@@ -256,7 +220,7 @@ def main() -> None:
             for k in ("problems", "examples", "contaminants"):
                 if c.get(k):
                     print(f"        {k}: {c[k]}")
-    print(f"\n  → {'ALL CHECKS PASSED' if report['all_passed'] else 'LEAKAGE DETECTED — TRAINING MUST NOT START'}")
+    print(f"\n  → {'ALL CHECKS PASSED' if report['all_passed'] else 'LEAKAGE DETECTED, TRAINING MUST NOT START'}")
     print(f"  >> {a.out}")
     sys.exit(0 if report["all_passed"] else 1)
 

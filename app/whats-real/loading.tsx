@@ -1,9 +1,4 @@
-/**
- * Route skeleton for the honesty page. Mirrors the real column structure —
- * contents rail, numbered parts, term/description pairs — including the one
- * elevated block, so the long page settles into place instead of reflowing
- * under the reader.
- */
+/** Route skeleton for the honesty page. */
 import { Skeleton } from "@/components/motion/Skeleton";
 
 function EntryLines({ lines = 3 }: { lines?: number }) {

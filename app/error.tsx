@@ -1,7 +1,7 @@
 "use client";
 
-/** Route-level error boundary, turns any thrown render/data error into an
- *  explainable card with a retry, instead of a blank screen or a stack trace. */
+// Route-level error boundary, turns any thrown render/data error into an explainable card with
+// a retry, instead of a blank screen or a stack trace.
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 

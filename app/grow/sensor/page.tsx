@@ -1,20 +1,6 @@
 "use client";
 
-/**
- * /grow/sensor — put a real measurement into the anchoring ladder.
- *
- * This is the top rung of `lib/grow/irrigation.ts`'s evidence hierarchy, and
- * until this page existed it was unreachable: the table, the calibration store
- * and the guard were all built and all read, but nothing wrote. Every plot ran
- * on a satellite-informed soil model or a rainfall balance.
- *
- * The page shows the gap it closes. Once a reading is saved it prints what the
- * weather model believed about this plot's root zone next to what the probe
- * measured — not as a correction, because the ladder already prefers the probe
- * outright, but because that difference is the entire argument for putting a
- * probe in the ground and it deserves to be visible rather than silently
- * enjoyed.
- */
+/** /grow/sensor, put a real measurement into the anchoring ladder. */
 import { useCallback, useEffect, useState } from "react";
 import { Ruler } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
@@ -52,9 +38,8 @@ export default function SensorPage() {
   const refresh = useCallback(() => {
     if (!plotId) return;
     void recentSensorReadings(plotId, 200).then(setStored).catch(() => setStored([]));
-    // The same call the irrigation engine makes, so what is shown here is what
-    // the ladder will actually use — including its staleness and plausibility
-    // rules, rather than a second opinion that could disagree with it.
+    // The same call the irrigation engine makes, so what is shown here is what the ladder will
+    // actually use, including its staleness and plausibility rules.
     void latestSoilMoisture(plotId).then(setAnchorVwc).catch(() => setAnchorVwc(null));
   }, [plotId]);
 
@@ -85,9 +70,9 @@ export default function SensorPage() {
             ]}
           />
         </div>
-        {/* Phones only: on desktop the nav bar already carries the switcher, and
+        {/* Below lg only: from lg up the nav bar already carries the switcher, and
             two of them side by side read as two different settings. */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <LanguageSwitcher />
         </div>
       </div>

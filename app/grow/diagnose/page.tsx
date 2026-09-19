@@ -1,26 +1,6 @@
 "use client";
 
-/**
- * /grow/diagnose — the complete advisory for one plot.
- *
- * Reads, in the order a farmer thinks in:
- *
- *   1. Field status    — what the soil is doing, and which tier of evidence said so
- *   2. Leaf assessment — what the photograph suggests, or that it could not say
- *   3. Conditions      — what the last two weeks of weather favoured
- *   4. Why             — each line naming its own provenance
- *   5. What to do      — one practical next action
- *
- * Sections 1 and 3 exist before any photo is taken, and survive the model
- * failing entirely: they are computed by the Day 1 engines from weather, and
- * the leaf checker is an addition to that advice, never a precondition for it.
- *
- * This component orchestrates and renders. It holds no model constants — the
- * threshold, temperature, class names and limitations all arrive from the
- * published card through `lib/grow/tea/`. It reuses the EXISTING weather,
- * irrigation and risk results via `useGrowPlot` rather than recomputing them,
- * and a leaf result is never an input to any of them.
- */
+/** /grow/diagnose, the complete advisory for one plot. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Leaf } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
@@ -62,16 +42,12 @@ export default function DiagnosePage() {
   const [busy, setBusy] = useState(false);
   const [prediction, setPrediction] = useState<TeaPrediction | null>(null);
 
-  // The plot is remembered across /grow <-> /grow/diagnose. Picking `plots[0]`
-  // independently on each page let a farmer select their second plot, tap
-  // "check the leaves", and be shown a leaf assessment composed against the
-  // FIRST plot's weather and soil — silently.
+  // The plot is remembered across /grow <-> /grow/diagnose.
   const remembered = useSelectedPlotId();
   const plotId = resolvePlotId(plots ?? [], remembered);
 
-  // --- diagnostics (?diag=1) ---------------------------------------------
-  // Read in an effect, not during render: `location` does not exist on the
-  // server and reading it inline would mismatch hydration.
+  // --- diagnostics (?diag=1) --------------------------------------------- Read in an effect,
+  // not during render.
   const [diag, setDiag] = useState(false);
   const [runtime, setRuntime] = useState<RuntimeFacts | null>(null);
   const [artifact, setArtifact] = useState<ArtifactCheck | null>(null);
@@ -86,9 +62,7 @@ export default function DiagnosePage() {
 
   useEffect(() => {
     if (!plotId) return;
-    // Clear first. Leaving the previous plot's profile in place while the new
-    // one loads would compute this plot's water balance from the LAST plot's
-    // crop and soil for a frame or two — briefly, silently, and wrongly.
+    // Clear first.
     setProfile(null);
     setProfileLoaded(false);
     let cancelled = false;
@@ -108,25 +82,21 @@ export default function DiagnosePage() {
     };
   }, [plotId]);
 
-  // A leaf result belongs to the plot it was taken for. Switching plots must
-  // drop it rather than re-describe the last plot's leaf against this plot's
-  // weather — the same wrong-plot association, one step later.
+  // A leaf result belongs to the plot it was taken for.
   useEffect(() => {
     setPrediction(null);
     setRuntime(null);
   }, [plotId]);
 
   // Hash the bytes the browser actually received and compare them to the card.
-  // Only under ?diag=1: it is a second full fetch of the model, which no farmer
-  // should pay for. Normally a cache hit.
   useEffect(() => {
     if (!diag || !card || card === "loading") return;
     void verifyPublishedModel(MODEL_URL, card).then(setArtifact);
   }, [diag, card]);
 
   const plot = plots?.find((p) => p.id === plotId) ?? null;
-  // Reads the existing engines. Nothing here recomputes weather, irrigation or
-  // risk, and no leaf result is an input to any of them.
+  // Reads the existing engines. Nothing here recomputes weather, irrigation or risk, and no leaf
+  // result is an input to any of them.
   const grow = useGrowPlot(plot, profile);
 
   const analyse = useCallback(async (img: HTMLImageElement) => {
@@ -176,9 +146,9 @@ export default function DiagnosePage() {
             ]}
           />
         </div>
-        {/* Phones only: on desktop the nav bar already carries the switcher, and
+        {/* Below lg only: from lg up the nav bar already carries the switcher, and
             two of them side by side read as two different settings. */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <LanguageSwitcher />
         </div>
       </div>
@@ -322,7 +292,7 @@ export default function DiagnosePage() {
 
           {/* ============ 2. LEAF ASSESSMENT ============ */}
           {/* An unsupported crop must not receive a tea diagnosis. The capture
-              control is withheld entirely rather than merely captioned — a
+              control is withheld entirely rather than merely captioned, a
               warning paragraph above a working camera still lets a coconut
               grower be handed a confident Camellia sinensis disease. */}
           {profile && !teaPlot && (
@@ -356,8 +326,8 @@ export default function DiagnosePage() {
               )}
 
               {/* Only the OUTCOME is live. The capture control used to sit inside
-                  this region, so every state change re-announced the whole card —
-                  heading, format note, buttons — before the result a farmer was
+                  this region, so every state change re-announced the whole card,
+                  heading, format note, buttons, before the result a farmer was
                   waiting for. Polite, not assertive: nothing here is an emergency. */}
               <div aria-live="polite" aria-busy={busy} className="space-y-6">
               {busy && (

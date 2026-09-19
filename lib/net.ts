@@ -1,8 +1,5 @@
-/**
- * Network helper for the demo path: conference wifi is slow and flaky, so every
- * fetch gets a timeout, one retry on server/transport errors, and a
- * HUMAN-READABLE error, never a hung promise or a raw stack trace.
- */
+// Network helper for the demo path: conference wifi is slow and flaky, so every fetch gets a
+// timeout, one retry on server/transport errors, and a HUMAN-READABLE error.
 export type NetErrorKind = "timeout" | "offline" | "server" | "client";
 
 export class NetError extends Error {

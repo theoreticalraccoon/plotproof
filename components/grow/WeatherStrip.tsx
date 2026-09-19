@@ -1,15 +1,7 @@
 "use client";
 
-/**
- * The four weather numbers the rest of the page is computed from, shown so the
- * advisory is never a black box — a farmer can sanity-check "it rained more
- * than that" against their own week and know to distrust the rest.
- *
- * Leaf wetness is included even though it is the least intuitive, because it is
- * the strongest driver in the disease model and it is DERIVED rather than
- * observed. Hiding the estimated input while showing the confident output is
- * the shape of a dishonest interface.
- */
+// The four weather numbers the rest of the page is computed from, shown so the advisory is
+// never a black box.
 import { t, type Lang } from "@/lib/i18n";
 import { WEATHER_SOURCE } from "@/lib/weather/openmeteo";
 import type { DailyWeather } from "@/lib/grow/types";

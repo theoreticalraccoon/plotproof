@@ -1,7 +1,7 @@
 "use client";
 
-/** Copy-to-clipboard with a satisfying success swap (icon + label flip to the
- *  accent for ~1.5s). A small, common "did it work?" reassurance. */
+// Copy-to-clipboard with a satisfying success swap (icon + label flip to the accent for ~1.5s).
+// A small, common "did it work?" reassurance.
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Copy, Check } from "lucide-react";

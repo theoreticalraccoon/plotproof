@@ -1,22 +1,6 @@
 "use client";
 
-/**
- * /sell — the export certification officer's workspace for one consignment.
- *
- * Top to bottom, the order the work actually happens in:
- *
- *   1. Questionnaire      — everything the documents need, on one page
- *   2. EUDR               — only for covered crops going to the EU
- *   3. Our documents      — invoice, packing list, certificate-of-origin draft
- *   4. Authority documents — what an authority must issue, with who and how
- *
- * and beside it, the assistant, which can see this sale and answers questions
- * about getting it exported.
- *
- * Everything reads from one sale in the store, so filling a field in the
- * questionnaire updates every document at once, and "New sale" starts the next
- * consignment without disturbing this one.
- */
+/** /sell, the export certification officer's workspace for one consignment. */
 import { FilePlus2 } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import PriceCard from "@/components/sell/PriceCard";

@@ -1,21 +1,4 @@
-"""
-Inference smoke tests against the PUBLISHED artifact, not the checkpoint.
-
-    python ml/tea/smoke_infer.py --csd <dir> --tld <dir>
-
-This runs the same file the browser will download, through onnxruntime, doing
-its own preprocessing from the card's constants rather than reusing torchvision.
-That is the point: it proves the published artifact plus the published
-preprocessing spec are sufficient to reproduce the model's behaviour. If the
-card's `mean`/`std`/`image_size` were wrong, every other test in this repo would
-still pass and only this one would fail.
-
-Four checks:
-  1. real leaves from the held-out CS-D test split are classified sensibly
-  2. real field photos from TLD-BD are classified sensibly
-  3. non-leaf inputs (flat colours, noise) land BELOW the abstention threshold
-  4. the output vector matches the card's class list, in order
-"""
+"""Inference smoke tests against the PUBLISHED artifact, not the checkpoint."""
 
 from __future__ import annotations
 
@@ -43,12 +26,7 @@ PUBLIC = REPO / "public" / "models"
 
 
 def preprocess(img: Image.Image, prep: dict) -> np.ndarray:
-    """Preprocess using ONLY the card's published constants.
-
-    Deliberately reimplemented from the spec rather than imported from
-    torchvision — a browser has no torchvision, so this is the closest thing to
-    the path the real client will take.
-    """
+    """Preprocess using ONLY the card's published constants."""
     size = prep["image_size"]
     short = prep["resize_shorter_side_to"]
     img = img.convert("RGB")
@@ -139,9 +117,8 @@ def main() -> None:
 
     print()
     if failures:
-        # A warning, not an exit(1): the card already states that open-set
-        # handling rests on the threshold alone and that there is no trained
-        # "not a tea leaf" class. This surfaces the cost of that decision.
+        # A warning, not an exit(1): the card already states that open-set handling rests on the
+        # threshold alone and that there is no trained "not a tea leaf" class.
         print("SMOKE WARNINGS (documented limitation, not a regression):")
         for f in failures:
             print("  -", f)

@@ -1,27 +1,4 @@
-"""
-Dataset loading, splitting and label mapping for the tea classifier.
-
-Shared by check_leakage.py, train.py and evaluate.py so that all three see
-exactly the same splits. That is the point of putting it here rather than
-letting each script build its own view: two scripts that disagree about which
-group is in the test set produce numbers nobody can defend.
-
-Three rules this module exists to enforce:
-
-1. **Classes come from models/tea/taxonomy.json.** Never hardcoded here, never
-   read from directory names. The taxonomy is the contract, it carries the
-   evidence for every merge, and lib/grow/teaClasses.ts mirrors it.
-
-2. **The split unit is the source GROUP, never the image.** CS-D publishes
-   80,329 images generated from 9,000 photographs; EWU ships ~1.7 augmented
-   copies per photo. Splitting on images puts near-identical siblings on both
-   sides of the boundary and inflates every downstream number.
-
-3. **The split is a pure function of identity.** sha256(dataset|class|group)
-   mod 100, matching assign_split() in scripts/audit_tea_datasets.py exactly.
-   No stored split file to lose, identical on every machine, and stable when
-   data is added.
-"""
+"""Dataset loading, splitting and label mapping for the tea classifier."""
 
 from __future__ import annotations
 
@@ -41,8 +18,7 @@ TRAIN_PCT = 70
 VAL_PCT = 15  # test gets the remaining 15
 
 
-# --------------------------------------------------------------------------
-# taxonomy
+# -------------------------------------------------------------------------- taxonomy
 # --------------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -81,11 +57,7 @@ class Taxonomy:
                 self._by_label.setdefault(_norm(l), c)
 
     def from_source_label(self, label: str) -> TeaClass | None:
-        """Map a dataset folder name to a canonical class, or None.
-
-        Returns None rather than guessing. An unmapped folder means the dataset
-        changed and a human should look, not that it should be silently binned.
-        """
+        """Map a dataset folder name to a canonical class, or None."""
         return self._by_label.get(_norm(label))
 
     def model_index(self, class_id: int) -> int:
@@ -101,8 +73,7 @@ class Taxonomy:
         return [c.key for c in self.active]
 
 
-# --------------------------------------------------------------------------
-# deterministic split
+# -------------------------------------------------------------------------- deterministic split
 # --------------------------------------------------------------------------
 
 def assign_split(dataset: str, class_name: str, group_id, train=TRAIN_PCT, val=VAL_PCT) -> str:
@@ -112,8 +83,7 @@ def assign_split(dataset: str, class_name: str, group_id, train=TRAIN_PCT, val=V
     return "train" if bucket < train else ("val" if bucket < train + val else "test")
 
 
-# --------------------------------------------------------------------------
-# samples
+# -------------------------------------------------------------------------- samples
 # --------------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -138,7 +108,7 @@ CSD_DIRS = {
 
 
 def load_csd(root: str, tax: Taxonomy) -> list[Sample]:
-    """CS-D: the only training source. Group = the original photograph."""
+    """the only training source. Group = the original photograph."""
     out: list[Sample] = []
     for label, sub in CSD_DIRS.items():
         d = Path(root) / sub
@@ -174,14 +144,7 @@ EWU_NAMES = ["Algal Leaf Spot", "Brown Blight", "Gray Blight", "Healthy", "Helop
 
 
 def load_ewu(root: str, tax: Taxonomy) -> list[Sample]:
-    """EWU: cross-dataset TEST only.
-
-    Ships a Roboflow YOLO export whose own split leaks (101 source stems span
-    splits), so the shipped split is discarded entirely and everything is
-    re-derived from the source stem. Every sample is marked split='test'
-    because this dataset is never trained on — the grouping is retained for
-    duplicate reporting, not for partitioning.
-    """
+    """cross-dataset TEST only."""
     out: list[Sample] = []
     for sp in ("train", "valid", "test"):
         img_dir = Path(root) / sp / "images"
@@ -196,8 +159,8 @@ def load_ewu(root: str, tax: Taxonomy) -> list[Sample]:
             for line in lf.read_text().splitlines():
                 if line.strip():
                     ids.add(int(line.split()[0]))
-            # 79 images carry no box, and a handful could in principle carry two
-            # classes. Neither has a usable single label, so both are skipped.
+            # 79 images carry no box, and a handful could in principle carry two classes. Neither
+            # has a usable single label, so both are skipped.
             if len(ids) != 1:
                 continue
             cls = tax.from_source_label(EWU_NAMES[next(iter(ids))])
@@ -219,26 +182,13 @@ def load_ewu(root: str, tax: Taxonomy) -> list[Sample]:
 
 
 def _tld_group(filename: str) -> str:
-    """TLD-BD group = camera shutter number.
-
-    iOS writes the edited copy of IMG_1234.JPG as IMG_E1234.JPG, so the 'E' is
-    stripped to put an edited image in the same group as its original — 38 such
-    pairs exist. Consecutive shutter numbers are bursts of the same leaf, but we
-    group per-number rather than per-run: TLD-BD is test-only, so grouping
-    serves duplicate reporting, and per-number is the conservative choice.
-    """
+    """TLD-BD group = camera shutter number."""
     m = re.match(r"^IMG_E?(\d+)", filename, re.I)
     return m.group(1) if m else filename
 
 
 def load_tld(root: str, tax: Taxonomy) -> list[Sample]:
-    """TLD-BD: cross-dataset field TEST only. Never training, never selection.
-
-    Only the three folders overlapping the active classes are loaded. The other
-    three (gray_blight, algal_leaf, looper_infested) map to inactive reserved
-    IDs and are skipped — presence in a test set is not a reason to activate a
-    class.
-    """
+    """cross-dataset field TEST only. Never training, never selection."""
     out: list[Sample] = []
     for label in sorted(os.listdir(root)):
         d = Path(root) / label

@@ -1,16 +1,6 @@
 "use client";
 
-/**
- * One field of a sale, rendered from its definition in `lib/sale/fields.ts`.
- *
- * Every edit goes straight to the sale store — there is no save button. The
- * questionnaire and every document preview subscribe to the same store, so a
- * change here shows on the invoice before the officer has lifted their finger.
- *
- * Errors appear only once a field has been left, not while a blank form is
- * first being read: a new sale lit up red from top to bottom reads as "you have
- * done something wrong" before anything has been done.
- */
+/** One field of a sale, rendered from its definition in `lib/sale/fields.ts`. */
 import { useEffect, useId, useState } from "react";
 import { Check } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
@@ -97,8 +87,8 @@ export default function SaleField({
       );
       break;
     case "select": {
-      // Incoterms are filtered by ship mode, so the list never offers a term the
-      // mode makes invalid.
+      // Incoterms are filtered by ship mode, so the list never offers a term the mode makes
+      // invalid.
       const options =
         def.path === "incoterm" ? incotermsFor(sale.shipMode) : (def.options ?? []);
       control = (
@@ -224,15 +214,7 @@ export default function SaleField({
   );
 }
 
-/**
- * A number field that lets the officer type.
- *
- * Binding a numeric input straight to a number throws away intermediate text:
- * "4." parses to 4 and the dot vanishes, "0.0" collapses to 0, and clearing the
- * field snaps it back to zero. So the text is held locally and only the parsed
- * value goes to the sale — and an empty field is 0 in the sale but blank on
- * screen, rather than a stubborn "0" the officer has to select and delete.
- */
+/** A number field that lets the officer type. */
 function NumberInput({
   common,
   value,
@@ -248,8 +230,8 @@ function NumberInput({
   const [text, setText] = useState(show(value));
   const [focused, setFocused] = useState(false);
 
-  // Follow edits made elsewhere (the document editor, another tab) unless the
-  // officer is mid-typing here.
+  // Follow edits made elsewhere (the document editor, another tab) unless the officer is
+  // mid-typing here.
   useEffect(() => {
     if (!focused) setText(show(value));
   }, [value, focused]);

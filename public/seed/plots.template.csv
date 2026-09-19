@@ -1,5 +1,5 @@
 farmer_name,national_id,membership_no,village,country_code,commodity,claimed_area_ha,geometry
-EXAMPLE ONLY — replace with real rows,,,,,,,
+EXAMPLE ONLY, replace with real rows,,,,,,,
 Example Farmer A,,COOP-LK-001,Example Village,LK,rubber,0.42,"POLYGON((80.4010 6.7010,80.4016 6.7010,80.4016 6.7016,80.4010 6.7016,80.4010 6.7010))"
 Example Farmer B,,COOP-ID-001,Example Village,ID,oil palm,0.55,"POLYGON((101.4500 -0.5000,101.4508 -0.5000,101.4508 -0.4992,101.4500 -0.4992,101.4500 -0.5000))"
 Example Farmer C,,COOP-VN-001,Example Village,VN,coffee,0.38,"POLYGON((108.0500 12.6800,108.0506 12.6800,108.0506 12.6806,108.0500 12.6806,108.0500 12.6800))"

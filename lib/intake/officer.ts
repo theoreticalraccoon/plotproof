@@ -1,10 +1,5 @@
-/**
- * Officer identity. PLACEHOLDER until magic-link auth lands: the officer names
- * themselves once and it's kept in localStorage, stamped onto every attestation
- * automatically. When Supabase auth arrives this is replaced by the signed-in
- * user (officers table, SCHEMA.md §D), attestation code won't change, only its
- * source of identity.
- */
+// Officer identity. PLACEHOLDER until magic-link auth lands: the officer names themselves once
+// and it's kept in localStorage, stamped onto every attestation automatically.
 export interface OfficerIdentity {
   id: string;
   name: string;

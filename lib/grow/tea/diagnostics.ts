@@ -1,29 +1,4 @@
-/**
- * Development-only diagnostics for the browser inference path.
- *
- * WHY THIS EXISTS: every part of the tea classifier is verified except the one
- * that actually runs on a farmer's phone. Python loads the published ONNX,
- * TypeScript preprocessing matches it, the pure decision logic is unit-tested,
- * and the assets serve — but `classifyLeaf` -> onnxruntime-web has never been
- * observed executing in a real browser. Files serving is not inference running.
- * This module makes that one gap observable, and nothing else.
- *
- * TWO RULES, both load-bearing:
- *
- *  1. It never touches the decision path. Everything below is derived from a
- *     prediction that was already made, and from facts the runtime reported.
- *     Turning diagnostics on cannot change what a farmer is told.
- *
- *  2. It hard-codes no model value. Every number and name here is read from the
- *     published card or measured at runtime. A panel that printed "160" or
- *     "0.9976" from a literal would agree with the card even when the card had
- *     changed underneath it, which is precisely the failure it is meant to catch.
- *
- * It is off unless `?diag=1` is in the URL. A farmer never types that, and the
- * query-param gate (rather than NODE_ENV) is deliberate: the device test has to
- * run against a real production build served over the LAN to a real phone, and
- * a NODE_ENV gate would compile the panel out of exactly the build under test.
- */
+/** Development-only diagnostics for the browser inference path. */
 import type { TeaModelCard, TeaPrediction } from "./types";
 
 export const DIAG_PARAM = "diag";
@@ -38,7 +13,7 @@ export function diagnosticsEnabled(search: string): boolean {
   }
 }
 
-/** What the runtime actually did, as reported by the runtime — not assumed. */
+/** What the runtime actually did, as reported by the runtime, not assumed. */
 export interface RuntimeFacts {
   /** Execution provider(s) the session was created with, plus thread count. */
   backend: string;
@@ -64,23 +39,14 @@ export interface DiagRow {
 }
 
 function fmtMs(ms: number | null): string {
-  return ms === null ? "—" : `${Math.round(ms)} ms`;
+  return ms === null ? "-" : `${Math.round(ms)} ms`;
 }
 
 function shape(s: readonly number[] | undefined): string {
-  return s && s.length ? `[${s.join(", ")}]` : "—";
+  return s && s.length ? `[${s.join(", ")}]` : "-";
 }
 
-/**
- * Integrity of the bytes the BROWSER received, not the bytes on disk.
- *
- * Criterion 1 of the release gate is "the browser actually loads the published
- * model". A served 200 does not establish that: a stale service worker, a proxy
- * that transcodes, or a CDN holding a previous deploy all return 200. Hashing
- * what `fetch` hands back and comparing it to the card's own sha256 is the only
- * check that distinguishes those cases, so the panel does it rather than
- * assuming. Same URL the session loads, so it is normally a cache hit.
- */
+/** Integrity of the bytes the BROWSER received, not the bytes on disk. */
 export interface ArtifactCheck {
   bytes: number | null;
   sha256: string | null;
@@ -120,14 +86,7 @@ export async function verifyPublishedModel(
   }
 }
 
-/**
- * The panel's contents, as data.
- *
- * Returned as rows rather than rendered here so the whole thing is testable
- * under plain Node, and so a test can assert the harder property: that the
- * shapes, class count and threshold shown to a human agree with the card the
- * app actually loaded.
- */
+/** The panel's contents, as data. */
 export function buildDiagnosticRows(
   card: TeaModelCard | null,
   prediction: TeaPrediction | null,
@@ -228,7 +187,7 @@ export function buildDiagnosticRows(
       });
       rows.push({
         label: "Cross-dataset validated",
-        value: prediction.crossDatasetValidated ? "yes" : "no — no external test set contains it",
+        value: prediction.crossDatasetValidated ? "yes" : "no, no external test set contains it",
         ok: null,
       });
       rows.push({

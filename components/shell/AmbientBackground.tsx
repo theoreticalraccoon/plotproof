@@ -1,16 +1,7 @@
 "use client";
 
-/**
- * Refined ambient backdrop, deliberately restrained (Linear / Vercel / Raycast
- * territory), NOT bouncing color blobs. Two fixed, STATIC layers:
- *   1. A faint two-tone aurora wash so glass surfaces have something to refract.
- *   2. Fine film grain (inline SVG) to kill banding and add matte texture.
- *
- * Both are intentionally static: a large 120px-blurred element that animates
- * every frame forces the GPU to re-rasterize the blur continuously, which fights
- * smooth scrolling. Rendered once, it composites cheaply and stays out of the
- * way. Pure decoration: aria-hidden, pointer-events-none.
- */
+// Refined ambient backdrop, deliberately restrained (Linear / Vercel / Raycast territory), NOT
+// bouncing color blobs.
 
 const GRAIN =
   "data:image/svg+xml;utf8," +

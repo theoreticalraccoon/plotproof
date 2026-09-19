@@ -1,10 +1,4 @@
-/**
- * Shared bearer-token gate for machine-facing routes (cron, webhooks).
- *
- * Fails closed: if the expected env var is unset in a production build the
- * route returns 503 rather than running open. Only a non-production build
- * (local dev) may skip auth, and only when the secret is genuinely unset.
- */
+/** Shared bearer-token gate for machine-facing routes (cron, webhooks). */
 import { NextResponse } from "next/server";
 
 export function requireBearer(

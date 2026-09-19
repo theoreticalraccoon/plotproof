@@ -1,23 +1,6 @@
 "use client";
 
-/**
- * The soil-probe surface: connect, calibrate, watch, save.
- *
- * Four things this screen has to get right, in order of how badly each would
- * hurt if it were wrong:
- *
- *  1. A simulated trace must be impossible to mistake for a real one. Every
- *     reading carries its source into storage, the trace is labelled while it
- *     runs, and the label does not disappear when the reading is saved.
- *  2. An uncalibrated probe must not produce a water content. The raw count is
- *     shown because it is the measurement; VWC stays blank, with the reason.
- *  3. A bad calibration must be refused, not averaged away. Anchors captured the
- *     wrong way round, or too close together, are named as the specific mistake
- *     they are.
- *  4. Nothing is written to the plot's trace until the farmer says so. A live
- *     preview that silently persists would make every fumbled calibration
- *     permanent.
- */
+/** The soil-probe surface: connect, calibrate, watch, save. */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Usb, Radio, Trash2, Save, CircleDot } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
@@ -62,8 +45,8 @@ export default function SensorPanel({
     setCal(getCalibration(plotId));
   }, [plotId]);
 
-  // Release the port if the component goes away mid-stream, or the port stays
-  // claimed until the tab is closed and the next connect fails confusingly.
+  // Release the port if the component goes away mid-stream, or the port stays claimed until the
+  // tab is closed and the next connect fails confusingly.
   useEffect(() => {
     return () => {
       void conn.current?.close();
@@ -128,8 +111,8 @@ export default function SensorPanel({
       const now = Date.now();
       const rows: SensorReading[] = frames.map((f, i) => ({
         plotId,
-        // Space the stored timestamps over the window that was actually
-        // observed, so a saved trace reads as a trace rather than a spike.
+        // Space the stored timestamps over the window that was actually observed, so a saved
+        // trace reads as a trace rather than a spike.
         at: new Date(now - (frames.length - 1 - i) * 1000).toISOString(),
         raw: f.raw,
         vwc: rawToVwc(f.raw, cal),
@@ -223,10 +206,10 @@ export default function SensorPanel({
 
           <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-sm)]"
               style={{ background: "var(--glass-hairline)" }}>
-            <Cell label={t(lang, "sensor_raw")} value={latest ? String(latest.raw) : "—"} />
+            <Cell label={t(lang, "sensor_raw")} value={latest ? String(latest.raw) : "-"} />
             <Cell
               label={t(lang, "sensor_vwc")}
-              value={latestVwc != null ? latestVwc.toFixed(3) : "—"}
+              value={latestVwc != null ? latestVwc.toFixed(3) : "-"}
               tone={latestVwc == null ? "faint" : undefined}
             />
           </dl>
@@ -318,9 +301,9 @@ export default function SensorPanel({
         {cal && (
           <dl className="mt-4 grid gap-x-5 gap-y-1.5 text-[0.82rem] sm:grid-cols-[10rem_1fr]">
             <dt className="faint">{t(lang, "sensor_cal_dry")}</dt>
-            <dd className="tabular-nums">{cal.dryRaw || "—"}</dd>
+            <dd className="tabular-nums">{cal.dryRaw || "-"}</dd>
             <dt className="faint">{t(lang, "sensor_cal_wet")}</dt>
-            <dd className="tabular-nums">{cal.wetRaw || "—"}</dd>
+            <dd className="tabular-nums">{cal.wetRaw || "-"}</dd>
             <dt className="faint">{t(lang, "sensor_cal_spread")}</dt>
             <dd className="tabular-nums">
               {check.spread}{" "}
@@ -357,14 +340,7 @@ function Cell({ label, value, tone }: { label: string; value: string; tone?: "fa
   );
 }
 
-/**
- * The raw trace as an SVG polyline.
- *
- * Raw counts, not calibrated values: this is the measurement, and it is the
- * thing that reveals a probe that has come loose or a cable that is failing.
- * Auto-scaled to the window, with the range printed, because a sparkline with
- * no scale can make 20 counts of noise look like a drought.
- */
+/** The raw trace as an SVG polyline. */
 function Sparkline({ frames }: { frames: SensorFrame[] }) {
   const values = frames.map((f) => f.raw);
   if (values.length < 2) return null;

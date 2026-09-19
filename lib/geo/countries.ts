@@ -1,20 +1,5 @@
-/**
- * Countries a Sri Lankan consignment can be addressed to, and which market's
- * rules each falls under.
- *
- * This used to be a list of ORIGIN countries — Indonesia, Kenya, Brazil and so
- * on — behind a "where do you farm?" question. The product now serves Sri
- * Lankan exporters only, so origin is fixed and that question is gone. What
- * remains useful is the other end: the buyer's country, which decides whether
- * EU, UK or US requirements apply. Asking for the country and deriving the
- * market removes a question the officer could otherwise answer inconsistently
- * (a German buyer with "US" selected as the market).
- *
- * A curated map rather than `Intl.DisplayNames`: the generated documents must
- * read identically on every device and in every locale, and a customs officer
- * comparing two copies of an invoice should never see two spellings of one
- * country.
- */
+// Countries a Sri Lankan consignment can be addressed to, and which market's rules each falls
+// under.
 import type { Market } from "../compliance/types";
 
 export interface Destination {

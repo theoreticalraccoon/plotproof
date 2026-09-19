@@ -1,17 +1,7 @@
 "use client";
 
-/**
- * Leaf photo input: camera or gallery, with a preview of what the model will
- * actually see before anything is inferred.
- *
- * The preview matters more than it looks. The model consumes a square centre
- * crop, so a farmer who frames a lesion at the edge of a landscape photo would
- * otherwise get a confident answer about a part of the leaf they never intended
- * to submit. Showing the crop makes that visible before they commit.
- *
- * Presentation only. No preprocessing, no inference, no thresholds — those live
- * in `lib/grow/tea/`.
- */
+// Leaf photo input: camera or gallery, with a preview of what the model will actually see
+// before anything is inferred.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, RotateCcw } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
@@ -29,8 +19,8 @@ export default function LeafCapture({ lang, busy, onAnalyse, onError }: LeafCapt
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const urlRef = useRef<string | null>(null);
 
-  // Object URLs are a manual-lifetime resource; a farmer retaking a photo ten
-  // times would otherwise leak ten decoded images on a phone with little to spare.
+  // Object URLs are a manual-lifetime resource; a farmer retaking a photo ten times would
+  // otherwise leak ten decoded images on a phone with little to spare.
   const revoke = useCallback(() => {
     if (urlRef.current) {
       URL.revokeObjectURL(urlRef.current);
@@ -91,10 +81,7 @@ export default function LeafCapture({ lang, busy, onAnalyse, onError }: LeafCapt
       />
 
       {!preview && (
-        // The real control is the sr-only input; the label is what is seen. A
-        // keyboard user tabbing here would otherwise land on an invisible
-        // element with no ring anywhere on screen, so the label mirrors the
-        // input's focus state.
+        // The real control is the sr-only input; the label is what is seen.
         <label
           htmlFor="leaf-photo-input"
           className="btn btn-primary mt-4 inline-flex min-h-[48px] cursor-pointer items-center gap-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2"

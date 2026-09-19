@@ -1,19 +1,6 @@
 "use client";
 
-/**
- * The shared credential form behind /login and /signup.
- *
- * Sign-in and sign-up are separate ROUTES, not a toggle inside one card: they
- * are different intentions with different stakes, and a person who came to
- * create an account should never have to notice which mode a shared form is
- * currently in. Each page states its own task in its own heading and links to
- * the other rather than swapping itself underneath the reader.
- *
- * The rule this file exists to enforce: a press is NEVER silent. Every submit
- * ends in a spinner, a redirect, or a named error — including the case where
- * the deployment has no Supabase credentials at all, which previously made the
- * button return early and do literally nothing.
- */
+/** The shared credential form behind /login and /signup. */
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -34,19 +21,13 @@ function destination(): string {
   return next && next.startsWith("/") && !next.startsWith("//") ? next : "/documents";
 }
 
-/**
- * Supabase reports failures as English strings. A farmer cannot act on
- * "AuthApiError", so a failure is split in two: a translated line saying what to
- * DO, and the provider's own words kept verbatim underneath. That second line is
- * what separates "wrong password" from "the service is unreachable".
- */
+/** Supabase reports failures as English strings. */
 function describe(lang: Lang, raw: string): Message {
   const offline =
     (typeof navigator !== "undefined" && navigator.onLine === false) ||
     /failed to fetch|networkerror|network request failed|load failed/i.test(raw);
-  // The single most common real-world sign-in failure: the account exists but
-  // its confirmation link was never opened. Supabase's own wording for it is
-  // opaque, so name the actual next step instead.
+  // The single most common real-world sign-in failure: the account exists but its confirmation
+  // link was never opened.
   const unconfirmed = /email not confirmed|not confirmed/i.test(raw);
   if (unconfirmed) return { ok: false, text: t(lang, "auth_unconfirmed"), detail: raw };
   return {
@@ -56,16 +37,7 @@ function describe(lang: Lang, raw: string): Message {
   };
 }
 
-/**
- * Why an emailed link did not work.
- *
- * Separate from `describe()` because the causes are different and so is the
- * remedy. The commonest by far is opening the link in a different browser from
- * the one that asked for it — the PKCE verifier lives in a cookie on the
- * requesting browser, so the code cannot be redeemed anywhere else. Telling
- * someone "invalid request" when the fix is "open it in the same browser" is a
- * dead end.
- */
+/** Why an emailed link did not work. */
 function describeLink(lang: Lang, raw: string): Message {
   const wrongBrowser = /code verifier|both auth code|pkce/i.test(raw);
   const spent = /expired|invalid|already|not found/i.test(raw);
@@ -74,11 +46,8 @@ function describeLink(lang: Lang, raw: string): Message {
   return { ok: false, text: t(lang, "auth_error"), detail: raw };
 }
 
-/**
- * With `shouldCreateUser: false`, Supabase refuses an unknown address with
- * "Signups not allowed for otp". That is not an error the reader caused — it is
- * the answer to their question, and the next step is the sign-up page.
- */
+// With `shouldCreateUser: false`, Supabase refuses an unknown address with "Signups not allowed
+// for otp".
 function describeOtp(lang: Lang, mode: AuthMode, raw: string): Message {
   if (mode === "signin" && /signups not allowed|not allowed for otp/i.test(raw)) {
     return { ok: false, text: t(lang, "auth_no_such_account") };
@@ -102,16 +71,14 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
   useEffect(() => () => { if (resetTimer.current) clearTimeout(resetTimer.current); }, []);
 
-  // Carried over from a sign-up that hit an existing address, so they do not
-  // retype what they just typed.
+  // Carried over from a sign-up that hit an existing address, so they do not retype what they
+  // just typed.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const e = params.get("email");
     if (e) setEmail(e);
 
-    // A refused email link redirects here with the provider's own reason. A
-    // dead link that silently returns you to a sign-in form is the single most
-    // confusing outcome in the whole flow, so it gets named.
+    // A refused email link redirects here with the provider's own reason.
     const authError = params.get("auth_error");
     if (authError) {
       setMsg(
@@ -139,9 +106,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     e.preventDefault();
     if (status === "working") return;
 
-    // The bug this replaces: when Supabase was unconfigured the handler
-    // returned here, so the button did nothing at all — no spinner, no error,
-    // no clue. An unusable deployment must SAY it is unusable.
+    // The bug this replaces: when Supabase was unconfigured the handler returned here, so the
+    // button did nothing at all, no spinner, no error, no clue.
     if (!configured) {
       fail({ ok: false, text: t(lang, "auth_not_configured"), detail: t(lang, "auth_not_configured_detail") });
       return;
@@ -153,8 +119,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       if (mode === "signup") {
         const r = await signUp(email, password);
         if (r.error === ACCOUNT_EXISTS) {
-          // Address taken and this password isn't the one on it. Send them to
-          // sign-in with the address preserved rather than into a dead end.
+          // Address taken and this password isn't the one on it. Send them to sign-in with the
+          // address preserved rather than into a dead end.
           fail({ ok: false, text: t(lang, "auth_exists_wrong_password") });
           router.push(`/login?email=${encodeURIComponent(email)}`);
         } else if (r.error) {
@@ -176,8 +142,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
         }
       }
     } catch (err) {
-      // Thrown here means the network or the Supabase client itself, not a
-      // rejected credential; without this the button would spin forever.
+      // Thrown here means the network or the Supabase client itself, not a rejected credential;
+      // without this the button would spin forever.
       fail(describe(lang, err instanceof Error ? err.message : String(err)));
     }
   };
@@ -195,9 +161,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     setStatus("working");
     setMsg(null);
     try {
-      // On /signup the link must be allowed to register the address; on /login
-      // it must not, or a typo silently creates an empty account instead of
-      // saying "no account with that address".
+      // On /signup the link must be allowed to register the address; on /login it must not.
       const r = await magicLink(email, { createAccount: mode === "signup" });
       if (r.error) fail(describeOtp(lang, mode, r.error));
       else {
@@ -340,8 +304,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
 
       {/* Both routes get the passwordless option, and each asks for what that
           route means: on /signup the link may register the address, on /login it
-          may not. The earlier objection — that a magic link would make the two
-          routes identical — is answered by `shouldCreateUser` rather than by
+          may not. The earlier objection, that a magic link would make the two
+          routes identical, is answered by `shouldCreateUser` rather than by
           withholding the feature from people who came to sign up. */}
       <div className="my-5 flex items-center gap-3" aria-hidden="true">
         <span className="h-px flex-1" style={{ background: "var(--glass-hairline)" }} />

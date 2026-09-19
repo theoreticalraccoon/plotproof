@@ -1,10 +1,7 @@
 "use client";
 
-/**
- * Tiny language store: localStorage-persisted, hydration-safe (server snapshot is
- * always "en"), shared across every component via useSyncExternalStore, no
- * provider wiring, so any client component can call useLang().
- */
+// Tiny language store: localStorage-persisted, hydration-safe (server snapshot is always "en"),
+// shared across every component via useSyncExternalStore, no provider wiring.
 import { useSyncExternalStore } from "react";
 import type { Lang } from "./strings";
 

@@ -1,18 +1,6 @@
 "use client";
 
-/**
- * Loads everything the GROW page needs for one plot, in one place.
- *
- * Order matters and is deliberate: cached weather renders FIRST, then the
- * network refreshes it. A farmer who opened this page in town and walked into a
- * field with no signal still gets a usable advisory, labelled with the date it
- * was saved — the same offline-first posture as plot capture, applied to
- * advice instead of evidence.
- *
- * Nothing here invents a number. If weather is unavailable and nothing is
- * cached, the hook reports `unavailable` and the page says so; it never falls
- * back to a climatology or a plausible-looking default.
- */
+/** Loads everything the GROW page needs for one plot, in one place. */
 import { useCallback, useEffect, useState } from "react";
 import { loadRecentWeather } from "../weather/openmeteo";
 import { plotCentre } from "../intake/geometry";
@@ -24,16 +12,7 @@ import type { LocalPlot } from "../intake/types";
 
 export type GrowState = "loading" | "ready" | "unavailable";
 
-/**
- * How old cached weather may be before it stops being advice.
- *
- * Found by the adversarial audit: the cache was unbounded, so a farmer who last
- * had signal three weeks ago would be shown a watering verdict and an infection
- * -pressure score computed from three-week-old weather, with nothing but a
- * quiet "saved on <date>" line to say so. Seven days is already generous — the
- * risk engine's window is 14 days and the water balance integrates daily — but
- * beyond it the honest answer is that we do not know.
- */
+/** How old cached weather may be before it stops being advice. */
 const MAX_CACHE_AGE_DAYS = 7;
 
 export interface GrowData {
@@ -71,9 +50,8 @@ export function useGrowPlot(plot: LocalPlot | null, profile: GrowProfile | null)
       const measured = await latestSoilMoisture(plot.id).catch(() => null);
       if (!cancelled) setSoilMoisture(measured);
 
-      // 1. Cache first, so something renders before the network is consulted —
-      // but only while it is still plausibly current. Stale weather presented as
-      // advice is worse than no advice, because it looks identical to fresh.
+      // Cache first, so something renders before the network is consulted, but only while it is
+      // still plausibly current.
       const rawCache = await cachedWeather(plot.id).catch(() => []);
       const freshest = rawCache.reduce<string | null>(
         (acc, r) => (acc === null || r.fetchedAt > acc ? r.fetchedAt : acc), null);
@@ -88,7 +66,7 @@ export function useGrowPlot(plot: LocalPlot | null, profile: GrowProfile | null)
         setState("ready");
       }
 
-      // 2. Then refresh from the network.
+      // Then refresh from the network.
       const centre = plotCentre(plot.ring);
       if (!centre) {
         if (!cancelled && cache.length === 0) {
@@ -138,10 +116,8 @@ export function useGrowPlot(plot: LocalPlot | null, profile: GrowProfile | null)
         })
       : null;
 
-  // Risk scoring is tea-specific: the epidemiological windows in risk.ts are
-  // Camellia sinensis pathogens. Other crops get weather and watering, and the
-  // page says the disease model does not cover them yet rather than scoring
-  // them with the wrong pathogen.
+  // Risk scoring is tea-specific: the epidemiological windows in risk.ts are Camellia sinensis
+  // pathogens.
   const risks = profile?.crop === "tea" && days.length > 0 ? assessAll(days) : [];
 
   return { state, days, irrigation, risks, cachedAt, observedThrough, reason, refresh };

@@ -1,18 +1,8 @@
-/**
- * Curated, sourced catalog: products (with HS codes), destination markets, and
- * the document/certification registry with applicability predicates. This is the
- * "requirements as data" core, adding a product, market, or document is data,
- * never a code change (the same principle as country profiles).
- *
- * Type-only imports so this module stays Node-loadable for tests.
- */
+// Curated, sourced catalog: products (with HS codes), destination markets, and the
+// document/certification registry with applicability predicates.
 import type { DocumentType, Market, Product } from "./types";
 
-/**
- * When the requirements data below was last checked against its sources.
- * Rendered on the checklist with a stale warning past 6 months — a legal
- * checklist that silently rots is worse than none.
- */
+/** When the requirements data below was last checked against its sources. */
 export const CATALOG_VERIFIED_AT = "2026-09-18";
 
 export const PRODUCTS: Product[] = [
@@ -43,10 +33,8 @@ export const MARKETS: MarketMeta[] = [
   { code: "US", name: "United States", authority: "US CBP + FDA + USDA APHIS", note: "FDA food rules (prior notice, FSVP) apply to most foods." },
 ];
 
-/**
- * The document registry. `applies` decides inclusion for a given context.
- * Ordered roughly by the sequence a farmer works through them.
- */
+// The document registry. `applies` decides inclusion for a given context. Ordered roughly by
+// the sequence a farmer works through them.
 export const DOCUMENT_TYPES: DocumentType[] = [
   {
     id: "hs_classification",
@@ -88,8 +76,8 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     what: "Official proof that the goods were produced in Sri Lanka.",
     why: "Customs at the destination may require it, and preferential origin can reduce or remove the buyer's import duty.",
     howToObtain:
-      "Prepare the draft here. Non-preferential certificates are issued by the Department of Commerce and by recognised chambers such as the National Chamber of Exporters. For EU GSP+ duty preference, an exporter registered in the EU REX system instead makes out a statement on origin on the commercial documents for each consignment — enter the REX number in the sale and the invoice carries it. Confirm which applies with the Department of Commerce.",
-    source: "Department of Commerce, Sri Lanka — doc.gov.lk (Certificates of Origin; REX system)",
+      "Prepare the draft here. Non-preferential certificates are issued by the Department of Commerce and by recognised chambers such as the National Chamber of Exporters. For EU GSP+ duty preference, an exporter registered in the EU REX system instead makes out a statement on origin on the commercial documents for each consignment, enter the REX number in the sale and the invoice carries it. Confirm which applies with the Department of Commerce.",
+    source: "Department of Commerce, Sri Lanka, doc.gov.lk (Certificates of Origin; REX system)",
     actionHref: "/documents/certificate-of-origin",
     applies: () => true,
   },
@@ -100,8 +88,8 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     what: "A plant-health certificate stating the consignment meets the importing country's pest requirements.",
     why: "Required for most raw plant products entering the EU, UK and US.",
     howToObtain:
-      "Issued by the National Plant Quarantine Service (NPQS), Department of Agriculture — Sri Lanka's national plant protection organisation. The exporter registers with NPQS first, then requests a certificate for each consignment before the shipping date.",
-    source: "National Plant Quarantine Service, Department of Agriculture — doa.gov.lk (NPQS export services); IPPC",
+      "Issued by the National Plant Quarantine Service (NPQS), Department of Agriculture, Sri Lanka's national plant protection organisation. The exporter registers with NPQS first, then requests a certificate for each consignment before the shipping date.",
+    source: "National Plant Quarantine Service, Department of Agriculture, doa.gov.lk (NPQS export services); IPPC",
     applies: (ctx) => ctx.product.phytoTypical,
   },
   {
@@ -144,7 +132,7 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     why: "No goods leave Sri Lanka without it.",
     howToObtain:
       "Lodged in Sri Lanka Customs' ASYCUDA system by the exporter or a licensed customs house agent, after any required approvals such as the phytosanitary certificate. Export must take place within 30 days of the CusDec's registration date.",
-    source: "Sri Lanka Customs — customs.gov.lk (Exporting goods)",
+    source: "Sri Lanka Customs, customs.gov.lk (Exporting goods)",
     applies: () => true,
   },
   {
@@ -154,8 +142,8 @@ export const DOCUMENT_TYPES: DocumentType[] = [
     what: "Registration with the Sri Lanka Tea Board as a tea exporter.",
     why: "Tea may only be exported by a registered exporter. Registration lasts one year and must be renewed.",
     howToObtain:
-      "Apply to the Tea Export Division of the Sri Lanka Tea Board. The Board's published criteria include a business registration, a registered warehouse, a qualified tea taster with a tasting facility, and minimum paid-up capital — check the current year's application guideline.",
-    source: "Sri Lanka Tea Board — srilankateaboard.lk (Tea Export Division; exporter registration)",
+      "Apply to the Tea Export Division of the Sri Lanka Tea Board. The Board's published criteria include a business registration, a registered warehouse, a qualified tea taster with a tasting facility, and minimum paid-up capital, check the current year's application guideline.",
+    source: "Sri Lanka Tea Board, srilankateaboard.lk (Tea Export Division; exporter registration)",
     applies: (ctx) => ctx.product.category === "tea",
   },
 ];

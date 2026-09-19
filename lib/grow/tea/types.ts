@@ -1,12 +1,4 @@
-/**
- * Types for the tea-leaf classifier's app-side integration.
- *
- * The published model card is the source of truth for every model fact. These
- * types describe its shape; they do not restate its values. No threshold, class
- * name, temperature or preprocessing constant is written down anywhere in the
- * app — read them from the card or they will drift the first time the model is
- * retrained.
- */
+/** Types for the tea-leaf classifier's app-side integration. */
 import type { TeaClassKey } from "../teaClasses";
 
 // --- the published card -------------------------------------------------
@@ -57,11 +49,7 @@ export interface TeaModelCard {
     threshold: number;
     selection_rule: string;
     behaviour: string;
-    /**
-     * Fraction of each test set the model ANSWERED at this threshold, published
-     * per test set. Optional because an older card may predate it, and because
-     * the UI must degrade to saying less rather than to inventing a number.
-     */
+    /** Fraction of each test set the model ANSWERED at this threshold, published per test set. */
     coverage_by_test_set?: Record<string, { coverage: number; accuracy_on_accepted: number }>;
   };
   known_limitations: string[];
@@ -70,12 +58,7 @@ export interface TeaModelCard {
 
 // --- prediction ---------------------------------------------------------
 
-/**
- * Three states, deliberately disjoint. "uncertain" is NOT a low-confidence
- * prediction with a class attached — it carries no class at all, because
- * offering the next-best guess is exactly what the abstention threshold exists
- * to prevent.
- */
+/** Three states, deliberately disjoint. */
 export type TeaPrediction =
   | {
       state: "confident";
@@ -86,7 +69,7 @@ export type TeaPrediction =
       /** All six, calibrated, for the detail view. */
       distribution: { key: TeaClassKey; displayName: string; probability: number }[];
       modelVersion: string;
-      /** False for blister_blight and red_rust — no external test set contains them. */
+      /** False for blister_blight and red_rust, no external test set contains them. */
       crossDatasetValidated: boolean;
     }
   | {
@@ -106,11 +89,7 @@ export type TeaPrediction =
 
 // --- evidence -----------------------------------------------------------
 
-/**
- * Where a piece of evidence came from. Rendered on every row, because the whole
- * point of this layer is that the farmer can tell an observation from an
- * inference, and a photograph from a weather model.
- */
+/** Where a piece of evidence came from. */
 export type EvidenceSource = "image" | "environment" | "sensor" | "weather";
 
 export type EvidenceStance = "supports" | "neutral" | "tension" | "observation";
@@ -118,30 +97,15 @@ export type EvidenceStance = "supports" | "neutral" | "tension" | "observation";
 export interface EvidenceItem {
   source: EvidenceSource;
   stance: EvidenceStance;
-  /** i18n key + slots — this layer never builds user-facing prose itself. */
+  /** i18n key + slots, this layer never builds user-facing prose itself. */
   messageKey: string;
   slots: Record<string, string | number>;
-  /**
-   * Slot names whose VALUE is itself an i18n key, to be translated by the
-   * renderer before interpolation.
-   *
-   * Without this the evidence layer leaks engineering identifiers straight onto
-   * a farmer's screen: the environmental rows carried `blister_blight` and the
-   * soil row carried `water_now`, so the advisory read "Conditions currently
-   * favour blister_blight" and "Watering advice: water_now" — in every
-   * language. Naming the translatable slots explicitly keeps this module pure
-   * (it still calls no `t()`) while making the leak impossible to reintroduce
-   * silently, because a test asserts no rendered slot survives as a raw key.
-   */
+  // Slot names whose VALUE is itself an i18n key, to be translated by the renderer before
+  // interpolation.
   translatedSlots?: string[];
 }
 
-/**
- * The combined view. Note what is absent: there is no fused score and no
- * corrected class. `prediction` is whatever the image said, untouched.
- * Environmental evidence can raise or lower plausibility in the narrative, and
- * can openly disagree, but it can never change the class.
- */
+/** The combined view. Note what is absent: there is no fused score and no corrected class. */
 export interface TeaAdvisory {
   prediction: TeaPrediction;
   evidence: EvidenceItem[];

@@ -1,16 +1,6 @@
 "use client";
 
-/**
- * The export assistant, beside the sale it can see.
- *
- * On a wide screen it sits in the right-hand column next to the questionnaire.
- * On a phone it opens as a sheet from a button, because a chat stacked below a
- * long form is a chat nobody finds.
- *
- * Each sale keeps its own conversation for the session, so switching between
- * two consignments does not mix up two exporters' questions. Nothing is stored
- * after the tab closes: the conversation is working notes, not a record.
- */
+/** The export assistant, beside the sale it can see. */
 import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2, MessageSquare, Send, X } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
@@ -283,10 +273,8 @@ export default function AssistantPanel({ sale, lang }: { sale: Sale; lang: Lang 
   );
 }
 
-/**
- * Plain-text answer with paragraphs, bullet lists and **bold** — and nothing
- * else. The model's output is never injected as HTML.
- */
+// Plain-text answer with paragraphs, bullet lists and bold, and nothing else. The model's
+// output is never injected as HTML.
 function Formatted({ text }: { text: string }) {
   const blocks = text.split(/\n{2,}/).filter((b) => b.trim());
   return (

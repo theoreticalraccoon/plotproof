@@ -1,14 +1,7 @@
 "use client";
 
-/**
- * On-screen signature / thumbprint pad. Pointer-based so it works with a finger
- * on the phone (the one moment the farmer touches the device, DECISIONS.md
- * D-006). Exposes an imperative handle to export the mark as a compact PNG.
- *
- * The pad also reports emptiness upward (`onMarkChange`): an officer must be
- * able to tell at a glance whether a mark was actually captured, and a ref
- * alone can't drive that because mutating it never re-renders.
- */
+// On-screen signature / thumbprint pad. Pointer-based so it works with a finger on the phone
+// (the one moment the farmer touches the device, DECISIONS.md D-006).
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Check, PenLine } from "lucide-react";
 import { canvasToPng, type ProcessedImage } from "@/lib/intake/image";
@@ -27,9 +20,8 @@ interface Props {
   onMarkChange?: (hasMark: boolean) => void;
 }
 
-// The canvas is and must stay white (it is the exported PNG), so anything drawn
-// on top of it is fixed ink, not a theme token, or it would vanish in dark mode.
-// Same reasoning as .doc-sheet in globals.css.
+// The canvas is and must stay white (it is the exported PNG), so anything drawn on top of it is
+// fixed ink, not a theme token, or it would vanish in dark mode.
 const INK_HINT = "#9ca3af";
 const INK_RULE = "#d1d5db";
 
@@ -42,8 +34,8 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(function SignaturePad
   const dirty = useRef(false);
   const [hasMark, setHasMark] = useState(false);
 
-  // dirty stays the source of truth for the imperative handle; state only
-  // mirrors it so the surrounding UI can render the captured/empty state.
+  // dirty stays the source of truth for the imperative handle; state only mirrors it so the
+  // surrounding UI can render the captured/empty state.
   const setDirty = (v: boolean) => {
     if (dirty.current === v) return;
     dirty.current = v;
@@ -79,9 +71,8 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(function SignaturePad
     const { x, y } = at(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
-    // A thumbprint is pressed, not dragged: without this dot a straight press
-    // left no ink and counted as empty, so the save was rejected for a farmer
-    // who had in fact confirmed.
+    // A thumbprint is pressed, not dragged: without this dot a straight press left no ink and
+    // counted as empty, so the save was rejected for a farmer who had in fact confirmed.
     ctx.lineTo(x, y);
     ctx.stroke();
     setDirty(true);
@@ -130,15 +121,15 @@ const SignaturePad = forwardRef<SignaturePadHandle, Props>(function SignaturePad
           onPointerMove={move}
           onPointerUp={up}
           onPointerLeave={up}
-          // A cancelled pointer (OS gesture, palm rejection) never fires up,
-          // which used to leave the pad stuck in drawing mode.
+          // A cancelled pointer (OS gesture, palm rejection) never fires up, which used to leave
+          // the pad stuck in drawing mode.
           onPointerCancel={up}
           role="img"
           aria-label={
             hasMark ? `Farmer ${noun}, captured` : `Empty ${noun} pad. Draw with a finger or stylus.`
           }
-          // touch-none stops the page scrolling while the farmer signs.
-          // Canvas stays white: it's the signature surface and the PNG export needs it.
+          // touch-none stops the page scrolling while the farmer signs. Canvas stays white: it's
+          // the signature surface and the PNG export needs it.
           className="block h-40 w-full touch-none rounded-xl border-2 bg-white"
           style={{
             borderColor: hasMark ? "var(--accent)" : "var(--accent-ring)",

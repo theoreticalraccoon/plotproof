@@ -1,15 +1,6 @@
 "use client";
 
-/**
- * The watering instruction. The one screen in the GROW lane a farmer acts on
- * directly, so it is the most opinionated: one verdict, one sentence of reason,
- * one quantity, and the method named underneath.
- *
- * The verdict colour is semantic, never decorative — `--danger` means "act
- * today", `--warn` means "act soon", `--info` means "stop, it is too wet".
- * A waterlogged plot deliberately does NOT read as a success state, because the
- * farmer still has a problem, just not a water shortage.
- */
+/** The watering instruction. */
 import { Droplets } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import { IRRIGATION_SOURCE } from "@/lib/grow/irrigation";

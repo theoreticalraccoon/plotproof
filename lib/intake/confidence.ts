@@ -1,14 +1,4 @@
-/**
- * Capture-method confidence. An auditor will ask which method produced a
- * boundary, a traced polygon and a walked one are not equally trustworthy, and
- * (per PROJECT.md) tracing is often MORE accurate than walking because it has no
- * GPS error while consumer GPS scatters 3–5 m under canopy.
- *
- * This is expressed as a LABEL + rationale, deliberately NOT folded into the
- * model's numeric confidence. Inventing a combined number would be exactly the
- * overclaiming the PDF caveats warn against. The evidence pack shows the model
- * verdict/confidence AND this capture assessment side by side.
- */
+/** Capture-method confidence. */
 import type { CaptureMethod } from "./types";
 
 export type ConfidenceLevel = "high" | "medium" | "low";
@@ -51,9 +41,8 @@ export function captureConfidence(method: CaptureMethod): CaptureConfidence {
           "Geometry taken from existing records and not verified in the field; accuracy depends on the source registry.",
       };
   }
-  // Unreachable for records this app wrote, but a record synced from the server
-  // or left by an older version can carry any string. Without this the whole
-  // plot list crashed on one bad row; with it, that row is marked as unverified.
+  // Unreachable for records this app wrote, but a record synced from the server or left by an
+  // older version can carry any string.
   return {
     level: "low",
     label: "Unknown capture method",

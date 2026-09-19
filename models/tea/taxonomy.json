@@ -55,7 +55,7 @@
       "trainImages": 13500,
       "trainSourceGroups": 1500,
       "riskEngineKey": "blister_blight",
-      "notes": "SINGLE-SOURCE. Of the five tea datasets examined (CS-D, teaLeafBD, EWU, TLD-BD, TeaLeafDiseaseBD), CS-D is the ONLY one containing blister blight. It therefore cannot be cross-dataset validated at all, and it is simultaneously the most important class in the product — the flagship up-country Ceylon tea disease and the one lib/grow/risk.ts is built around. Treat every blister-blight number as in-distribution only."
+      "notes": "SINGLE-SOURCE. Of the five tea datasets examined (CS-D, teaLeafBD, EWU, TLD-BD, TeaLeafDiseaseBD), CS-D is the ONLY one containing blister blight. It therefore cannot be cross-dataset validated at all, and it is simultaneously the most important class in the product, the flagship up-country Ceylon tea disease and the one lib/grow/risk.ts is built around. Treat every blister-blight number as in-distribution only."
     },
     {
       "classId": 2,
@@ -99,7 +99,7 @@
       },
       "trainImages": 13500,
       "trainSourceGroups": 1500,
-      "notes": "NOT merged with algal_leaf_spot (5) or red_leaf_spot (9) despite overlapping literature — see `unresolved_ambiguities`."
+      "notes": "NOT merged with algal_leaf_spot (5) or red_leaf_spot (9) despite overlapping literature, see `unresolved_ambiguities`."
     },
     {
       "classId": 4,
@@ -177,7 +177,7 @@
         ]
       },
       "riskEngineKey": "grey_blight",
-      "notes": "RESERVED, inactive in v1. Absent from CS-D, which is the only training source with blister blight. Present in three other datasets. Note the spelling split: US 'Gray' in the datasets, UK 'Grey' in PlotProof's own risk engine — the key here is canonical and the source labels carry both."
+      "notes": "RESERVED, inactive in v1. Absent from CS-D, which is the only training source with blister blight. Present in three other datasets. Note the spelling split: US 'Gray' in the datasets, UK 'Grey' in PlotProof's own risk engine, the key here is canonical and the source labels carry both."
     },
     {
       "classId": 7,
@@ -200,7 +200,7 @@
           "Algal Leaf Spot"
         ]
       },
-      "notes": "RESERVED, inactive in v1. Absent from CS-D. Kept distinct from red_rust — see `unresolved_ambiguities`."
+      "notes": "RESERVED, inactive in v1. Absent from CS-D. Kept distinct from red_rust, see `unresolved_ambiguities`."
     },
     {
       "classId": 8,
@@ -213,7 +213,7 @@
           "Red Leaf Spot"
         ]
       },
-      "notes": "RESERVED, inactive in v1. Its relationship to red_rust and algal_leaf_spot is genuinely unresolved — see `unresolved_ambiguities`."
+      "notes": "RESERVED, inactive in v1. Its relationship to red_rust and algal_leaf_spot is genuinely unresolved, see `unresolved_ambiguities`."
     },
     {
       "classId": 9,
@@ -265,10 +265,10 @@
         "algal_leaf_spot (7)",
         "red_leaf_spot (8)"
       ],
-      "evidence_for_merging": "Plant-pathology sources treat 'red rust' as the name given to Cephaleuros infection specifically on tea and coffee, and list Cephaleuros parasiticus as a synonym of C. virescens — which would make red rust and algal leaf spot the same disease under two names.",
+      "evidence_for_merging": "Plant-pathology sources treat 'red rust' as the name given to Cephaleuros infection specifically on tea and coffee, and list Cephaleuros parasiticus as a synonym of C. virescens, which would make red rust and algal leaf spot the same disease under two names.",
       "evidence_against_merging": "The EWU annotators ship 'Algal Leaf Spot' and 'Red Leaf Spot' as SEPARATE classes in the same dataset, so they evidently saw two distinguishable presentations. Independently, the TeaLeafDiseaseBD team also ship 'Algal Leaf Spot' and 'Red Rust' as separate classes. Two unrelated annotation teams both chose to split them.",
       "decision": "DO NOT MERGE. Keep 3, 7 and 8 distinct.",
-      "reasoning": "The taxonomic literature and the annotators disagree, and the annotators are describing what is actually in the pixels. Merging on literature alone would collapse classes the labels do not support, and a wrong merge is unrecoverable once the model is trained — whereas leaving them separate costs only that classes 7 and 8 stay inactive in v1, which they would be anyway (neither is in CS-D)."
+      "reasoning": "The taxonomic literature and the annotators disagree, and the annotators are describing what is actually in the pixels. Merging on literature alone would collapse classes the labels do not support, and a wrong merge is unrecoverable once the model is trained, whereas leaving them separate costs only that classes 7 and 8 stay inactive in v1, which they would be anyway (neither is in CS-D)."
     },
     {
       "id": "csd_repository_title_mismatch",

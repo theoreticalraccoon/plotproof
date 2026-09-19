@@ -1,17 +1,4 @@
-/**
- * The three documents this app issues, each as plain data built from a sale.
- *
- * WHY DATA AND NOT JSX. Each document is rendered twice: as an on-screen
- * preview the officer edits against, and as the PDF that is actually sent. If
- * those two renderers computed their own values they would eventually disagree,
- * and the version the officer checked would not be the version the buyer
- * received. Both renderers therefore consume these models and nothing else.
- *
- * Only the three documents an exporter may lawfully produce themselves are
- * here. The rest of a consignment's paperwork is issued by an authority
- * (phytosanitary certificate, customs declaration, …) and appears in the
- * checklist, never as a generated look-alike.
- */
+/** The three documents this app issues, each as plain data built from a sale. */
 import { countryName } from "../geo/countries.ts";
 import { saleProduct, saleTotals } from "./model.ts";
 import type { Sale } from "./types";
@@ -20,10 +7,8 @@ export type DocKind = "invoice" | "packing-list" | "certificate-of-origin";
 
 export const DOC_KINDS: DocKind[] = ["invoice", "packing-list", "certificate-of-origin"];
 
-/**
- * The i18n stem for a document kind. The kinds are hyphenated because they are
- * also URL segments; translation keys are identifiers, so they are not.
- */
+// The i18n stem for a document kind. The kinds are hyphenated because they are also URL
+// segments; translation keys are identifiers, so they are not.
 export function docKey(kind: DocKind): string {
   return "doc_" + kind.replace(/-/g, "_");
 }
@@ -157,8 +142,8 @@ export function buildInvoice(sale: Sale, today: string, draft: boolean): Invoice
     },
     currency: sale.currency,
     incoterm: sale.incoterm,
-    // Incoterms name a place: FOB names the port of loading, CIF/CFR/CIP/DAP
-    // the destination. An incoterm with no place is incomplete.
+    // Incoterms name a place: FOB names the port of loading, CIF/CFR/CIP/DAP the destination. An
+    // incoterm with no place is incomplete.
     incotermPlace:
       sale.incoterm === "FOB" || sale.incoterm === "EXW" ? sale.portOfLoading : sale.portOfDischarge,
     paymentTerms: sale.paymentTerms,

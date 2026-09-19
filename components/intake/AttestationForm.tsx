@@ -1,16 +1,7 @@
 "use client";
 
-/**
- * Attestation, what turns a saved polygon into evidence (PROJECT.md).
- * Captures automatically: officer identity + timestamp. Captures in the field:
- * a geotagged, compressed photo taken at the plot, and the farmer's confirmation
- * (signature or thumbprint) with name and ID. Persists offline with the plot.
- *
- * Two genuinely async steps sit in the middle of this form, and both used to be
- * silent: compressing the camera shot, and taking a GPS reading at photo time.
- * Each now reports its own real state, and a failed fix says so rather than
- * leaving a blank where coordinates should be.
- */
+// Attestation, what turns a saved polygon into evidence (PROJECT.md). Captures automatically:
+// officer identity + timestamp.
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -33,11 +24,11 @@ interface Props {
   onSkip: () => void;
 }
 
-/** Photo compression runs on the phone and takes a visible moment on a 4–8 MB
- *  camera shot, so it is a state, not an instant. */
+// Photo compression runs on the phone and takes a visible moment on a 4–8 MB camera shot, so it
+// is a state, not an instant.
 type PhotoState = "idle" | "processing" | "ready" | "error";
-/** The GPS reading is separate from the photo: the photo can succeed while the
- *  fix fails, and the officer needs to see which of the two happened. */
+// The GPS reading is separate from the photo: the photo can succeed while the fix fails, and
+// the officer needs to see which of the two happened.
 type LocState = "idle" | "locating" | "ok" | "failed";
 
 export default function AttestationForm({
@@ -62,8 +53,8 @@ export default function AttestationForm({
   const [farmerId, setFarmerId] = useState(defaultFarmerId ?? "");
   const [method, setMethod] = useState<ConfirmationMethod>("signature");
   const [signed, setSigned] = useState(false);
-  // Timestamped at the moment the farmer consents, not at save, so the record
-  // reflects when consent was actually given. Cleared if the box is unticked.
+  // Timestamped at the moment the farmer consents, not at save, so the record reflects when
+  // consent was actually given. Cleared if the box is unticked.
   const [consentAt, setConsentAt] = useState<string | null>(null);
   const sigRef = useRef<SignaturePadHandle>(null);
   const reduce = useReducedMotion();
@@ -94,8 +85,8 @@ export default function AttestationForm({
     try {
       processed = await processPhoto(file);
     } catch (err) {
-      // A failed decode used to reject silently and leave the form looking
-      // untouched, so the officer thought the photo had been taken.
+      // A failed decode used to reject silently and leave the form looking untouched, so the
+      // officer thought the photo had been taken.
       setPhotoState("error");
       setPhotoError(
         err instanceof Error && err.message ? err.message : "That photo couldn't be read.",
@@ -106,8 +97,8 @@ export default function AttestationForm({
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     setPhotoUrl(URL.createObjectURL(processed.blob));
     setPhotoState("ready");
-    // Capture where the officer is standing, at photo time. A denied fix is
-    // fine, the photo and attestation still stand, just without coordinates.
+    // Capture where the officer is standing, at photo time. A denied fix is fine, the photo and
+    // attestation still stand, just without coordinates.
     setLocState("locating");
     setLocNote("locating…");
     const r = await getPosition({ timeoutMs: 6000 });
@@ -122,8 +113,8 @@ export default function AttestationForm({
     }
   };
 
-  // Throws on any validation or save failure so the Save button surfaces it as
-  // an error toast + shake; resolves on success (which closes the form).
+  // Throws on any validation or save failure so the Save button surfaces it as an error toast +
+  // shake; resolves on success (which closes the form).
   const submit = async () => {
     if (!officer) throw new Error("Enter the officer name first.");
     if (!photo) throw new Error("Take a photo standing at the plot.");
@@ -146,8 +137,8 @@ export default function AttestationForm({
     onDone();
   };
 
-  // What the officer still has to do, derived from real state so it can never
-  // disagree with what submit() will actually reject.
+  // What the officer still has to do, derived from real state so it can never disagree with what
+  // submit() will actually reject.
   const missing = [
     !officer && "officer name",
     !photo && "photo",
@@ -156,9 +147,8 @@ export default function AttestationForm({
     !signed && method,
   ].filter((x): x is string => typeof x === "string");
 
-  // One shared entrance for the photo region's three states, so processing →
-  // preview → error swap without a jump. Reduced motion drops the offset and
-  // the duration; the state change itself is still visible.
+  // One shared entrance for the photo region's three states, so processing → preview → error
+  // swap without a jump.
   const blockIn = {
     hidden: { opacity: 0, y: reduce ? 0 : 4 },
     show: { opacity: 1, y: 0 },
@@ -222,8 +212,8 @@ export default function AttestationForm({
 
         <AnimatePresence mode="wait" initial={false}>
           {photoState === "processing" ? (
-            // Shaped like the preview it will become, so nothing jumps when the
-            // real image lands.
+            // Shaped like the preview it will become, so nothing jumps when the real image
+            // lands.
             <motion.div
               key="processing"
               variants={blockIn}
@@ -362,8 +352,7 @@ export default function AttestationForm({
         className="rounded-xl p-3 text-sm"
         style={{
           background: consentAt ? "var(--accent-soft)" : "var(--info-soft)",
-          // The border carries the state: unticked is a notice, ticked is a
-          // recorded fact.
+          // The border carries the state: unticked is a notice, ticked is a recorded fact.
           border: `1px solid ${consentAt ? "var(--accent)" : "var(--info)"}`,
           transition: "background-color var(--dur-base) ease, border-color var(--dur-base) ease",
         }}

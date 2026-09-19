@@ -1,18 +1,6 @@
 "use client";
 
-/**
- * One disease, its infection-pressure score, and — non-negotiably — WHY.
- *
- * The "why" is not a nicety. An unexplained risk number is exactly the kind of
- * output this project refuses to ship: a farmer cannot check it, an agronomist
- * cannot challenge it, and neither can tell it apart from a guess. So every
- * card names the measured conditions that produced the score, and the pathogen
- * biology that makes those conditions matter.
- *
- * The score is rendered as a band plus a bar, never as a bare "0.72" — the same
- * reason the public map used plain-language confidence rather than raw
- * probabilities.
- */
+/** One disease, its infection-pressure score, and, non-negotiably, WHY. */
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";

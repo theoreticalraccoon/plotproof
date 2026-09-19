@@ -1,33 +1,4 @@
-"""
-Calibrate on validation, freeze, then evaluate the three test sets exactly once.
-
-    python ml/tea/evaluate.py --csd <dir> --ewu <dir> --tld <dir>
-
-Order is load-bearing and enforced by the structure of this file:
-
-  1. Validation logits  -> temperature scaling, and the abstention threshold.
-  2. Model frozen.
-  3. Test 1 / 2 / 3 scored, each once, with no parameter chosen from them.
-
-The test sets are NEVER combined into a headline metric. They measure different
-things and averaging them would produce a number that describes none of them.
-
-A CORRECTION THAT MATTERS. An earlier version of this file called TLD-BD a
-"field" test set. It is not. Every image in CS-D, EWU and TLD-BD alike is a
-detached leaf on white paper or cloth, evenly lit, filling the frame. There is
-no field imagery in the audited corpus at all, so until this run the model had
-never seen the thing it is deployed to see — a leaf on a bush, among other
-leaves, under dappled light — and abstained on most real photographs for the
-honest reason that they were unlike anything it had been trained on. Test 4 is a
-SIMULATED field set (ml/tea/fieldsim.py). It measures the gap; it is labelled
-synthetic everywhere it is reported, and it is not evidence about real
-photographs.
-
-Two classes carry a permanent caveat: blister_blight and red_rust appear in NO
-external dataset in the audited corpus, so they have no cross-dataset evidence
-at all. Their only numbers come from Test 1, which shares CS-D's domain. The
-report states this rather than letting a strong Test 1 figure imply otherwise.
-"""
+"""Calibrate on validation, freeze, then evaluate the three test sets exactly once."""
 
 from __future__ import annotations
 
@@ -56,8 +27,7 @@ REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "models" / "tea"
 
 
-# --------------------------------------------------------------------------
-# inference
+# -------------------------------------------------------------------------- inference
 # --------------------------------------------------------------------------
 
 @torch.no_grad()
@@ -73,19 +43,11 @@ def collect_logits(model, samples, tf, batch_size=64, workers=4, field_sim=None,
     return np.concatenate(L), np.concatenate(Y)
 
 
-# --------------------------------------------------------------------------
-# calibration
+# -------------------------------------------------------------------------- calibration
 # --------------------------------------------------------------------------
 
 def fit_temperature(logits: np.ndarray, y: np.ndarray) -> float:
-    """Temperature scaling (Guo et al. 2017), fitted on VALIDATION ONLY.
-
-    One parameter, fitted by minimising NLL. Chosen over Platt scaling or
-    isotonic regression because it cannot change the argmax — so accuracy is
-    untouched and only the confidence is corrected. That property matters here:
-    the abstention threshold is applied to the calibrated confidence, and a
-    calibration that reshuffled predictions would make the two interact.
-    """
+    """Temperature scaling (Guo et al. 2017), fitted on VALIDATION ONLY."""
     lg = torch.tensor(logits, dtype=torch.float32)
     yy = torch.tensor(y, dtype=torch.long)
     log_T = torch.zeros(1, requires_grad=True)  # optimise log T to keep T > 0
@@ -129,43 +91,16 @@ def expected_calibration_error(conf: np.ndarray, correct: np.ndarray, bins: int 
     return float(ece), rows
 
 
-# --------------------------------------------------------------------------
-# abstention
+# -------------------------------------------------------------------------- abstention
 # --------------------------------------------------------------------------
 
 def choose_abstention_threshold(conf: np.ndarray, correct: np.ndarray,
                                 abstain_rate: float = 0.05,
                                 target_accuracy: float = 0.90,
                                 selected_on: str = "CS-D validation split only") -> dict:
-    """Pick the confidence floor below which the app says "retake the photo".
-
-    SELECTION RULE: the lowest threshold whose accuracy-on-accepted reaches
-    `target_accuracy` on validation, floored by a small quantile of validation
-    confidence.
-
-    This rule was tried once before and abandoned, for a reason that has since
-    been fixed rather than argued away. It degenerated: validation accuracy was
-    0.9964 at threshold 0.0, so the rule chose 0.0 and the mechanism could never
-    fire. The cause was that validation contained nothing hard — every image in
-    it was a studio photograph of a detached leaf, so there was no confidence at
-    which the model became unreliable, and the question had no answer.
-
-    Validation now contains simulated field photographs at the same rate as
-    training (ml/tea/fieldsim.py), so the question has an answer: there IS a
-    confidence below which this model gets field-like inputs wrong. Asking where
-    accuracy falls below target is now the right question, and it produces a
-    floor that admits far more real photographs than a quantile of studio-image
-    confidence ever could.
-
-    The quantile is retained as a FLOOR, so a run whose validation happened to
-    be easy cannot produce a threshold of 0 and silently disable abstention.
-
-    Coverage on the test sets is REPORTED as an outcome; it is never used to
-    choose the threshold.
-    """
-    # A fine grid over the top of the range: up there a hundredth of confidence
-    # is the difference between answering a farmer and telling them to take the
-    # photograph again.
+    """Pick the confidence floor below which the app says "retake the photo"."""
+    # A fine grid over the top of the range: up there a hundredth of confidence is the difference
+    # between answering a farmer and telling them to take the photograph again.
     grid = np.unique(np.concatenate([
         np.arange(0.0, 1.0, 0.01),
         np.linspace(0.90, 0.9999, 200),
@@ -176,8 +111,8 @@ def choose_abstention_threshold(conf: np.ndarray, correct: np.ndarray,
         curve.append({"threshold": round(float(t), 4), "coverage": round(float(m.mean()), 4),
                       "accuracy_on_accepted": round(float(correct[m].mean()), 4) if m.any() else None})
 
-    # `coverage >= 0.02` stops the rule picking a threshold so high that it is
-    # satisfied by a handful of images and answers nobody.
+    # `coverage >= 0.02` stops the rule picking a threshold so high that it is satisfied by a
+    # handful of images and answers nobody.
     acc_rule = next((r["threshold"] for r in curve
                      if r["accuracy_on_accepted"] is not None
                      and r["coverage"] >= 0.02
@@ -215,8 +150,7 @@ def choose_abstention_threshold(conf: np.ndarray, correct: np.ndarray,
     }
 
 
-# --------------------------------------------------------------------------
-# metrics
+# -------------------------------------------------------------------------- metrics
 # --------------------------------------------------------------------------
 
 def evaluate_set(name: str, logits: np.ndarray, y: np.ndarray, T: float,
@@ -234,9 +168,6 @@ def evaluate_set(name: str, logits: np.ndarray, y: np.ndarray, T: float,
     absent = [i for i in range(len(keys)) if i not in present]
 
     # Macro metrics are computed over the classes PRESENT in this test set.
-    # Averaging in classes with zero support would silently drag the macro
-    # figure toward zero and make two test sets look incomparable for a reason
-    # that has nothing to do with the model.
     p, r, f1, sup = precision_recall_fscore_support(
         y, pred, labels=present, zero_division=0)
 
@@ -302,7 +233,7 @@ def reliability_plot(results: list[dict], path: Path) -> None:
         ax.set_xlim(0, 1); ax.set_ylim(0, 1)
         ax.grid(alpha=0.25)
         ax.legend(fontsize=7, loc="upper left")
-    fig.suptitle("Reliability — each test set separately, never pooled", fontsize=11)
+    fig.suptitle("Reliability, each test set separately, never pooled", fontsize=11)
     fig.tight_layout()
     fig.savefig(path, dpi=130)
     plt.close(fig)
@@ -342,9 +273,8 @@ def main() -> None:
     val = [s for s in csd if s.split == "val"]
     test1 = [s for s in csd if s.split == "test"]
 
-    # Donors for a simulated set always come from the SAME split as the images
-    # being simulated, so no validation or test leaf can appear in a background
-    # behind another split's image.
+    # Donors for a simulated set always come from the SAME split as the images being simulated, so
+    # no validation or test leaf can appear in a background behind another split's image.
     val_sim = test_sim = None
     if a.field_prob > 0:
         val_sim = FieldSimulator([x.path for x in val], size=img_size,
@@ -363,19 +293,6 @@ def main() -> None:
     v_ece_after, v_bins = expected_calibration_error(vconf, vcorrect)
 
     # The threshold is chosen on the SIMULATED-FIELD validation images alone.
-    #
-    # Two earlier choices both failed, in opposite directions, and the record of
-    # why is the reason for this one:
-    #   - Clean validation alone gave 0.9976: a floor set by how confident the
-    #     model is on studio photographs, which refused two real photos in three.
-    #   - Clean and simulated validation POOLED gave 0.53: the clean half is right
-    #     ~99.6% of the time, so it carried the pooled accuracy over the target
-    #     at almost any threshold and the rule fell through to its floor. The
-    #     model then answered ~95% of cross-dataset photos and was wrong on ~28%
-    #     of the answers — confident wrong labels, the one outcome abstention
-    #     exists to prevent.
-    # The hard half is the only half that can say where the model becomes
-    # unreliable, so it alone is asked.
     if val_sim is not None:
         print(f"  + {len(val)} simulated-field validation images for the abstention rule…")
         fvlog, fvy = collect_logits(model, val, eval_tf, workers=a.workers,
@@ -399,14 +316,14 @@ def main() -> None:
     # ---- STEP 2: model frozen. Each test set scored exactly once. ----------
     results = []
     suites = [
-        ("Test 1 — CS-D internal (in-distribution, studio)", test1, None),
-        ("Test 2 — EWU cross-dataset (studio, detached leaf)", load_ewu(a.ewu, tax), None),
-        ("Test 3 — TLD-BD cross-dataset (studio, detached leaf)", load_tld(a.tld, tax), None),
+        ("Test 1: CS-D internal (in-distribution, studio)", test1, None),
+        ("Test 2: EWU cross-dataset (studio, detached leaf)", load_ewu(a.ewu, tax), None),
+        ("Test 3: TLD-BD cross-dataset (studio, detached leaf)", load_tld(a.tld, tax), None),
     ]
     if test_sim is not None:
-        # Held-out CS-D groups, rendered as field photographs with donors drawn
-        # only from those same held-out groups.
-        suites.append(("Test 4 — CS-D test groups, SIMULATED field conditions", test1, test_sim))
+        # Held-out CS-D groups, rendered as field photographs with donors drawn only from those
+        # same held-out groups.
+        suites.append(("Test 4: CS-D test groups, SIMULATED field conditions", test1, test_sim))
 
     for name, samples, sim in suites:
         print(f"\nscoring: {name}  ({len(samples)} images)")

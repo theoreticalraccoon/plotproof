@@ -1,11 +1,5 @@
-/**
- * CSV / registry import, the highest-priority intake path (PROJECT.md: "import
- * beats capture every time"). Real registries vary wildly, so we parse loosely
- * and let the officer map columns, rather than assuming a fixed schema.
- *
- * Geometry per row may arrive as GeoJSON, WKT POLYGON, or a bare coordinate
- * list. Pure functions (Papa parse works in Node too), unit-testable.
- */
+// CSV / registry import, the highest-priority intake path (PROJECT.md: "import beats capture
+// every time").
 import Papa from "papaparse";
 import type { LngLat } from "./types";
 
@@ -76,13 +70,7 @@ export function mapRows(rows: Record<string, string>[], m: ColumnMapping): Mappe
   });
 }
 
-/**
- * Parse one geometry cell into an outer ring of [lng, lat]. Supports:
- *  - GeoJSON: a Polygon geometry, or a Feature wrapping one (as JSON text)
- *  - WKT:     POLYGON ((lng lat, lng lat, ...))  (optional Z ignored)
- *  - list:    "lng lat, lng lat, ..." or "lng,lat lng,lat"
- * Returns null if empty.
- */
+/** Parse one geometry cell into an outer ring of [lng, lat]. */
 export function parseGeometryCell(raw: string): LngLat[] | null {
   const s = raw.trim();
   if (!s) return null;

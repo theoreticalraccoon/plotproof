@@ -1,15 +1,5 @@
-/**
- * Interface strings for the farmer-facing flow, in English, Sinhala and Tamil
- * (Sri Lanka first, per the EU-first depth decision, adding a language is a
- * dictionary, not a code change).
- *
- * Scope is deliberate and honest: the wizard chrome, checklist labels and
- * disclaimers are translated as fixed strings below. The per-document guidance
- * text (what/why/how) and the generated documents themselves remain in English -
- * documents because customs authorities expect English, guidance because
- * machine-translating semi-legal text without review risks misleading a farmer.
- * That guidance translation is the LLM seam noted in DECISIONS D-014.
- */
+// Interface strings for the farmer-facing flow, in English, Sinhala and Tamil (Sri Lanka first,
+// per the EU-first depth decision, adding a language is a dictionary, not a code change).
 
 export type Lang = "en" | "si" | "ta";
 
@@ -33,13 +23,13 @@ const en: Dict = {
   nav_sell: "Sell",
   nav_documents: "Documents",
   nav_evidence: "Plots",
-  // Technical evidence page. "Models" reads the same in all three languages in
-  // practice, but the Sinhala and Tamil entries exist so the nav is not mixed.
+  // Technical evidence page. "Models" reads the same in all three languages in practice, but the
+  // Sinhala and Tamil entries exist so the nav is not mixed.
   nav_models: "Models",
   nav_menu: "Menu",
   nav_close_menu: "Close menu",
   skip_to_content: "Skip to content",
-  footer_tagline: "Built for smallholder farmers exporting direct, no middleman, no guesswork.",
+  footer_tagline: "Export paperwork for Sri Lankan crops, prepared in one place.",
   footer_product: "Product",
   footer_resources: "Resources",
   footer_honesty_title: "What we won't do",
@@ -49,15 +39,11 @@ const en: Dict = {
   footer_privacy: "Privacy and your data",
 
 
-  // --- grow lane (weather, irrigation, disease risk) ---------------------
-  // NOTE ON TRANSLATION: short labels below are translated; the advisory
-  // SENTENCES stay English in si/ta and fall back automatically. Same rule as
-  // the document guidance (D-016) — machine-translating instructions a farmer
-  // will act on, without review, risks telling someone to water a drowning
-  // field. Reviewed translations replace these keys, not a translation API.
+  // --- grow lane (weather, irrigation, disease risk) --------------------- NOTE ON TRANSLATION:
+  // short labels below are translated.
   nav_grow: "Grow",
   grow_title: "Grow",
-  grow_lede: "Weather, watering and disease pressure for one plot — from this plot’s own conditions.",
+  grow_lede: "Weather, watering and disease pressure for one plot, from this plot’s own conditions.",
   grow_pick_plot: "Which plot?",
   grow_no_plots: "No plots yet. Map a plot first and it will appear here.",
   grow_no_plots_cta: "Map a plot",
@@ -97,16 +83,16 @@ const en: Dict = {
   irrigation_no_action: "No watering needed",
   irrigation_water_soon: "Water within a day or two",
   irrigation_water_now: "Water now",
-  irrigation_waterlogged: "Too wet — do not water",
+  irrigation_waterlogged: "Too wet, do not water",
   irrigation_reason_no_action: "The root zone has used {pct}% of the water it can hold. That is still comfortable.",
   irrigation_reason_water_soon: "The root zone has used {pct}% of its water ({depletion} mm of {taw} mm). Stress starts near {raw} mm.",
   irrigation_reason_water_now: "The root zone is {depletion} mm short of full, past the {raw} mm at which this crop starts to suffer.",
   irrigation_reason_waterlogged: "{rain} mm of rain in three days on an already-full profile. Watch for root disease, not drought.",
-  irrigation_apply: "Apply about {mm} mm — roughly {litres} litres across this plot.",
+  irrigation_apply: "Apply about {mm} mm, roughly {litres} litres across this plot.",
   irrigation_rainfed_note: "You marked this plot rainfed, so read this as a stress warning rather than an instruction.",
   irrigation_anchor_sensor: "Set by your soil sensor, measured in this plot.",
   irrigation_anchor_grid: "Set by a satellite-informed soil model for this area. A sensor in the plot would replace this estimate with a measurement.",
-  irrigation_anchor_balance: "Estimated from rainfall and evaporation only — no soil observation was available.",
+  irrigation_anchor_balance: "Estimated from rainfall and evaporation only, no soil observation was available.",
   irrigation_method: "FAO-56 soil-water balance",
 
   risk_title: "Disease pressure",
@@ -130,10 +116,8 @@ const en: Dict = {
   risk_no_spray_advice: "We do not name a pesticide or a dose. Confirm treatment with your TRI extension officer.",
 
 
-  // --- leaf diagnosis (tea CNN) ------------------------------------------
-  // Same translation rule as the rest of the grow lane: short labels are
-  // translated, advisory SENTENCES stay English and fall back, because an
-  // unreviewed machine translation of a disease instruction can mislead.
+  // --- leaf diagnosis (tea CNN) ------------------------------------------ Same translation
+  // rule as the rest of the grow lane: short labels are translated.
   nav_diagnose: "Check a leaf",
   tea_title: "Check a leaf",
   tea_lede: "Photograph one leaf. The result is a suggestion from an image, not a laboratory test.",
@@ -145,7 +129,7 @@ const en: Dict = {
   tea_preview_alt: "The leaf photo you selected",
   tea_preview_note: "The model sees a square centre crop of this photo.",
 
-  tea_state_uncertain: "Uncertain — retake the photo",
+  tea_state_uncertain: "Uncertain, retake the photo",
   tea_state_error: "The leaf checker could not run",
   tea_confidence: "{pct}% confidence",
   tea_confidence_caveat: "Confidence is how sure the model is, not the chance it is right. It can be confidently wrong on a farm unlike the ones it learned from.",
@@ -155,11 +139,11 @@ const en: Dict = {
 
   tea_uncertain_body: "The model is not confident enough to name a condition, so it will not guess. A wrong name is worse than no name.",
   tea_photo_tips_title: "For a better photo",
-  tea_tip_light: "Use good natural light — not direct midday glare, not deep shade.",
+  tea_tip_light: "Use good natural light, not direct midday glare, not deep shade.",
   tea_tip_one_leaf: "Photograph one representative leaf, filling most of the frame.",
   tea_tip_focus: "Keep the leaf in focus and hold still.",
   tea_tip_shadow: "Avoid hard shadows, reflections and anything covering the leaf.",
-  tea_tip_retake: "Retake rather than resubmitting the same photo — the result will not change.",
+  tea_tip_retake: "Retake rather than resubmitting the same photo, the result will not change.",
 
   tea_error_no_artifact: "The model has not been published to this app yet.",
   tea_error_load_failed: "The model could not be downloaded. Check your connection and try again.",
@@ -168,23 +152,23 @@ const en: Dict = {
   tea_error_still_useful: "Weather and watering advice on this plot are unaffected.",
   tea_try_again: "Try again",
 
-  // Evidence layer — each line names where it came from.
+  // Evidence layer, each line names where it came from.
   tea_src_image: "Photo",
   tea_src_environment: "Conditions",
   tea_src_sensor: "Soil sensor",
   tea_src_weather: "Weather model",
   tea_ev_image_confident: "The photo looks like {disease} ({pct}% confidence).",
   tea_ev_image_uncertain: "The photo was not clear enough to name a condition.",
-  tea_ev_image_unavailable: "No photo result — the leaf checker did not run.",
+  tea_ev_image_unavailable: "No photo result, the leaf checker did not run.",
   tea_ev_env_supports: "Recent weather also favoured {disease}: {band} pressure, {days} of {window} days favourable.",
   tea_ev_env_low: "Recent weather did NOT particularly favour {disease} ({band} pressure). That does not rule it out; the photo is the direct evidence.",
-  tea_ev_env_conflict: "Conditions currently favour {favoured} ({band} pressure) rather than {seen}. We report this disagreement rather than overruling the photo — check the leaf for both.",
+  tea_ev_env_conflict: "Conditions currently favour {favoured} ({band} pressure) rather than {seen}. We report this disagreement rather than overruling the photo, check the leaf for both.",
   tea_ev_env_no_model_pest: "{disease} is a pest, not a fungal disease. We have no weather model for it, so conditions say nothing either way.",
   tea_ev_env_no_model: "We have no weather model for {disease}, so conditions say nothing either way.",
   tea_ev_env_healthy_but_pressure: "The leaf looks healthy, but conditions have favoured {disease} ({band} pressure). Keep checking over the coming days.",
   tea_ev_env_healthy_calm: "Conditions have not strongly favoured any of the diseases we model.",
   tea_ev_env_standalone: "Conditions favoured {disease}: {band} pressure, {days} of {window} days favourable.",
-  tea_ev_weather_provenance: "Weather is from a model grid near your plot, observed through {date} — not a station on your farm.",
+  tea_ev_weather_provenance: "Weather is from a model grid near your plot, observed through {date}, not a station on your farm.",
   tea_ev_soil_measured: "Your soil sensor measured the root zone directly. Watering advice: {verdict}.",
   tea_ev_soil_modelled: "Soil water is a satellite-informed model estimate, not a measurement. Watering advice: {verdict}.",
   tea_ev_soil_balance: "Soil water is estimated from rainfall and evaporation only. Watering advice: {verdict}.",
@@ -198,25 +182,19 @@ const en: Dict = {
   tea_action_error: "Try again when you have a connection. Watering and disease-pressure advice still work.",
   tea_no_pesticide: "We never name a pesticide or a dose. Confirm any treatment with your TRI extension officer.",
   tea_limitations_title: "What this checker cannot do",
-  tea_guidance_in_english: "Detailed guidance below is written in English. We do not machine-translate instructions a farmer acts on — a mistranslated treatment instruction is worse than an English one.",
-  tea_crop_unsupported: "The leaf checker only covers tea. This plot is set to {crop}, so no leaf diagnosis is offered — a tea model cannot read a {crop} leaf. Watering and weather advice still work.",
+  tea_guidance_in_english: "Detailed guidance below is written in English. We do not machine-translate instructions a farmer acts on, a mistranslated treatment instruction is worse than an English one.",
+  tea_crop_unsupported: "The leaf checker only covers tea. This plot is set to {crop}, so no leaf diagnosis is offered, a tea model cannot read a {crop} leaf. Watering and weather advice still work.",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "Export-readiness for smallholders and their cooperatives",
-  landing_hero_title: "Get export-ready. Prove your plot. Know your price.",
-  landing_hero_sub:
-    "PlotProof tells you exactly which export documents your harvest needs for the EU, UK, or US, and generates the ones we can, in minutes, from four simple questions.",
-  landing_what_is:
-    "PlotProof maps your farm plot, records signed proof of where your crop grows, and shows you the world price — so you and your cooperative negotiate from strength.",
   results_next_title: "What happens next",
   results_next_body:
-    "You do not ship a container alone — a 0.4 ha plot yields a few hundred kilos and a container holds ~19 tonnes. Your cooperative or an exporter aggregates lots, and under EU rules the importer files the due diligence statement. What YOU bring to that table: this checklist, your attested plot proof, and the reference price. That is bargaining power.",
+    "You do not ship a container alone, a 0.4 ha plot yields a few hundred kilos and a container holds ~19 tonnes. Your cooperative or an exporter aggregates lots, and under EU rules the importer files the due diligence statement. What YOU bring to that table: this checklist, your attested plot proof, and the reference price. That is bargaining power.",
   results_eudr_covered:
     "EUDR applies to this product (importers must file due diligence from Dec 2026). Your attested plot geolocation is exactly the evidence their filing needs.",
   results_eudr_not_covered:
-    "EUDR does not apply to this product. For the EU the real gate is food-safety testing (e.g. contaminant and residue limits) through an accredited laboratory — the checklist points the way.",
+    "EUDR does not apply to this product. For the EU the real gate is food-safety testing (e.g. contaminant and residue limits) through an accredited laboratory, the checklist points the way.",
   catalog_verified_note: "Requirements last verified {date}. Rules change; confirm with your customs broker before shipping.",
-  catalog_stale_warning: "These requirements were last verified {date} — more than 6 months ago. Treat them as a starting point, not current law.",
+  catalog_stale_warning: "These requirements were last verified {date}, more than 6 months ago. Treat them as a starting point, not current law.",
   price_title: "Know your price before you negotiate",
   price_context: "Higher than {pct}% of monthly prices over the last 5 years.",
   price_yoy: "{dir}{yoy}% vs a year ago.",
@@ -227,32 +205,6 @@ const en: Dict = {
   price_none: "No world reference price series exists for this product, so none is shown.",
   price_stale:
     "The reference price data in this deployment ends at {month} and is out of date, so no price is shown. It needs a refresh from the World Bank series.",
-  landing_cta_primary: "Sell your harvest",
-  landing_cta_secondary: "See how it works",
-  landing_stat_products: "commodities covered",
-  landing_stat_markets: "destination markets",
-  landing_stat_countries: "countries configured",
-  landing_stat_languages: "languages",
-  landing_how_title: "Four questions. That's it.",
-  landing_how_sub: "No account, no forms to hunt for. Answer in the language you're comfortable in.",
-  landing_how_result_title: "Your personal checklist",
-  landing_how_result_body: "A plain-language list of exactly which documents your sale needs, which ones we generate for you right now, and which ones you request from an authority.",
-  landing_features_eyebrow: "What's included",
-  landing_features_title: "Everything between harvest and the shipping container",
-  landing_feature_docs_title: "Generate real documents",
-  landing_feature_docs_body: "Commercial invoice, packing list, and a certificate-of-origin draft, prefilled from your sale, ready to print.",
-  landing_feature_eudr_title: "EUDR forest evidence",
-  landing_feature_eudr_body: "Map your plot on satellite imagery; we run deforestation analysis and generate the EU's required evidence pack.",
-  landing_feature_shipping_title: "Shipping made clear",
-  landing_feature_shipping_body: "Container or air, Incoterms, transit times, matched to what you're shipping and how much.",
-  landing_feature_lang_title: "Speak your language",
-  landing_feature_lang_body: "The whole app works in English, Sinhala, and Tamil, not just the homepage.",
-  landing_honesty_eyebrow: "Our one rule",
-  landing_honesty_title: "We never invent law",
-  landing_honesty_body: "Every requirement we show you cites a real, named source. When a document must be issued by an authority, we say so plainly and prepare what we can, never pretending to be that authority.",
-  landing_final_cta_title: "Four questions from your documents checklist.",
-  landing_final_cta_sub: "Free to start. Create your account in under a minute.",
-  landing_also_title: "Also in PlotProof",
   sell_sub: "Answer four simple questions. We'll show you exactly which papers you need and make the ones we can.",
   q_product: "What do you grow?",
   q_product_free: "Or describe it in your own words",
@@ -290,7 +242,6 @@ const en: Dict = {
   offline_message: "Offline, your work is saved on this device and will sync when you reconnect.",
   q_product_placeholder: "e.g. dried arabica coffee beans",
   qty_placeholder: "e.g. 2000",
-  landing_manifesto: "A wall of paperwork stands between a smallholder farmer and a global buyer. We turn that wall into four simple questions, and the documents that follow.",
 
   // --- command palette / global UX ------------------------------------
   cmd_open: "Search",
@@ -367,18 +318,14 @@ const en: Dict = {
   please_wait: "Please wait",
   retry_label: "Try again",
 
-  // --- advisory composition (/grow/diagnose) ----------------------------
-  // Section headings for the single result screen, in the order a farmer
-  // thinks in: what the field is doing, what the leaf shows, what the weather
-  // favoured, why, and what to do.
+  // --- advisory composition (/grow/diagnose) ---------------------------- Section headings for
+  // the single result screen, in the order a farmer thinks in: what the field is doing.
   tea_section_field: "Field status",
   tea_section_leaf: "Leaf assessment",
   tea_section_conditions: "Conditions",
   tea_section_why: "Why this advice",
   tea_why_lede: "Each line names where it came from, so you can tell a measurement from an estimate.",
-  // The provenance word beside each evidence row. These are the whole point of
-  // the evidence layer: a probe in this plot and a regional model are not the
-  // same kind of thing and must never read as one.
+  // The provenance word beside each evidence row.
   tea_kind_measured: "measured here",
   tea_kind_estimated: "outside estimate",
   tea_kind_calculated: "calculated",
@@ -395,26 +342,21 @@ const en: Dict = {
   irrigation_mm: "{mm} mm",
   irrigation_mm_used: "{mm} mm used",
 
-  // Abstention is the single most likely thing to be MISREAD as breakage: at the
-  // published threshold the model answers only about a third of real field
-  // photographs. Saying so, with the rate read off the card, turns "this app
-  // never works" into "this model knows when it does not know".
+  // Abstention is the single most likely thing to be MISREAD as breakage: at the published
+  // threshold the model answers only about a third of real field photographs.
   tea_uncertain_expected: "You will see this often. On photographs from farms unlike the ones it learned from, this model declines to answer about {pct}% of the time. That is it being careful, not a fault in the app.",
 
-  // --- soil probe (/grow/sensor) ----------------------------------------
-  // Same translation policy as the rest of the grow lane: labels, states and
-  // errors are translated; the calibration CAVEAT stays English everywhere and
-  // is marked lang="en", because it is the sentence that stops someone treating
-  // a field calibration as a laboratory one.
+  // --- soil probe (/grow/sensor) ---------------------------------------- Same translation
+  // policy as the rest of the grow lane: labels, states and errors are translated.
   sensor_title: "Soil probe",
   sensor_lede: "Connect a soil probe over USB and its reading replaces the satellite soil model for this plot. The probe is the only thing in the app that actually touches your soil.",
   sensor_connect_title: "Connect the probe",
-  sensor_connect_body: "Plug the ESP32 soil sensor into this computer, then choose its port. Close the Arduino Serial Monitor first — only one program can use the port. The reading stays on this device; nothing is uploaded.",
+  sensor_connect_body: "Plug the ESP32 soil sensor into this computer, then choose its port. Close the Arduino Serial Monitor first, only one program can use the port. The reading stays on this device; nothing is uploaded.",
   sensor_connect: "Connect probe",
   sensor_connecting: "Choose a port…",
   sensor_stop: "Disconnect",
   sensor_simulate: "Run a simulated probe",
-  sensor_unsupported: "This browser cannot talk to USB devices. Web Serial works in Chrome, Edge and other Chromium browsers on a computer — not on a phone, and not in Firefox or Safari. You can still run the simulated probe to see how the screen behaves.",
+  sensor_unsupported: "This browser cannot talk to USB devices. Web Serial works in Chrome, Edge and other Chromium browsers on a computer, not on a phone, and not in Firefox or Safari. You can still run the simulated probe to see how the screen behaves.",
   sensor_simulated_warning: "Simulated readings. These are generated numbers, not a measurement of any soil. They are stored and labelled as simulated, and you can delete them at any time.",
 
   sensor_live_title: "Live reading",
@@ -448,9 +390,9 @@ const en: Dict = {
   sensor_cal_caveat: "This is a field calibration, not a laboratory one. Air and water remove the probe's arbitrary scale, but a water content that is accurate for YOUR soil needs oven-dried samples. Treat the number as a good comparison against the satellite estimate, not as a soil survey.",
 
   sensor_anchor_title: "What this plot's watering advice is using now",
-  sensor_anchor_unknown: "No watering advice yet for this plot — it needs weather and a crop profile first.",
-  sensor_gap_wetter: "Your probe reads {probe} and the satellite soil model estimates {grid} — your soil is {delta} m³/m³ wetter than the model thinks. Watering advice now uses your probe.",
-  sensor_gap_drier: "Your probe reads {probe} and the satellite soil model estimates {grid} — your soil is {delta} m³/m³ drier than the model thinks. Watering advice now uses your probe.",
+  sensor_anchor_unknown: "No watering advice yet for this plot, it needs weather and a crop profile first.",
+  sensor_gap_wetter: "Your probe reads {probe} and the satellite soil model estimates {grid}, your soil is {delta} m³/m³ wetter than the model thinks. Watering advice now uses your probe.",
+  sensor_gap_drier: "Your probe reads {probe} and the satellite soil model estimates {grid}, your soil is {delta} m³/m³ drier than the model thinks. Watering advice now uses your probe.",
   sensor_stored: "{n} readings saved for this plot.",
   sensor_stored_simulated: "Includes simulated readings.",
   sensor_clear_stored: "Delete them",
@@ -459,9 +401,9 @@ const en: Dict = {
   // --- one-time email links ---------------------------------------------
   auth_magic_cta_signup: "Email me a sign-up link instead",
   auth_magic_sent_signup: "Check your email. Opening that link creates your account and signs you in.",
-  auth_magic_same_browser: "Open the link in this same browser — the link is tied to the browser that asked for it.",
+  auth_magic_same_browser: "Open the link in this same browser, the link is tied to the browser that asked for it.",
   auth_link_wrong_browser: "That link was opened in a different browser from the one that asked for it, so it could not be used. Ask for a new link and open it here.",
-  auth_link_expired: "That link has expired or was already used. Each link works once — ask for a new one.",
+  auth_link_expired: "That link has expired or was already used. Each link works once, ask for a new one.",
   auth_no_such_account: "No account uses that email address. Create one instead.",
 
   // --- the sale workspace (/sell) ---------------------------------------
@@ -550,12 +492,12 @@ const en: Dict = {
   sale_f_vessel: "Vessel or flight",
   sale_f_ship_date: "Shipment date",
 
-  incoterm_fob: "FOB — free on board",
-  incoterm_cfr: "CFR — cost and freight",
-  incoterm_cif: "CIF — cost, insurance and freight",
-  incoterm_cip: "CIP — carriage and insurance paid to",
-  incoterm_dap: "DAP — delivered at place",
-  incoterm_exw: "EXW — ex works",
+  incoterm_fob: "FOB, free on board",
+  incoterm_cfr: "CFR, cost and freight",
+  incoterm_cif: "CIF, cost, insurance and freight",
+  incoterm_cip: "CIP, carriage and insurance paid to",
+  incoterm_dap: "DAP, delivered at place",
+  incoterm_exw: "EXW, ex works",
   shipmode_sea_fcl: "Sea, full container",
   shipmode_sea_lcl: "Sea, shared container",
   shipmode_air: "Air freight",
@@ -571,7 +513,7 @@ const en: Dict = {
 
   // --- generated documents ------------------------------------------------
   sale_docs_title: "Documents we produce",
-  sale_docs_ready: "Ready to download, together or one at a time. Open one to edit it — a change writes back to the consignment, so the documents always agree.",
+  sale_docs_ready: "Ready to download, together or one at a time. Open one to edit it, a change writes back to the consignment, so the documents always agree.",
   sale_docs_draft: "You can download these now, but every page will be marked DRAFT until the details above are complete.",
   sale_docs_download_all: "Download all (PDF)",
   sale_docs_download_named: "Download {name}",
@@ -589,7 +531,7 @@ const en: Dict = {
 
   // --- authority documents ---------------------------------------------------
   sale_auth_title: "Documents an authority must issue",
-  sale_auth_lede: "We never produce these — they would be forgeries. Here is what this consignment needs, who issues each one, and how to get it.",
+  sale_auth_lede: "We never produce these, they would be forgeries. Here is what this consignment needs, who issues each one, and how to get it.",
   sale_auth_need_product: "Choose the product and the buyer's country, and the list of required documents appears here.",
   sale_auth_progress: "{done} of {total} obtained",
   sale_auth_how: "How to get it",
@@ -628,23 +570,23 @@ const en: Dict = {
   eudr_n_loss_forest: "Loss after 2020 on that forest",
   eudr_n_loss_any: "Loss after 2020 anywhere on the plot",
   eudr_n_threshold: "Screening threshold",
-  eudr_method: "Both layers are published satellite products: the JRC Global Forest Cover map for 2020, and Hansen/UMD Global Forest Change for tree-cover loss, with loss causes from the WRI and Google driver model. PlotProof does not train its own deforestation model — there is no ground-truth data to validate one against. This is a risk screening, not a compliance decision, and there is no EUDR certificate to obtain: the EU operator files a due-diligence statement.",
+  eudr_method: "Both layers are published satellite products: the JRC Global Forest Cover map for 2020, and Hansen/UMD Global Forest Change for tree-cover loss, with loss causes from the WRI and Google driver model. PlotProof does not train its own deforestation model, there is no ground-truth data to validate one against. This is a risk screening, not a compliance decision, and there is no EUDR certificate to obtain: the EU operator files a due-diligence statement.",
 
   eudr_r_unknown: "This plot has not been checked yet.",
-  eudr_r_loss_on_forest: "{ha} ha of tree cover — about {pct}% of the plot — was lost in {years}, on land mapped as forest at the end of 2020.",
+  eudr_r_loss_on_forest: "{ha} ha of tree cover, about {pct}% of the plot, was lost in {years}, on land mapped as forest at the end of 2020.",
   eudr_r_driver_conversion: "The recorded cause is {driver}, which is conversion to agriculture. After the cut-off date, on land that was forest, that is what the regulation calls deforestation.",
-  eudr_r_driver_non_conversion: "The recorded cause is {driver}. That removes trees without necessarily converting the land, so it may not be deforestation — but it has to be evidenced, not assumed.",
+  eudr_r_driver_non_conversion: "The recorded cause is {driver}. That removes trees without necessarily converting the land, so it may not be deforestation, but it has to be evidenced, not assumed.",
   eudr_r_driver_other: "The recorded cause is {driver}.",
   eudr_r_forest_2020: "{pct}% of the plot ({ha} ha) was mapped as forest at the end of 2020.",
-  eudr_r_plantation_overlap: "About {pct}% of that is also mapped as plantation ({type}) — a sign the crop itself was mapped as forest, which is common for closed-canopy tree crops such as rubber.",
+  eudr_r_plantation_overlap: "About {pct}% of that is also mapped as plantation ({type}), a sign the crop itself was mapped as forest, which is common for closed-canopy tree crops such as rubber.",
   eudr_r_no_loss_since: "No tree-cover loss is recorded on the plot after the cut-off date.",
   eudr_r_not_forest_2020: "Only {pct}% of the plot was mapped as forest at the end of 2020.",
-  eudr_r_loss_not_forest: "Tree cover was lost after 2020 ({ha} ha), but on land the 2020 forest map did not count as forest — consistent with replanting a tree crop rather than clearing forest.",
+  eudr_r_loss_not_forest: "Tree cover was lost after 2020 ({ha} ha), but on land the 2020 forest map did not count as forest, consistent with replanting a tree crop rather than clearing forest.",
 
   eudr_e_retry: "Run the check for this plot.",
   eudr_e_dated_imagery: "Dated satellite imagery of the plot from before and after the loss.",
   eudr_e_land_use_records: "Records showing what the land was used for before 2021.",
-  eudr_e_operator: "Send this to the EU operator early — they carry the due-diligence obligation and may refuse the consignment.",
+  eudr_e_operator: "Send this to the EU operator early, they carry the due-diligence obligation and may refuse the consignment.",
   eudr_e_planting_records: "Planting or replanting records showing when the crop was established.",
   eudr_e_keep_boundary: "Keep the attested boundary and this screening with the consignment file.",
 
@@ -676,7 +618,7 @@ const en: Dict = {
   assistant_end_cut: "The answer was cut short. Ask for the rest if you need it.",
   assistant_end_refused: "The assistant declined to answer that.",
   assistant_end_failed: "The answer stopped before it finished.",
-  assistant_end_unavailable: "The assistant is not working on this deployment — its API access was rejected. Trying again will not help; the deployment needs a working API key with credit.",
+  assistant_end_unavailable: "The assistant is not working on this deployment, its API access was rejected. Trying again will not help; the deployment needs a working API key with credit.",
   assistant_err_sign_in_required: "Sign in to use the assistant.",
   assistant_err_not_configured: "The assistant is not configured for this deployment.",
   assistant_err_limits_unavailable: "The assistant is unavailable: its usage limits cannot be checked, so it will not run.",
@@ -687,7 +629,7 @@ const en: Dict = {
 
   // --- /documents ----------------------------------------------------------
   docs_title: "Your export documents",
-  docs_lede: "The three documents PlotProof produces for the open consignment. Open one to correct the details inside it — the correction carries to the others, because customs compares them against each other.",
+  docs_lede: "The three documents PlotProof produces for the open consignment. Open one to correct the details inside it, the correction carries to the others, because customs compares them against each other.",
   docs_for_sale: "For {name}",
   docs_edit_this: "Edit this document",
   docs_authority_note: "Everything else a consignment needs is issued by an authority, not by us.",
@@ -700,6 +642,61 @@ const en: Dict = {
   doc_edit_lede: "Only the fields this document uses. A change here updates the whole consignment.",
   doc_back_to_sale: "Back to the consignment",
   doc_preview_label: "Document preview",
+
+  // --- homepage ---
+  home_title: "Everything one consignment needs, on one page.",
+  home_lede: "For export certification officers in Sri Lanka. Enter the shipment once and PlotProof writes the invoice, packing list and origin draft, lists every certificate an authority has to issue, and checks the farmer's plot against the EU forest maps.",
+  home_cta_start: "Start a consignment",
+  home_cta_how: "How it works",
+  home_example_caption: "An example consignment. The invoice is drawn by the same code that makes the PDF.",
+  home_stat_crops: "export crops",
+  home_stat_markets: "markets: EU, UK, US",
+  home_stat_languages: "languages",
+  home_slip_title: "From an authority",
+  home_slip_phyto: "Phytosanitary certificate",
+  home_slip_phyto_by: "NPQS",
+  home_slip_cusdec: "Customs declaration",
+  home_slip_cusdec_by: "Sri Lanka Customs",
+  home_slip_done: "Obtained",
+  home_slip_todo: "To do",
+  home_how_title: "One shipment, start to finish",
+  home_how_lede: "The page follows the order the work actually happens in, and anything missing is flagged where you'll see it.",
+  home_step_1_title: "Fill in the shipment once",
+  home_step_1_body: "Exporter, grower, buyer, packing, price, route. The questionnaire takes them in any order and shows every gap at once.",
+  home_step_2_title: "Download the documents",
+  home_step_2_body: "Invoice, packing list and certificate-of-origin draft, all from the same record, so the weights and totals always match. Customs checks exactly that.",
+  home_step_3_title: "Get the rest from the right office",
+  home_step_3_body: "Phytosanitary certificates from NPQS, CusDec with Sri Lanka Customs, Tea Board papers for tea. Each one says who issues it and how to apply.",
+  home_step_4_title: "Check the plot, if the EU asks",
+  home_step_4_body: "Rubber, coffee and cocoa going to the EU get a deforestation check on each farmer's plot.",
+  home_step_5_title: "Ask when you're stuck",
+  home_step_5_body: "An assistant that can see the consignment answers questions about the paperwork and names the authority to confirm with.",
+  home_eudr_title: "Two plots, checked against the real satellite record",
+  home_eudr_lede: "We ran these through the live Global Forest Watch data while building the check. Same code the app uses.",
+  home_eudr_a_name: "Sinharaja forest edge",
+  home_eudr_a_size: "1.2 ha",
+  home_eudr_b_name: "A holding in Uva",
+  home_eudr_b_size: "490 ha",
+  home_eudr_forest: "Forest in 2020",
+  home_eudr_lost: "Cleared since 2021",
+  home_eudr_cause: "Cause",
+  home_eudr_cause_farming: "Permanent agriculture",
+  home_eudr_a_result: "Needs explaining",
+  home_eudr_a_note: "Mapped as forest in 2020. Planting records and dated imagery would settle it.",
+  home_eudr_b_result: "Cleared after the cut-off",
+  home_eudr_b_note: "Cleared in 2022, 2024 and 2025. An EU buyer will refuse crops from that land.",
+  home_eudr_foot: "There is no such thing as an EUDR certificate. The EU importer files a due-diligence statement, and this check is evidence for it.",
+  home_farm_title: "And for the farm itself",
+  home_farm_grow_title: "Watering and disease weather",
+  home_farm_grow_body: "Daily watering advice from the plot's own weather, and how much the last two weeks favoured blister blight.",
+  home_farm_leaf_title: "Leaf check",
+  home_farm_leaf_body: "Photograph a tea leaf. It names the problem, or says plainly that it can't tell.",
+  home_farm_probe_title: "Soil probe",
+  home_farm_probe_body: "Plug in a soil sensor over USB and the watering advice uses a real measurement.",
+  home_rule_title: "We don't invent law",
+  home_rule_body: "Every requirement links to the authority that sets it. When an office has to issue a document, we say so and never produce a look-alike.",
+  home_final_title: "Start the next consignment.",
+  home_final_body: "Free to use. Sign in once and your consignments follow you to any device.",
 };
 
 const si: Dict = {
@@ -750,7 +747,7 @@ const si: Dict = {
   nav_menu: "මෙනුව",
   nav_close_menu: "මෙනුව වසන්න",
   skip_to_content: "අන්තර්ගතයට යන්න",
-  footer_tagline: "සෘජුවම අපනයනය කරන කුඩා ගොවීන් සඳහා සාදන ලදී, මැදිහත්කරුවෙක් නැත, අනුමාන කිරීමක් නැත.",
+  footer_tagline: "ශ්‍රී ලංකා භෝග සඳහා අපනයන ලේඛන, එක තැනකින් සකස් කෙරේ.",
   footer_product: "නිෂ්පාදනය",
   footer_resources: "සම්පත්",
   footer_honesty_title: "අප නොකරන දේ",
@@ -793,30 +790,25 @@ const si: Dict = {
   tea_analyse: "මෙම කොළය පරීක්ෂා කරන්න",
   tea_retake: "වෙනත් ඡායාරූපයක්",
   tea_analysing: "කොළය බලමින්…",
-  tea_state_uncertain: "අවිනිශ්චිතයි — නැවත ඡායාරූපයක් ගන්න",
+  tea_state_uncertain: "අවිනිශ්චිතයි, නැවත ඡායාරූපයක් ගන්න",
   tea_src_image: "ඡායාරූපය",
   tea_src_environment: "තත්ත්ව",
   tea_src_sensor: "පස් සංවේදකය",
   tea_src_weather: "කාලගුණ ආකෘතිය",
   tea_action_title: "මීළඟට කළ යුත්තේ",
   tea_try_again: "නැවත උත්සාහ කරන්න",
-  tea_guidance_in_english: "පහත විස්තරාත්මක උපදෙස් ඉංග්‍රීසියෙන් ලියා ඇත. ගොවියෙකු ක්‍රියාත්මක කරන උපදෙස් යන්ත්‍රයෙන් පරිවර්තනය නොකරමු — වැරදි පරිවර්තනයක් ඉංග්‍රීසියට වඩා නරකයි.",
+  tea_guidance_in_english: "පහත විස්තරාත්මක උපදෙස් ඉංග්‍රීසියෙන් ලියා ඇත. ගොවියෙකු ක්‍රියාත්මක කරන උපදෙස් යන්ත්‍රයෙන් පරිවර්තනය නොකරමු, වැරදි පරිවර්තනයක් ඉංග්‍රීසියට වඩා නරකයි.",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "කුඩා ගොවීන්ට සහ ඔවුන්ගේ සමුපකාරවලට අපනයන සූදානම",
-  landing_hero_title: "අපනයනයට සූදානම් වන්න. ඔබේ ඉඩම ඔප්පු කරන්න. ඔබේ මිල දැනගන්න.",
-  landing_hero_sub: "ඔබේ අස්වැන්නට EU, UK හෝ US සඳහා අවශ්‍ය අපනයන ලේඛන මොනවාදැයි PlotProof නිවැරදිව කියයි, සරල ප්‍රශ්න හතරකින්, විනාඩි කිහිපයකින් සෑදිය හැකි ඒවා අපි සාදමු.",
-  landing_what_is:
-    "PlotProof ඔබේ ගොවිබිම සිතියම්ගත කර, අස්වැන්න වැවෙන ස්ථානය පිළිබඳ අත්සන් සහිත සාක්ෂි සටහන් කර, ලෝක මිලද පෙන්වයි — ඔබ සහ ඔබේ සමුපකාරය ශක්තියෙන් කේවල් කිරීමට.",
   results_next_title: "ඊළඟට සිදුවන්නේ කුමක්ද",
   results_next_body:
-    "ඔබ තනිවම කන්ටේනරයක් නොයවයි — හෙක්. 0.4 ක ඉඩමකින් ලැබෙන්නේ කිලෝ සිය ගණනක් වන අතර කන්ටේනරයක් ~ටොන් 19 කි. ඔබේ සමුපකාරය හෝ අපනයනකරු තොග එකතු කරන අතර EU නීති යටතේ ආනයනකරු නිසි විමර්ශන ප්‍රකාශය ගොනු කරයි. ඔබ එම මේසයට ගෙන එන දේ: මෙම ලැයිස්තුව, ඔබේ සහතික කළ ඉඩම් සාක්ෂිය සහ යොමු මිල. එයයි කේවල් බලය.",
+    "ඔබ තනිවම කන්ටේනරයක් නොයවයි, හෙක්. 0.4 ක ඉඩමකින් ලැබෙන්නේ කිලෝ සිය ගණනක් වන අතර කන්ටේනරයක් ~ටොන් 19 කි. ඔබේ සමුපකාරය හෝ අපනයනකරු තොග එකතු කරන අතර EU නීති යටතේ ආනයනකරු නිසි විමර්ශන ප්‍රකාශය ගොනු කරයි. ඔබ එම මේසයට ගෙන එන දේ: මෙම ලැයිස්තුව, ඔබේ සහතික කළ ඉඩම් සාක්ෂිය සහ යොමු මිල. එයයි කේවල් බලය.",
   results_eudr_covered:
     "මෙම නිෂ්පාදනයට EUDR අදාළ වේ (2026 දෙසැම්බර් සිට ආනයනකරුවන් නිසි විමර්ශන ගොනු කළ යුතුය). ඔබේ සහතික කළ ඉඩම් පිහිටීම ඔවුන්ගේ ගොනුවට අවශ්‍ය සාක්ෂියයි.",
   results_eudr_not_covered:
-    "මෙම නිෂ්පාදනයට EUDR අදාළ නොවේ. EU සඳහා සැබෑ දොරටුව ප්‍රතීතන රසායනාගාරයක් හරහා ආහාර-ආරක්ෂණ පරීක්ෂණයි — ලැයිස්තුව මඟ පෙන්වයි.",
+    "මෙම නිෂ්පාදනයට EUDR අදාළ නොවේ. EU සඳහා සැබෑ දොරටුව ප්‍රතීතන රසායනාගාරයක් හරහා ආහාර-ආරක්ෂණ පරීක්ෂණයි, ලැයිස්තුව මඟ පෙන්වයි.",
   catalog_verified_note: "අවශ්‍යතා අවසන් වරට {date} දින සත්‍යාපනය කරන ලදී. නීති වෙනස් වේ; නැව්ගත කිරීමට පෙර ඔබේ රේගු තැරැව්කරුගෙන් තහවුරු කරගන්න.",
-  catalog_stale_warning: "මෙම අවශ්‍යතා අවසන් වරට සත්‍යාපනය කළේ {date} — මාස 6 කට වඩා පෙරය. මේවා ආරම්භක ලක්ෂ්‍යයක් ලෙස සලකන්න, වත්මන් නීතිය ලෙස නොවේ.",
+  catalog_stale_warning: "මෙම අවශ්‍යතා අවසන් වරට සත්‍යාපනය කළේ {date}, මාස 6 කට වඩා පෙරය. මේවා ආරම්භක ලක්ෂ්‍යයක් ලෙස සලකන්න, වත්මන් නීතිය ලෙස නොවේ.",
   price_title: "කේවල් කිරීමට පෙර ඔබේ මිල දැනගන්න",
   price_context: "පසුගිය වසර 5 ක මාසික මිලවලින් {pct}% කට වඩා ඉහළයි.",
   price_yoy: "වසරකට පෙරට සාපේක්ෂව {dir}{yoy}%.",
@@ -827,38 +819,11 @@ const si: Dict = {
   price_none: "මෙම නිෂ්පාදනයට ලෝක යොමු මිල මාලාවක් නොමැති නිසා මිලක් නොපෙන්වයි.",
   price_stale:
     "මෙහි ඇති යොමු මිල දත්ත {month} දක්වා පමණක් වන අතර යල් පැන ගොස් ඇති නිසා මිලක් නොපෙන්වයි. ලෝක බැංකු මාලාවෙන් යාවත්කාලීන කිරීමක් අවශ්‍යයි.",
-  landing_cta_primary: "ඔබේ අස්වැන්න විකුණන්න",
-  landing_cta_secondary: "එය ක්‍රියා කරන ආකාරය බලන්න",
-  landing_stat_products: "ආවරණය කරන භාණ්ඩ",
-  landing_stat_markets: "ගමනාන්ත වෙළඳපොළවල්",
-  landing_stat_countries: "වින්‍යාසගත රටවල්",
-  landing_stat_languages: "භාෂා",
-  landing_how_title: "ප්‍රශ්න හතරයි. එච්චරයි.",
-  landing_how_sub: "ගිණුමක් අවශ්‍ය නැත, සොයාගත යුතු පෝරම නැත. ඔබට පහසු භාෂාවෙන් පිළිතුරු දෙන්න.",
-  landing_how_result_title: "ඔබේ පෞද්ගලික ලේඛන ලැයිස්තුව",
-  landing_how_result_body: "ඔබේ විකිණීමට හරියටම අවශ්‍ය ලේඛන මොනවාදැයි සරල භාෂාවෙන් ලැයිස්තුවක්, දැන්ම අප සාදන ඒවා, සහ බලධාරියෙකුගෙන් ඉල්ලිය යුතු ඒවා.",
-  landing_features_eyebrow: "ඇතුළත් වන දේ",
-  landing_features_title: "අස්වැන්නේ සිට නැව් බහාලුම දක්වා සියල්ල",
-  landing_feature_docs_title: "සැබෑ ලේඛන සාදන්න",
-  landing_feature_docs_body: "වාණිජ ඉන්වොයිසිය, පැකිං ලැයිස්තුව, සහ මූලාරම්භ සහතික කෙටුම්පතක්, ඔබේ විකිණීමෙන් කලින්ම පුරවා, මුද්‍රණයට සූදානම්.",
-  landing_feature_eudr_title: "EUDR වන සාක්ෂි",
-  landing_feature_eudr_body: "චන්ද්‍රිකා රූප මත ඔබේ ඉඩම සිතියම්ගත කරන්න; අපි වන විනාශ විශ්ලේෂණය ක්‍රියාත්මක කර EU අවශ්‍ය කරන සාක්ෂි පැකේජය සාදමු.",
-  landing_feature_shipping_title: "නැව්ගත කිරීම පැහැදිලිව",
-  landing_feature_shipping_body: "බහාලුම හෝ ගුවන් මගින්, Incoterms, ප්‍රවාහන කාලය, ඔබ නැව්ගත කරන දේට සහ ප්‍රමාණයට ගැලපෙන පරිදි.",
-  landing_feature_lang_title: "ඔබේ භාෂාවෙන්",
-  landing_feature_lang_body: "සම්පූර්ණ යෙදුමම ඉංග්‍රීසි, සිංහල සහ දෙමළ භාෂාවලින් ක්‍රියා කරයි, මුල් පිටුව පමණක් නොව.",
-  landing_honesty_eyebrow: "අපගේ එකම නීතිය",
-  landing_honesty_title: "අපි කිසි විටෙකත් නීතිය ගොතන්නේ නැත",
-  landing_honesty_body: "අප පෙන්වන සෑම අවශ්‍යතාවක්ම සැබෑ, නම් කළ මූලාශ්‍රයක් උපුටා දක්වයි. ලේඛනයක් බලධාරියෙකු විසින් නිකුත් කළ යුතු විට, අපි එය පැහැදිලිව කියා අපට හැකි දේ සකසමු, එම බලධාරියා ලෙස කිසි විටෙකත් නොපෙනී.",
-  landing_final_cta_title: "ඔබේ ලේඛන ලැයිස්තුවට ප්‍රශ්න හතරක් පමණි.",
-  landing_final_cta_sub: "නොමිලේ අරඹන්න. විනාඩියකින් ඔබේ ගිණුම සාදන්න.",
-  landing_also_title: "PlotProof තුළ තවත්",
   documents_title: "ඔබේ අපනයන ලේඛන",
   documents_empty_body: "ඔබ විකුණන දේ අපට කියන්න, අවශ්‍ය නිවැරදි ලේඛන අපි ලැයිස්තුගත කරමු.",
   offline_message: "නොබැඳි, ඔබේ කාර්යය මෙම උපකරණයේ සුරැකී ඇත, යළි සම්බන්ධ වූ විට සමමුහුර්ත වේ.",
   q_product_placeholder: "උදා. වියළි අරාබිකා කෝපි බීජ",
   qty_placeholder: "උදා. 2000",
-  landing_manifesto: "කුඩා ගොවියෙකු සහ ගෝලීය ගැනුම්කරුවෙකු අතර ලේඛන තාප්පයක් ඇත. අපි එම තාප්පය සරල ප්‍රශ්න හතරක් බවට පත් කරමු, සහ ඉන් පසු එන ලේඛන.",
 
   // --- command palette / global UX ------------------------------------
   cmd_open: "සොයන්න",
@@ -935,12 +900,9 @@ const si: Dict = {
   please_wait: "මොහොතක් රැඳී සිටින්න",
   retry_label: "නැවත උත්සාහ කරන්න",
 
-  // --- grow lane ---------------------------------------------------------
-  // Labels, states, errors and names are translated. The advisory SENTENCES
-  // (tea_ev_*, tea_action_*, irrigation_reason_*) deliberately stay English and
-  // fall back, per D-016: a mistranslated instruction a farmer acts on is worse
-  // than an English one. `tea_guidance_in_english` discloses this on screen.
-  grow_lede: "එක් ඉඩමක් සඳහා කාලගුණය, ජලය සැපයීම සහ රෝග පීඩනය — එම ඉඩමේම තත්ත්වයන් අනුව.",
+  // --- grow lane --------------------------------------------------------- Labels, states,
+  // errors and names are translated.
+  grow_lede: "එක් ඉඩමක් සඳහා කාලගුණය, ජලය සැපයීම සහ රෝග පීඩනය, එම ඉඩමේම තත්ත්වයන් අනුව.",
   grow_no_plots: "තවම ඉඩම් නැත. පළමුව ඉඩමක් සිතියම්ගත කළ විට එය මෙහි පෙනේ.",
   grow_no_plots_cta: "ඉඩමක් සිතියම්ගත කරන්න",
   grow_setup_title: "මෙම ඉඩම ගැන කියන්න",
@@ -959,7 +921,7 @@ const si: Dict = {
   weather_unavailable: "දැන් කාලගුණ දත්ත නොලැබේ, එබැවින් පහත කිසිවක් නොපෙන්වයි. අපි ඒ වෙනුවට අනුමාන නොකරමු.",
   weather_cached: "{date} දින සුරැකි කාලගුණය. යාවත්කාලීන කිරීමට නැවත සම්බන්ධ වන්න.",
   weather_observed_through: "{date} දක්වා නිරීක්ෂණය කර ඇත",
-  weather_grid_note: "ඔබේ ඉඩමට ආසන්න කාලගුණ ආකෘති ජාල කොටුවකින් — ඉඩමේම කාලගුණ මධ්‍යස්ථානයකින් නොවේ.",
+  weather_grid_note: "ඔබේ ඉඩමට ආසන්න කාලගුණ ආකෘති ජාල කොටුවකින්, ඉඩමේම කාලගුණ මධ්‍යස්ථානයකින් නොවේ.",
   weather_rain_7d: "වර්ෂාව, දින 7",
   weather_temp_mean: "සාමාන්‍ය උෂ්ණත්වය",
   weather_wetness: "කොළ තෙතමනය",
@@ -967,10 +929,10 @@ const si: Dict = {
   weather_retry: "නැවත උත්සාහ කරන්න",
 
   irrigation_water_soon: "දිනක් දෙකක් ඇතුළත ජලය දෙන්න",
-  irrigation_waterlogged: "ඉතා තෙතයි — ජලය නොදෙන්න",
+  irrigation_waterlogged: "ඉතා තෙතයි, ජලය නොදෙන්න",
   irrigation_anchor_sensor: "ඔබේ පස් සංවේදකය මෙම ඉඩමේදීම මැන ඇත.",
   irrigation_anchor_grid: "මෙම ප්‍රදේශය සඳහා චන්ද්‍රිකා දත්ත මත පදනම් වූ පස් ආකෘතියකින්. ඉඩමේ සංවේදකයක් මෙම ඇස්තමේන්තුව මිනුමකින් ප්‍රතිස්ථාපනය කරයි.",
-  irrigation_anchor_balance: "වර්ෂාව හා වාෂ්පීකරණය අනුව පමණක් ඇස්තමේන්තු කර ඇත — පස් නිරීක්ෂණයක් නොතිබුණි.",
+  irrigation_anchor_balance: "වර්ෂාව හා වාෂ්පීකරණය අනුව පමණක් ඇස්තමේන්තු කර ඇත, පස් නිරීක්ෂණයක් නොතිබුණි.",
   irrigation_taw_label: "පසට රඳවා ගත හැක්කේ",
   irrigation_raw_label: "පීඩනය ඇරඹෙන්නේ",
   irrigation_mm: "මි.මී. {mm}",
@@ -996,13 +958,13 @@ const si: Dict = {
   tea_section_leaf: "කොළය",
   tea_section_conditions: "තත්ත්වයන්",
   tea_section_why: "මෙම උපදෙසට හේතුව",
-  tea_why_lede: "සෑම පේළියක්ම එය පැමිණි තැන නම් කරයි — මිනුමක් ඇස්තමේන්තුවකින් වෙන් කර හඳුනාගත හැකි වන පරිදි.",
+  tea_why_lede: "සෑම පේළියක්ම එය පැමිණි තැන නම් කරයි, මිනුමක් ඇස්තමේන්තුවකින් වෙන් කර හඳුනාගත හැකි වන පරිදි.",
   tea_kind_measured: "මෙහිදී මැනූ",
   tea_kind_estimated: "පිටත ඇස්තමේන්තුව",
   tea_kind_calculated: "ගණනය කළ",
   tea_kind_inferred: "ආකෘතියේ අනුමානය",
   tea_lede: "එක් කොළයක ඡායාරූපයක් ගන්න. ප්‍රතිඵලය ඡායාරූපයකින් ලැබෙන යෝජනාවකි, රසායනාගාර පරීක්ෂණයක් නොවේ.",
-  tea_formats: "JPEG, PNG හෝ WebP — කැමරාවෙන් හෝ ගැලරියෙන්.",
+  tea_formats: "JPEG, PNG හෝ WebP, කැමරාවෙන් හෝ ගැලරියෙන්.",
   tea_preview_alt: "ඔබ තෝරාගත් කොළයේ ඡායාරූපය",
   tea_preview_note: "ආකෘතිය දකින්නේ මෙම ඡායාරූපයේ මධ්‍යයේ හතරැස් කොටස පමණි.",
   tea_check_another: "තවත් කොළයක් පරීක්ෂා කරන්න",
@@ -1015,11 +977,11 @@ const si: Dict = {
   tea_other_possibilities: "වෙනත් හැකියාවන්",
   tea_uncertain_body: "රෝගයක් නම් කිරීමට ආකෘතියට ප්‍රමාණවත් විශ්වාසයක් නැත, එබැවින් එය අනුමාන නොකරයි. වැරදි නමක් නමක් නොමැති වීමට වඩා නරකයි.",
   tea_photo_tips_title: "වඩා හොඳ ඡායාරූපයකට",
-  tea_tip_light: "හොඳ ස්වාභාවික එළියක් භාවිතා කරන්න — දහවල් තද එළිය හෝ ගැඹුරු සෙවණ නොවේ.",
+  tea_tip_light: "හොඳ ස්වාභාවික එළියක් භාවිතා කරන්න, දහවල් තද එළිය හෝ ගැඹුරු සෙවණ නොවේ.",
   tea_tip_one_leaf: "රාමුවෙන් වැඩි කොටසක් පුරවන සේ නියෝජිත එක් කොළයක් ඡායාරූප ගන්න.",
   tea_tip_focus: "කොළය පැහැදිලිව තබාගෙන නිශ්චලව සිටින්න.",
   tea_tip_shadow: "තද සෙවණැලි, පරාවර්තන සහ කොළය වසන දේ මඟහරින්න.",
-  tea_tip_retake: "එකම ඡායාරූපය නැවත යොමු නොකර අලුතින් ගන්න — ප්‍රතිඵලය වෙනස් නොවේ.",
+  tea_tip_retake: "එකම ඡායාරූපය නැවත යොමු නොකර අලුතින් ගන්න, ප්‍රතිඵලය වෙනස් නොවේ.",
   tea_error_no_artifact: "ආකෘතිය තවම මෙම යෙදුමට ප්‍රකාශයට පත් කර නැත.",
   tea_error_load_failed: "ආකෘතිය බාගත කළ නොහැකි විය. සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
   tea_error_bad_image: "එම ගොනුව ඡායාරූපයක් ලෙස කියවිය නොහැකි විය. JPEG හෝ PNG උත්සාහ කරන්න.",
@@ -1045,7 +1007,7 @@ const si: Dict = {
   sensor_connecting: "Port එකක් තෝරන්න…",
   sensor_stop: "විසන්ධි කරන්න",
   sensor_simulate: "අනුකරණය කළ සංවේදකයක් ධාවනය කරන්න",
-  sensor_unsupported: "මෙම බ්‍රව්සරයට USB උපාංග සමඟ සන්නිවේදනය කළ නොහැක. Web Serial ක්‍රියා කරන්නේ පරිගණකයක Chrome, Edge වැනි බ්‍රව්සරවල පමණි — දුරකථනයක නොවේ, Firefox හෝ Safari හි ද නොවේ. තිරය ක්‍රියා කරන ආකාරය බැලීමට අනුකරණය කළ සංවේදකය භාවිතා කළ හැක.",
+  sensor_unsupported: "මෙම බ්‍රව්සරයට USB උපාංග සමඟ සන්නිවේදනය කළ නොහැක. Web Serial ක්‍රියා කරන්නේ පරිගණකයක Chrome, Edge වැනි බ්‍රව්සරවල පමණි, දුරකථනයක නොවේ, Firefox හෝ Safari හි ද නොවේ. තිරය ක්‍රියා කරන ආකාරය බැලීමට අනුකරණය කළ සංවේදකය භාවිතා කළ හැක.",
   sensor_simulated_warning: "අනුකරණය කළ කියවීම්. මේවා ජනනය කළ සංඛ්‍යා මිස කිසිදු පසක මිනුම් නොවේ. ඒවා 'අනුකරණය' ලෙස ලේබල් කර ගබඩා වන අතර ඕනෑම විටෙක මකා දැමිය හැක.",
   sensor_live_title: "සජීවී කියවීම",
   sensor_source_magicbit: "ESP32 සංවේදකය, USB හරහා",
@@ -1075,7 +1037,7 @@ const si: Dict = {
   sensor_cal_inverted: "ලක්ෂ්‍ය දෙක මාරු වී ඇති සේ පෙනේ: සංවේදකය ජලයට වඩා වාතයේ වැඩි අගයක් දිය යුතුය. ඒවා අනෙක් අයුරින් නැවත ගන්න.",
   sensor_cal_too_close: "ලක්ෂ්‍ය දෙක එකිනෙකට ඉතා ළඟයි, එබැවින් කියවීම අර්ථවත් නොවේ. වියළි ලක්ෂ්‍යය ගන්නා විට සංවේදකය තෙතව තිබෙන්නට ඇත.",
   sensor_anchor_title: "මෙම ඉඩමේ ජල උපදෙස් දැන් භාවිත කරන්නේ",
-  sensor_anchor_unknown: "මෙම ඉඩමට තවම ජලය සැපයීමේ උපදෙස් නැත — පළමුව කාලගුණය සහ බෝග විස්තර අවශ්‍යයි.",
+  sensor_anchor_unknown: "මෙම ඉඩමට තවම ජලය සැපයීමේ උපදෙස් නැත, පළමුව කාලගුණය සහ බෝග විස්තර අවශ්‍යයි.",
   sensor_stored: "මෙම ඉඩම සඳහා කියවීම් {n} ක් සුරැකී ඇත.",
   sensor_stored_simulated: "අනුකරණය කළ කියවීම් ද ඇතුළත් වේ.",
   sensor_clear_stored: "ඒවා මකන්න",
@@ -1083,9 +1045,9 @@ const si: Dict = {
 
   auth_magic_cta_signup: "ඒ වෙනුවට ලියාපදිංචි සබැඳියක් එවන්න",
   auth_magic_sent_signup: "ඔබේ විද්‍යුත් තැපෑල පරීක්ෂා කරන්න. එම සබැඳිය විවෘත කිරීමෙන් ඔබේ ගිණුම සෑදී පිවිසුම ද සිදුවේ.",
-  auth_magic_same_browser: "සබැඳිය මෙම බ්‍රව්සරයේම විවෘත කරන්න — සබැඳිය එය ඉල්ලූ බ්‍රව්සරයට බැඳී ඇත.",
+  auth_magic_same_browser: "සබැඳිය මෙම බ්‍රව්සරයේම විවෘත කරන්න, සබැඳිය එය ඉල්ලූ බ්‍රව්සරයට බැඳී ඇත.",
   auth_link_wrong_browser: "එම සබැඳිය ඉල්ලූ බ්‍රව්සරයට වඩා වෙනත් බ්‍රව්සරයක විවෘත කර ඇති බැවින් භාවිත කළ නොහැකි විය. නව සබැඳියක් ඉල්ලා එය මෙහිදී විවෘත කරන්න.",
-  auth_link_expired: "එම සබැඳියේ කාලය අවසන් වී ඇත, නැතහොත් එය දැනටමත් භාවිත කර ඇත. එක් සබැඳියක් වරක් පමණක් ක්‍රියා කරයි — නව එකක් ඉල්ලන්න.",
+  auth_link_expired: "එම සබැඳියේ කාලය අවසන් වී ඇත, නැතහොත් එය දැනටමත් භාවිත කර ඇත. එක් සබැඳියක් වරක් පමණක් ක්‍රියා කරයි, නව එකක් ඉල්ලන්න.",
   auth_no_such_account: "එම විද්‍යුත් තැපැල් ලිපිනය සහිත ගිණුමක් නැත. ඒ වෙනුවට එකක් සාදන්න.",
 
   sell_title: "අපනයන තොගය",
@@ -1137,6 +1099,15 @@ const si: Dict = {
   docs_empty_cta: "විකුණුමක් අරඹන්න",
   doc_back_to_sale: "තොගය වෙත ආපසු",
   doc_edit_title: "මෙම ලේඛනයේ මුද්‍රණය වන දේ",
+
+  home_title: "එක් අපනයන තොගයකට අවශ්‍ය සියල්ල, එක් පිටුවක.",
+  home_cta_start: "තොගයක් අරඹන්න",
+  home_cta_how: "එය ක්‍රියා කරන ආකාරය",
+  home_how_title: "එක් නැව්ගත කිරීමක්, මුල සිට අග දක්වා",
+  home_eudr_title: "සැබෑ චන්ද්‍රිකා වාර්තාවට එරෙහිව පරීක්ෂා කළ ඉඩම් දෙකක්",
+  home_farm_title: "ගොවිපළ සඳහාද",
+  home_rule_title: "අපි නීති ගොතන්නේ නැත",
+  home_final_title: "ඊළඟ තොගය අරඹන්න.",
 };
 
 const ta: Dict = {
@@ -1187,7 +1158,7 @@ const ta: Dict = {
   nav_menu: "பட்டி",
   nav_close_menu: "பட்டியை மூடு",
   skip_to_content: "உள்ளடக்கத்திற்கு செல்லவும்",
-  footer_tagline: "நேரடியாக ஏற்றுமதி செய்யும் சிறு விவசாயிகளுக்காக உருவாக்கப்பட்டது, இடைத்தரகர் இல்லை, யூகிப்பு இல்லை.",
+  footer_tagline: "இலங்கைப் பயிர்களுக்கான ஏற்றுமதி ஆவணங்கள், ஒரே இடத்தில் தயாரிக்கப்படுகின்றன.",
   footer_product: "தயாரிப்பு",
   footer_resources: "வளங்கள்",
   footer_honesty_title: "நாங்கள் செய்யாதது",
@@ -1230,30 +1201,25 @@ const ta: Dict = {
   tea_analyse: "இந்த இலையைச் சரிபார்",
   tea_retake: "வேறு புகைப்படம்",
   tea_analysing: "இலையைப் பார்க்கிறது…",
-  tea_state_uncertain: "உறுதியற்றது — மீண்டும் படம் எடுக்கவும்",
+  tea_state_uncertain: "உறுதியற்றது, மீண்டும் படம் எடுக்கவும்",
   tea_src_image: "புகைப்படம்",
   tea_src_environment: "நிலைமைகள்",
   tea_src_sensor: "மண் உணரி",
   tea_src_weather: "வானிலை மாதிரி",
   tea_action_title: "அடுத்து என்ன செய்வது",
   tea_try_again: "மீண்டும் முயற்சிக்கவும்",
-  tea_guidance_in_english: "கீழுள்ள விரிவான வழிகாட்டுதல் ஆங்கிலத்தில் உள்ளது. விவசாயி செயல்படுத்தும் அறிவுறுத்தல்களை நாங்கள் இயந்திர மொழிபெயர்ப்பு செய்வதில்லை — தவறான மொழிபெயர்ப்பு ஆங்கிலத்தை விட மோசமானது.",
+  tea_guidance_in_english: "கீழுள்ள விரிவான வழிகாட்டுதல் ஆங்கிலத்தில் உள்ளது. விவசாயி செயல்படுத்தும் அறிவுறுத்தல்களை நாங்கள் இயந்திர மொழிபெயர்ப்பு செய்வதில்லை, தவறான மொழிபெயர்ப்பு ஆங்கிலத்தை விட மோசமானது.",
 
   // --- landing page ------------------------------------------------------
-  landing_eyebrow: "சிறு விவசாயிகளுக்கும் அவர்களின் கூட்டுறவுகளுக்கும் ஏற்றுமதி தயார்நிலை",
-  landing_hero_title: "ஏற்றுமதிக்குத் தயாராகுங்கள். உங்கள் நிலத்தை நிரூபியுங்கள். உங்கள் விலையை அறியுங்கள்.",
-  landing_hero_sub: "உங்கள் அறுவடைக்கு EU, UK அல்லது US சந்தைக்கு என்ன ஆவணங்கள் தேவை என்று PlotProof சரியாகச் சொல்கிறது, நான்கு எளிய கேள்விகளில், நிமிடங்களில் உருவாக்கக்கூடியவற்றை நாங்களே உருவாக்குகிறோம்.",
-  landing_what_is:
-    "PlotProof உங்கள் நிலத்தை வரைபடமாக்கி, பயிர் விளையும் இடத்தின் கையொப்பமிட்ட சான்றைப் பதிவு செய்து, உலக விலையையும் காட்டுகிறது — நீங்களும் உங்கள் கூட்டுறவும் வலிமையுடன் பேரம் பேச.",
   results_next_title: "அடுத்து என்ன நடக்கும்",
   results_next_body:
-    "நீங்கள் தனியாக கன்டெய்னர் அனுப்புவதில்லை — 0.4 ஹெக்டேர் நிலம் சில நூறு கிலோதான் தரும்; கன்டெய்னர் ~19 டன். உங்கள் கூட்டுறவு அல்லது ஏற்றுமதியாளர் தொகுப்பார்; EU விதிகளின்படி இறக்குமதியாளர் உரிய விசாரணை அறிக்கையை தாக்கல் செய்வார். நீங்கள் கொண்டு வருவது: இந்தச் சரிபார்ப்புப் பட்டியல், உங்கள் சான்றளிக்கப்பட்ட நிலச் சான்று, குறிப்பு விலை. அதுவே பேர வலிமை.",
+    "நீங்கள் தனியாக கன்டெய்னர் அனுப்புவதில்லை, 0.4 ஹெக்டேர் நிலம் சில நூறு கிலோதான் தரும்; கன்டெய்னர் ~19 டன். உங்கள் கூட்டுறவு அல்லது ஏற்றுமதியாளர் தொகுப்பார்; EU விதிகளின்படி இறக்குமதியாளர் உரிய விசாரணை அறிக்கையை தாக்கல் செய்வார். நீங்கள் கொண்டு வருவது: இந்தச் சரிபார்ப்புப் பட்டியல், உங்கள் சான்றளிக்கப்பட்ட நிலச் சான்று, குறிப்பு விலை. அதுவே பேர வலிமை.",
   results_eudr_covered:
     "இந்த பொருளுக்கு EUDR பொருந்தும் (டிசம்பர் 2026 முதல் இறக்குமதியாளர்கள் உரிய விசாரணை தாக்கல் செய்ய வேண்டும்). உங்கள் சான்றளிக்கப்பட்ட நில இருப்பிடம் அவர்களின் தாக்கலுக்குத் தேவையான சான்று.",
   results_eudr_not_covered:
-    "இந்த பொருளுக்கு EUDR பொருந்தாது. EU-க்கு உண்மையான வாயில் அங்கீகரிக்கப்பட்ட ஆய்வகம் வழியான உணவு-பாதுகாப்பு சோதனை — பட்டியல் வழிகாட்டும்.",
+    "இந்த பொருளுக்கு EUDR பொருந்தாது. EU-க்கு உண்மையான வாயில் அங்கீகரிக்கப்பட்ட ஆய்வகம் வழியான உணவு-பாதுகாப்பு சோதனை, பட்டியல் வழிகாட்டும்.",
   catalog_verified_note: "தேவைகள் கடைசியாக {date} அன்று சரிபார்க்கப்பட்டன. விதிகள் மாறும்; அனுப்பும் முன் உங்கள் சுங்க முகவரிடம் உறுதிப்படுத்தவும்.",
-  catalog_stale_warning: "இந்தத் தேவைகள் கடைசியாக {date} அன்று சரிபார்க்கப்பட்டவை — 6 மாதங்களுக்கு மேல் ஆகிவிட்டது. இவற்றை தொடக்கப் புள்ளியாகக் கருதுங்கள், தற்போதைய சட்டமாக அல்ல.",
+  catalog_stale_warning: "இந்தத் தேவைகள் கடைசியாக {date} அன்று சரிபார்க்கப்பட்டவை, 6 மாதங்களுக்கு மேல் ஆகிவிட்டது. இவற்றை தொடக்கப் புள்ளியாகக் கருதுங்கள், தற்போதைய சட்டமாக அல்ல.",
   price_title: "பேரம் பேசும் முன் உங்கள் விலையை அறியுங்கள்",
   price_context: "கடந்த 5 ஆண்டுகளின் மாத விலைகளில் {pct}% ஐ விட அதிகம்.",
   price_yoy: "ஓராண்டுக்கு முன்பை விட {dir}{yoy}%.",
@@ -1264,38 +1230,11 @@ const ta: Dict = {
   price_none: "இந்த பொருளுக்கு உலக குறிப்பு விலைத் தொடர் இல்லை, எனவே எதுவும் காட்டப்படவில்லை.",
   price_stale:
     "இங்குள்ள குறிப்பு விலைத் தரவு {month} வரை மட்டுமே உள்ளது; காலாவதியானதால் விலை காட்டப்படவில்லை. உலக வங்கித் தொடரிலிருந்து புதுப்பிப்பு தேவை.",
-  landing_cta_primary: "உங்கள் அறுவடையை விற்கவும்",
-  landing_cta_secondary: "இது எப்படி செயல்படுகிறது எனப் பாருங்கள்",
-  landing_stat_products: "உள்ளடக்கிய பொருட்கள்",
-  landing_stat_markets: "இலக்கு சந்தைகள்",
-  landing_stat_countries: "கட்டமைக்கப்பட்ட நாடுகள்",
-  landing_stat_languages: "மொழிகள்",
-  landing_how_title: "நான்கு கேள்விகள். அவ்வளவுதான்.",
-  landing_how_sub: "கணக்கு தேவையில்லை, தேட வேண்டிய படிவங்கள் இல்லை. நீங்கள் வசதியான மொழியில் பதிலளியுங்கள்.",
-  landing_how_result_title: "உங்கள் தனிப்பட்ட ஆவணப் பட்டியல்",
-  landing_how_result_body: "உங்கள் விற்பனைக்கு சரியாக என்ன ஆவணங்கள் தேவை என்பதன் எளிய பட்டியல், இப்போதே நாங்கள் உருவாக்குபவை, மற்றும் அதிகாரியிடம் நீங்கள் கோர வேண்டியவை.",
-  landing_features_eyebrow: "அடங்கியிருப்பவை",
-  landing_features_title: "அறுவடையிலிருந்து ஏற்றுமதி கொள்கலன் வரை அனைத்தும்",
-  landing_feature_docs_title: "உண்மையான ஆவணங்களை உருவாக்குங்கள்",
-  landing_feature_docs_body: "வணிக விலைப்பட்டியல், பொதி பட்டியல், மற்றும் தோற்றுவாய் சான்றிதழ் வரைவு, உங்கள் விற்பனையிலிருந்து முன்பே நிரப்பப்பட்டு, அச்சிட தயார்.",
-  landing_feature_eudr_title: "EUDR காடழிப்பு சான்று",
-  landing_feature_eudr_body: "செயற்கைக்கோள் படத்தில் உங்கள் நிலத்தை வரைபடமாக்குங்கள்; நாங்கள் காடழிப்பு பகுப்பாய்வை இயக்கி EU தேவைப்படும் சான்றுப் பொதியை உருவாக்குகிறோம்.",
-  landing_feature_shipping_title: "அனுப்புதல் தெளிவாக",
-  landing_feature_shipping_body: "கொள்கலன் அல்லது விமானம், Incoterms, போக்குவரத்து நேரம், நீங்கள் அனுப்புவதற்கும் அளவுக்கும் ஏற்ப.",
-  landing_feature_lang_title: "உங்கள் மொழியில்",
-  landing_feature_lang_body: "முழு பயன்பாடும் ஆங்கிலம், சிங்களம், தமிழில் இயங்குகிறது, முகப்புப் பக்கம் மட்டுமல்ல.",
-  landing_honesty_eyebrow: "எங்கள் ஒரே விதி",
-  landing_honesty_title: "நாங்கள் ஒருபோதும் சட்டத்தை உருவாக்க மாட்டோம்",
-  landing_honesty_body: "நாங்கள் காட்டும் ஒவ்வொரு தேவையும் உண்மையான, பெயரிடப்பட்ட மூலத்தை மேற்கோள் காட்டுகிறது. ஒரு ஆவணத்தை அதிகாரி வழங்க வேண்டியிருக்கும்போது, நாங்கள் அதைத் தெளிவாகச் சொல்லி முடிந்தவற்றை தயார் செய்கிறோம், அந்த அதிகாரியாக ஒருபோதும் நடிக்காமல்.",
-  landing_final_cta_title: "உங்கள் ஆவணப் பட்டியலுக்கு நான்கு கேள்விகள் மட்டுமே.",
-  landing_final_cta_sub: "இலவசமாகத் தொடங்குங்கள். ஒரு நிமிடத்தில் உங்கள் கணக்கை உருவாக்குங்கள்.",
-  landing_also_title: "PlotProof-இல் மேலும்",
   documents_title: "உங்கள் ஏற்றுமதி ஆவணங்கள்",
   documents_empty_body: "நீங்கள் விற்பது என்ன என்று சொல்லுங்கள், சரியான ஆவணங்களை நாங்கள் பட்டியலிடுகிறோம்.",
   offline_message: "இணைப்பு இல்லை, உங்கள் பணி இந்த சாதனத்தில் சேமிக்கப்பட்டுள்ளது, மீண்டும் இணைந்தவுடன் ஒத்திசைக்கப்படும்.",
   q_product_placeholder: "எ.கா. உலர் அரபிகா காபி பீன்ஸ்",
   qty_placeholder: "எ.கா. 2000",
-  landing_manifesto: "ஒரு சிறு விவசாயிக்கும் உலகளாவிய வாங்குபவருக்கும் இடையே ஆவணச் சுவர் ஒன்று உள்ளது. அந்தச் சுவரை நாங்கள் நான்கு எளிய கேள்விகளாகவும், அதைத் தொடர்ந்து வரும் ஆவணங்களாகவும் மாற்றுகிறோம்.",
 
   // --- command palette / global UX ------------------------------------
   cmd_open: "தேடல்",
@@ -1372,10 +1311,9 @@ const ta: Dict = {
   please_wait: "சற்று காத்திருக்கவும்",
   retry_label: "மீண்டும் முயற்சிக்கவும்",
 
-  // --- grow lane ---------------------------------------------------------
-  // Same policy as si above: labels, states, errors and names translated; the
-  // advisory sentences and action instructions stay English and fall back.
-  grow_lede: "ஒரு நிலத்துக்கான வானிலை, நீர்ப்பாசனம், நோய் அழுத்தம் — அந்த நிலத்தின் சொந்த நிலைமைகளிலிருந்து.",
+  // --- grow lane --------------------------------------------------------- Same policy as si
+  // above: labels, states, errors and names translated.
+  grow_lede: "ஒரு நிலத்துக்கான வானிலை, நீர்ப்பாசனம், நோய் அழுத்தம், அந்த நிலத்தின் சொந்த நிலைமைகளிலிருந்து.",
   grow_no_plots: "இன்னும் நிலங்கள் இல்லை. முதலில் ஒரு நிலத்தை வரைபடமாக்கினால் அது இங்கு தோன்றும்.",
   grow_no_plots_cta: "நிலத்தை வரைபடமாக்கு",
   grow_setup_title: "இந்த நிலத்தைப் பற்றிச் சொல்லுங்கள்",
@@ -1394,7 +1332,7 @@ const ta: Dict = {
   weather_unavailable: "இப்போது வானிலைத் தரவு கிடைக்கவில்லை, எனவே கீழே எதுவும் காட்டப்படவில்லை. அதற்குப் பதிலாக நாங்கள் ஊகிப்பதில்லை.",
   weather_cached: "{date} அன்று சேமித்த வானிலை. புதுப்பிக்க மீண்டும் இணையுங்கள்.",
   weather_observed_through: "{date} வரை அவதானிக்கப்பட்டது",
-  weather_grid_note: "உங்கள் நிலத்துக்கு அருகிலுள்ள வானிலை மாதிரிக் கட்டத்திலிருந்து — நிலத்தில் உள்ள நிலையத்திலிருந்து அல்ல.",
+  weather_grid_note: "உங்கள் நிலத்துக்கு அருகிலுள்ள வானிலை மாதிரிக் கட்டத்திலிருந்து, நிலத்தில் உள்ள நிலையத்திலிருந்து அல்ல.",
   weather_rain_7d: "மழை, கடந்த 7 நாட்கள்",
   weather_temp_mean: "சராசரி வெப்பநிலை",
   weather_wetness: "இலை ஈரப்பதம்",
@@ -1402,10 +1340,10 @@ const ta: Dict = {
   weather_retry: "மீண்டும் முயற்சிக்கவும்",
 
   irrigation_water_soon: "ஓரிரு நாட்களுக்குள் நீர் பாய்ச்சுங்கள்",
-  irrigation_waterlogged: "மிகவும் ஈரம் — நீர் பாய்ச்ச வேண்டாம்",
+  irrigation_waterlogged: "மிகவும் ஈரம், நீர் பாய்ச்ச வேண்டாம்",
   irrigation_anchor_sensor: "உங்கள் மண் உணரி இந்த நிலத்திலேயே அளந்தது.",
   irrigation_anchor_grid: "இந்தப் பகுதிக்கான செயற்கைக்கோள் சார்ந்த மண் மாதிரியிலிருந்து. நிலத்தில் ஒரு உணரி இந்த மதிப்பீட்டை உண்மையான அளவீடாக மாற்றும்.",
-  irrigation_anchor_balance: "மழை, ஆவியாதல் மட்டுமே கொண்டு மதிப்பிடப்பட்டது — மண் அவதானிப்பு எதுவும் கிடைக்கவில்லை.",
+  irrigation_anchor_balance: "மழை, ஆவியாதல் மட்டுமே கொண்டு மதிப்பிடப்பட்டது, மண் அவதானிப்பு எதுவும் கிடைக்கவில்லை.",
   irrigation_taw_label: "மண் தாங்கும் அளவு",
   irrigation_raw_label: "அழுத்தம் தொடங்கும் இடம்",
   irrigation_mm: "{mm} மி.மீ.",
@@ -1431,13 +1369,13 @@ const ta: Dict = {
   tea_section_leaf: "இலை",
   tea_section_conditions: "நிலைமைகள்",
   tea_section_why: "இந்த ஆலோசனைக்குக் காரணம்",
-  tea_why_lede: "ஒவ்வொரு வரியும் அது எங்கிருந்து வந்தது என்பதைக் குறிப்பிடுகிறது — அளவீட்டையும் மதிப்பீட்டையும் வேறுபடுத்த.",
+  tea_why_lede: "ஒவ்வொரு வரியும் அது எங்கிருந்து வந்தது என்பதைக் குறிப்பிடுகிறது, அளவீட்டையும் மதிப்பீட்டையும் வேறுபடுத்த.",
   tea_kind_measured: "இங்கே அளக்கப்பட்டது",
   tea_kind_estimated: "வெளி மதிப்பீடு",
   tea_kind_calculated: "கணக்கிடப்பட்டது",
   tea_kind_inferred: "மாதிரியின் ஊகம்",
   tea_lede: "ஒரு இலையைப் புகைப்படம் எடுங்கள். முடிவு ஒரு படத்திலிருந்து வரும் பரிந்துரை, ஆய்வகச் சோதனை அல்ல.",
-  tea_formats: "JPEG, PNG அல்லது WebP — கேமரா அல்லது கேலரியிலிருந்து.",
+  tea_formats: "JPEG, PNG அல்லது WebP, கேமரா அல்லது கேலரியிலிருந்து.",
   tea_preview_alt: "நீங்கள் தேர்ந்தெடுத்த இலைப் புகைப்படம்",
   tea_preview_note: "மாதிரி இந்தப் படத்தின் நடுவிலுள்ள சதுரப் பகுதியை மட்டுமே பார்க்கிறது.",
   tea_check_another: "இன்னொரு இலையைச் சரிபார்",
@@ -1450,11 +1388,11 @@ const ta: Dict = {
   tea_other_possibilities: "மற்ற சாத்தியங்கள்",
   tea_uncertain_body: "ஒரு நிலையைப் பெயரிடும் அளவுக்கு மாதிரிக்கு நம்பிக்கை இல்லை, எனவே அது ஊகிக்காது. தவறான பெயர் பெயரே இல்லாததை விட மோசம்.",
   tea_photo_tips_title: "சிறந்த படத்துக்கு",
-  tea_tip_light: "நல்ல இயற்கை ஒளியைப் பயன்படுத்துங்கள் — நேரடி நண்பகல் வெயிலோ ஆழ்ந்த நிழலோ அல்ல.",
+  tea_tip_light: "நல்ல இயற்கை ஒளியைப் பயன்படுத்துங்கள், நேரடி நண்பகல் வெயிலோ ஆழ்ந்த நிழலோ அல்ல.",
   tea_tip_one_leaf: "சட்டகத்தின் பெரும்பகுதியை நிரப்பும்படி ஒரு இலையை மட்டும் படம் எடுங்கள்.",
   tea_tip_focus: "இலையைத் தெளிவாக வைத்து அசையாமல் பிடியுங்கள்.",
   tea_tip_shadow: "கடுமையான நிழல்கள், பிரதிபலிப்புகள், இலையை மறைக்கும் எதையும் தவிர்க்கவும்.",
-  tea_tip_retake: "அதே படத்தை மீண்டும் அனுப்பாமல் புதிதாக எடுங்கள் — முடிவு மாறாது.",
+  tea_tip_retake: "அதே படத்தை மீண்டும் அனுப்பாமல் புதிதாக எடுங்கள், முடிவு மாறாது.",
   tea_error_no_artifact: "மாதிரி இன்னும் இந்தப் பயன்பாட்டில் வெளியிடப்படவில்லை.",
   tea_error_load_failed: "மாதிரியைப் பதிவிறக்க முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
   tea_error_bad_image: "அந்தக் கோப்பைப் படமாகப் படிக்க முடியவில்லை. JPEG அல்லது PNG முயற்சிக்கவும்.",
@@ -1480,7 +1418,7 @@ const ta: Dict = {
   sensor_connecting: "ஒரு port-ஐத் தேர்வுசெய்க…",
   sensor_stop: "துண்டிக்கவும்",
   sensor_simulate: "உருவகப்படுத்திய உணரியை இயக்கு",
-  sensor_unsupported: "இந்த உலாவியால் USB சாதனங்களுடன் தொடர்பு கொள்ள முடியாது. Web Serial கணினியில் Chrome, Edge போன்ற உலாவிகளில் மட்டுமே இயங்கும் — தொலைபேசியில் அல்ல, Firefox அல்லது Safari-யிலும் அல்ல. திரை எப்படி இயங்குகிறது என்று பார்க்க உருவகப்படுத்திய உணரியைப் பயன்படுத்தலாம்.",
+  sensor_unsupported: "இந்த உலாவியால் USB சாதனங்களுடன் தொடர்பு கொள்ள முடியாது. Web Serial கணினியில் Chrome, Edge போன்ற உலாவிகளில் மட்டுமே இயங்கும், தொலைபேசியில் அல்ல, Firefox அல்லது Safari-யிலும் அல்ல. திரை எப்படி இயங்குகிறது என்று பார்க்க உருவகப்படுத்திய உணரியைப் பயன்படுத்தலாம்.",
   sensor_simulated_warning: "உருவகப்படுத்திய அளவீடுகள். இவை உருவாக்கப்பட்ட எண்கள், எந்த மண்ணின் அளவீடும் அல்ல. அவை 'உருவகம்' எனக் குறிக்கப்பட்டுச் சேமிக்கப்படும், எப்போது வேண்டுமானாலும் நீக்கலாம்.",
   sensor_live_title: "நேரடி அளவீடு",
   sensor_source_magicbit: "ESP32 உணரி, USB வழியாக",
@@ -1510,7 +1448,7 @@ const ta: Dict = {
   sensor_cal_inverted: "இரு புள்ளிகளும் மாறியிருப்பதாகத் தெரிகிறது: உணரி நீரைவிடக் காற்றில் அதிக எண்ணைக் காட்ட வேண்டும். அவற்றை மறுபுறமாக மீண்டும் பதிவுசெய்யுங்கள்.",
   sensor_cal_too_close: "இரு புள்ளிகளும் மிக நெருக்கமாக உள்ளன, எனவே அளவீடு அர்த்தமற்றது. உலர் புள்ளியைப் பதிவுசெய்யும்போது உணரி இன்னும் ஈரமாக இருந்திருக்கலாம்.",
   sensor_anchor_title: "இந்த நிலத்தின் நீர் ஆலோசனை இப்போது பயன்படுத்துவது",
-  sensor_anchor_unknown: "இந்த நிலத்துக்கு இன்னும் நீர்ப்பாசன ஆலோசனை இல்லை — முதலில் வானிலையும் பயிர் விவரங்களும் தேவை.",
+  sensor_anchor_unknown: "இந்த நிலத்துக்கு இன்னும் நீர்ப்பாசன ஆலோசனை இல்லை, முதலில் வானிலையும் பயிர் விவரங்களும் தேவை.",
   sensor_stored: "இந்த நிலத்துக்கு {n} அளவீடுகள் சேமிக்கப்பட்டுள்ளன.",
   sensor_stored_simulated: "உருவகப்படுத்திய அளவீடுகளும் அடங்கும்.",
   sensor_clear_stored: "அவற்றை நீக்கு",
@@ -1518,9 +1456,9 @@ const ta: Dict = {
 
   auth_magic_cta_signup: "பதிலாக பதிவு இணைப்பை மின்னஞ்சல் செய்யவும்",
   auth_magic_sent_signup: "உங்கள் மின்னஞ்சலைப் பாருங்கள். அந்த இணைப்பைத் திறந்தால் உங்கள் கணக்கு உருவாகி உள்நுழைவும் நடக்கும்.",
-  auth_magic_same_browser: "இணைப்பை இதே உலாவியில் திறக்கவும் — இணைப்பு அதைக் கேட்ட உலாவியுடன் பிணைக்கப்பட்டுள்ளது.",
+  auth_magic_same_browser: "இணைப்பை இதே உலாவியில் திறக்கவும், இணைப்பு அதைக் கேட்ட உலாவியுடன் பிணைக்கப்பட்டுள்ளது.",
   auth_link_wrong_browser: "அந்த இணைப்பு, அதைக் கேட்ட உலாவியிலிருந்து வேறு உலாவியில் திறக்கப்பட்டதால் பயன்படுத்த முடியவில்லை. புதிய இணைப்பைக் கேட்டு இங்கே திறக்கவும்.",
-  auth_link_expired: "அந்த இணைப்பின் காலம் முடிந்துவிட்டது அல்லது ஏற்கனவே பயன்படுத்தப்பட்டுவிட்டது. ஒவ்வொரு இணைப்பும் ஒருமுறை மட்டுமே வேலை செய்யும் — புதிது ஒன்றைக் கேளுங்கள்.",
+  auth_link_expired: "அந்த இணைப்பின் காலம் முடிந்துவிட்டது அல்லது ஏற்கனவே பயன்படுத்தப்பட்டுவிட்டது. ஒவ்வொரு இணைப்பும் ஒருமுறை மட்டுமே வேலை செய்யும், புதிது ஒன்றைக் கேளுங்கள்.",
   auth_no_such_account: "அந்த மின்னஞ்சல் முகவரியில் கணக்கு எதுவும் இல்லை. அதற்குப் பதிலாக ஒன்றை உருவாக்குங்கள்.",
 
   sell_title: "ஏற்றுமதி சரக்கு",
@@ -1572,20 +1510,20 @@ const ta: Dict = {
   docs_empty_cta: "ஒரு விற்பனையைத் தொடங்கு",
   doc_back_to_sale: "சரக்குக்குத் திரும்பு",
   doc_edit_title: "இந்த ஆவணம் அச்சிடுவது",
+
+  home_title: "ஒரு ஏற்றுமதி சரக்குக்குத் தேவையான அனைத்தும், ஒரே பக்கத்தில்.",
+  home_cta_start: "ஒரு சரக்கைத் தொடங்கு",
+  home_cta_how: "இது எப்படி வேலை செய்கிறது",
+  home_how_title: "ஒரு கப்பல் அனுப்புதல், தொடக்கம் முதல் முடிவு வரை",
+  home_eudr_title: "உண்மையான செயற்கைக்கோள் பதிவுடன் சரிபார்க்கப்பட்ட இரண்டு நிலங்கள்",
+  home_farm_title: "பண்ணைக்காகவும்",
+  home_rule_title: "நாங்கள் சட்டத்தை உருவாக்குவதில்லை",
+  home_final_title: "அடுத்த சரக்கைத் தொடங்கு.",
 };
 
 const DICTS: Record<Lang, Dict> = { en, si, ta };
 
-/**
- * Does THIS language have its own entry for this key, or would `t()` fall back?
- *
- * Needed because the fallback is deliberate and permanent for the advisory
- * sentences (D-016), which means a Sinhala or Tamil page knowingly renders
- * English paragraphs. A screen reader announcing English words with a Sinhala
- * voice is close to unintelligible, so the renderer marks those runs
- * `lang="en"` (WCAG 3.1.2, Language of Parts). It can only do that if it can
- * ask which strings actually fell back.
- */
+/** Does THIS language have its own entry for this key, or would `t()` fall back? */
 export function hasTranslation(lang: Lang, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(DICTS[lang], key);
 }

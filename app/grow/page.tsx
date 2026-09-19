@@ -1,17 +1,7 @@
 "use client";
 
-/**
- * The GROW lane front door: pick a plot, state the crop and soil once, then see
- * watering and disease pressure computed from that plot's own weather.
- *
- * Reuses the field-capture spine rather than duplicating it — plots come from
- * the same Dexie store the officer captured into, and the weather grid cell is
- * derived from the attested boundary via `plotCentre`. One record, three lanes.
- *
- * Every failure path here is a readable sentence with a retry, never a spinner
- * that never resolves: no plots, no boundary, no network, no cache. Same
- * demo-path hardening rule the rest of the app was built to (D-013).
- */
+// The GROW lane front door: pick a plot, state the crop and soil once, then see watering and
+// disease pressure computed from that plot's own weather.
 import { useCallback, useEffect, useState } from "react";
 import { Leaf } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
@@ -38,23 +28,23 @@ export default function GrowPage() {
   const [profile, setProfile] = useState<GrowProfile | null>(null);
   const [editingProfile, setEditingProfile] = useState(false);
 
-  // Dexie is browser-only, so every read is guarded and failure degrades to
-  // "no plots" rather than an unhandled rejection.
+  // Dexie is browser-only, so every read is guarded and failure degrades to "no plots" rather
+  // than an unhandled rejection.
   useEffect(() => {
     listPlots()
       .then(setPlots)
       .catch(() => setPlots([]));
   }, []);
 
-  // Shared with /grow/diagnose so the two pages cannot drift onto different
-  // plots. See lib/grow/selection.ts for why that mattered.
+  // Shared with /grow/diagnose so the two pages cannot drift onto different plots. See
+  // lib/grow/selection.ts for why that mattered.
   const remembered = useSelectedPlotId();
   const plotId = resolvePlotId(plots ?? [], remembered);
 
   useEffect(() => {
     if (!plotId) return;
-    // Same reason as on /grow/diagnose: never let the previous plot's crop and
-    // soil drive this plot's numbers, not even for a frame.
+    // Same reason as on /grow/diagnose: never let the previous plot's crop and soil drive this
+    // plot's numbers, not even for a frame.
     setProfile(null);
     getGrowProfile(plotId)
       .then((p) => {
@@ -84,9 +74,9 @@ export default function GrowPage() {
             items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_grow") }]}
           />
         </div>
-        {/* Phones only: on desktop the nav bar already carries the switcher, and
+        {/* Below lg only: from lg up the nav bar already carries the switcher, and
             two of them side by side read as two different settings. */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <LanguageSwitcher />
         </div>
       </div>

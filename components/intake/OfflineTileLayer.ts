@@ -1,10 +1,5 @@
-/**
- * A Leaflet tile layer that reads tiles from the IndexedDB cache first and
- * falls back to the network. This is what makes the tracing map work with no
- * signal: whatever the officer pre-cached for the district renders offline.
- *
- * Browser-only (imports leaflet). Load via a dynamic() with ssr:false.
- */
+// A Leaflet tile layer that reads tiles from the IndexedDB cache first and falls back to the
+// network.
 import L from "leaflet";
 import {
   buildTileUrl,

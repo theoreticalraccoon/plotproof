@@ -1,10 +1,6 @@
 "use client";
 
-/**
- * The card /login and /signup share. Deliberately quiet: this is the highest
- * anxiety moment in the product, so it is one column, one accent, generous
- * spacing, and nothing that moves except the thing you just pressed.
- */
+/** The card /login and /signup share. */
 import { Leaf, ShieldCheck } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import PendingLink from "@/components/motion/PendingLink";
@@ -25,7 +21,7 @@ export default function AuthShell({
     <main className="mx-auto flex min-h-dvh w-full max-w-[27rem] flex-col justify-center px-6 py-12">
       {/* A CSS entrance, not a JS one. The card is server-rendered, and a
           Framer entrance meant the served HTML carried opacity:0 until
-          hydration — invisible to anyone on a slow connection, and a hydration
+          hydration, invisible to anyone on a slow connection, and a hydration
           mismatch in the console. `.page-in` animates the same rise and is
           already reduced-motion aware in globals.css. */}
       <div className="page-in">

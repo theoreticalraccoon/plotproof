@@ -4,10 +4,7 @@ import "./globals.css";
 import OnlineBanner from "@/components/OnlineBanner";
 import AppShell from "@/components/shell/AppShell";
 
-// Signature pairing, self-served by Next (no runtime CDN request). Neither is Inter:
-//   Fraunces      , warm high-contrast optical serif; large display headings
-//                    ONLY, for a memorable, premium, craft-forward voice.
-//   Hanken Grotesk, high legibility at small sizes; body, UI, small headings.
+// Signature pairing, self-served by Next (no runtime CDN request).
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["400", "500", "600"],

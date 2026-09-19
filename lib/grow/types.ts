@@ -1,41 +1,9 @@
-/**
- * The GROW lane: help a farmer grow an export crop well, before the compliance
- * paperwork ever matters.
- *
- * Design rule, inherited from the compliance lane ("the app never invents law"):
- * **the app never invents agronomy.** Every threshold in this lane is either
- * (a) published FAO-56 / tea-research literature, cited on the type that carries
- * it, or (b) a measured model output shipped with its own model card. Nothing is
- * a number someone felt was about right.
- *
- * The three evidence streams and what each is worth:
- *
- *   weather  →  epidemiological risk   — computed from THIS farm's conditions,
- *                                        so it carries no transfer gap
- *   photo    →  CNN                    — trained on Assam/Bangladesh imagery,
- *                                        so it DOES carry a transfer gap
- *   sensor   →  grid calibration       — corrects the weather grid to this site
- *
- * `lib/grow/tea/evidence.ts` presents the first two SIDE BY SIDE and never
- * merges them; `lib/sensor/calibrate.ts` feeds the third back into the first.
- * There is deliberately no fusion step: a calibrated posterior over classes and
- * a fuzzy index over weather conditions are not commensurable, and combining
- * them would bury the disagreement that is the most useful thing on the screen.
- * Keeping the stages separate and individually inspectable is the part an
- * agronomist will question, so it needs to be readable rather than buried in
- * weights.
- */
+// The GROW lane: help a farmer grow an export crop well, before the compliance paperwork ever
+// matters.
 
 // --- weather -------------------------------------------------------------
 
-/**
- * One day of weather for one plot, aggregated from Open-Meteo hourly data.
- *
- * `leafWetnessHours` is DERIVED, not served: Open-Meteo has no leaf-wetness
- * variable, and it is the single most important driver of foliar fungal
- * infection. See `deriveLeafWetnessHours` in `lib/weather/openmeteo.ts` for the
- * estimator and its citation.
- */
+/** One day of weather for one plot, aggregated from Open-Meteo hourly data. */
 export interface DailyWeather {
   /** Local calendar date, YYYY-MM-DD (Open-Meteo `timezone=auto`). */
   date: string;
@@ -53,13 +21,8 @@ export interface DailyWeather {
   vpdKpa: number;
   /** Volumetric soil water content 0–7 cm, m³/m³. Model estimate, not measured. */
   soilMoistureM3M3: number | null;
-  /**
-   * Depth-weighted mean soil water over the crop's root zone, m³/m³, blended
-   * from Open-Meteo's four soil layers. This is a LAND-SURFACE MODEL estimate,
-   * not a measurement — but it is a far better-calibrated one than a 20-line
-   * water balance accumulating rain and evaporation, so it anchors the balance
-   * when no physical sensor is present. See `anchorSource` on IrrigationAdvice.
-   */
+  // Depth-weighted mean soil water over the crop's root zone, m³/m³, blended from Open-Meteo's
+  // four soil layers.
   soilMoistureRootZone: number | null;
   /** Derived. Hours the canopy was probably wet. See the note above. */
   leafWetnessHours: number;
@@ -74,21 +37,13 @@ export type WeatherResult =
 
 // --- the plot's growing profile -----------------------------------------
 
-/**
- * Soil texture classes we support, with the hydraulic properties the FAO-56
- * water balance needs. Deliberately coarse: a farmer knows "clay" or "sandy",
- * and pretending to more precision than that would be false.
- */
+// Soil texture classes we support, with the hydraulic properties the FAO-56 water balance
+// needs.
 export type SoilTexture = "sand" | "sandy_loam" | "loam" | "clay_loam" | "clay";
 
 export type GrowCrop = "tea" | "rubber" | "coconut" | "cinnamon";
 
-/**
- * Per-plot growing context the farmer supplies once. Stored in the Dexie
- * `growProfiles` table keyed by plotId — deliberately NOT folded into
- * `LocalPlot`, so the field-capture record keeps exactly the shape it had when
- * it was attested.
- */
+/** Per-plot growing context the farmer supplies once. */
 export interface GrowProfile {
   plotId: string;
   crop: GrowCrop;
@@ -130,17 +85,10 @@ export interface IrrigationAdvice {
   recommendedLitres: number;
   /** Total available water in the root zone, mm. */
   tawMm: number;
-  /** Readily available water — depletion beyond this starts stressing the crop. */
+  /** Readily available water, depletion beyond this starts stressing the crop. */
   rawMm: number;
   balance: WaterBalanceDay[];
-  /**
-   * Which evidence set the final soil state. An honesty ladder, best first:
-   *   "sensor"  — measured on this plot by a calibrated probe
-   *   "grid"    — a land-surface model estimate for this area
-   *   "balance" — accumulated from rainfall and evaporation only
-   * Rendered on screen, because a farmer deciding whether to trust the number
-   * should know whether anything actually touched their soil.
-   */
+  /** Which evidence set the final soil state. */
   anchorSource: "sensor" | "grid" | "balance";
   /** Convenience for the UI: true when `anchorSource === "sensor"`. */
   sensorCorrected: boolean;
@@ -152,13 +100,7 @@ export type TeaDisease = "blister_blight" | "brown_blight" | "grey_blight";
 
 export type RiskBand = "low" | "moderate" | "high";
 
-/**
- * Environmental infection risk for one disease on one day.
- *
- * `score` is an infection-pressure index in 0–1, NOT a probability of disease.
- * That distinction is stated wherever it is rendered: we are saying "conditions
- * this week favour the pathogen", not "your field is 0.7 infected".
- */
+/** Environmental infection risk for one disease on one day. */
 export interface DiseaseRisk {
   disease: TeaDisease;
   score: number;

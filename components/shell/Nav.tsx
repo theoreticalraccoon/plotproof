@@ -1,19 +1,6 @@
 "use client";
 
-/**
- * Persistent app navigation. Present on every route (wired in AppShell) so no
- * workflow, including the document generators, which used to strand a farmer
- * mid-print with no way back, can trap a user. Desktop: horizontal text links
- * with an active-route rule. Mobile: a full-height animated drawer.
- *
- * Every link here is a PendingLink: this is the one component every route
- * change in the app passes through, so a tap that is waiting on a route bundle
- * has to say so inline rather than leaving the user to tap again.
- *
- * The desktop links are deliberately text-only. An icon beside every label in
- * a 68px bar is decoration, not affordance; the drawer keeps its icons because
- * a 52px touch row genuinely reads faster with a leading mark.
- */
+/** Persistent app navigation. */
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,25 +14,19 @@ import { EASE_IN_OUT, EASE_OUT_2 } from "@/lib/motion/variants";
 import type { Variants } from "framer-motion";
 
 const LINKS = [
-  // Order follows the farmer's year, not the build order: grow it, sell it,
-  // then prove it. "Grow" leads because it is the only lane that matters before
-  // a harvest exists.
+  // Order follows the farmer's year, not the build order: grow it, sell it, then prove it.
+  // "Grow" leads because it is the only lane that matters before a harvest exists.
   { href: "/grow", key: "nav_grow", Icon: Leaf },
   { href: "/sell", key: "nav_sell", Icon: Sprout },
   { href: "/documents", key: "nav_documents", Icon: FileText },
   { href: "/intake", key: "nav_evidence", Icon: Satellite },
-  // Last, and deliberately not in the farmer's year: /models is the technical
-  // evidence page, for someone checking whether the ML is real.
+  // Last, and deliberately not in the farmer's year: /models is the technical evidence page, for
+  // someone checking whether the ML is real.
   { href: "/models", key: "nav_models", Icon: FlaskConical },
 ] as const;
 
-/**
- * Local, deliberately faster than the shared `drawerSlide` (450ms in): a menu
- * is a direct answer to a tap, so any travel long enough to notice reads as the
- * tap having missed. 160ms in / 120ms out keeps the panel attached to the
- * finger. Kept here rather than edited in lib/motion/variants.ts because the
- * slower curve is right for content panels.
- */
+// Local, deliberately faster than the shared `drawerSlide` (450ms in): a menu is a direct
+// answer to a tap, so any travel long enough to notice reads as the tap having missed.
 const drawerSlideFast: Variants = {
   hidden: { x: "100%" },
   show: { x: 0, transition: { duration: 0.16, ease: EASE_OUT_2 } },
@@ -73,10 +54,8 @@ export default function Nav() {
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
 
-  // The palette binds BOTH ⌘K and Ctrl-K, so the keycap is a label, not a
-  // contract, but printing ⌘ to a Windows farmer is still a small lie. Resolved
-  // after mount (the platform is not knowable during SSR) into a slot of fixed
-  // width, so settling on the real label cannot shift the bar.
+  // The palette binds BOTH ⌘K and Ctrl-K, so the keycap is a label, not a contract, but printing
+  // ⌘ to a Windows farmer is still a small lie.
   const [shortcutLabel, setShortcutLabel] = useState<string | null>(null);
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -95,17 +74,14 @@ export default function Nav() {
     };
   }, [open]);
 
-  // Dismissal that a person chose (Esc, backdrop) hands focus back to the
-  // trigger. A route change does NOT: focus belongs to the page that just
-  // loaded, not to a menu button the user has already left behind.
+  // Dismissal that a person chose (Esc, backdrop) hands focus back to the trigger.
   const dismiss = useCallback(() => {
     setOpen(false);
     menuBtnRef.current?.focus();
   }, []);
 
-  // Focus moves into the drawer and stays there: an off-canvas panel that
-  // leaves Tab wandering through the page behind it is invisible to a keyboard
-  // user and unreachable to a screen reader.
+  // Focus moves into the drawer and stays there: an off-canvas panel that leaves Tab wandering
+  // through the page behind it is invisible to a keyboard user and unreachable to a screen.
   useEffect(() => {
     if (!open) return;
     const node = drawerRef.current;
@@ -155,7 +131,7 @@ export default function Nav() {
           <span>PlotProof</span>
         </PendingLink>
 
-        <nav className="hidden items-center md:flex" aria-label="Primary">
+        <nav className="hidden items-center lg:flex" aria-label="Primary">
           {LINKS.map((l) => {
             const active = isActive(l.href);
             return (
@@ -173,10 +149,8 @@ export default function Nav() {
                   <motion.span
                     layoutId={reduce ? undefined : "nav-active"}
                     aria-hidden="true"
-                    // 2.125rem = the link's own px-2.5 (0.625rem) plus the
-                    // 1.5rem spinner slot PendingLink always reserves, so the
-                    // rule tracks the label rather than the label plus dead
-                    // space.
+                    // 2.125rem = the link's own px-2.5 (0.625rem) plus the 1.5rem spinner slot
+                    // PendingLink always reserves.
                     className="absolute bottom-[-1px] left-2.5 right-[2.125rem] h-[2px] rounded-full"
                     style={{ background: "var(--accent)" }}
                     transition={{ duration: 0.22, ease: EASE_OUT_2 }}
@@ -187,7 +161,7 @@ export default function Nav() {
           })}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2 md:flex">
+        <div className="ml-auto hidden items-center gap-2 lg:flex">
           <button
             type="button"
             onClick={openCmd}
@@ -215,7 +189,7 @@ export default function Nav() {
           <AccountControl />
         </div>
 
-        <div className="ml-auto flex items-center gap-1 md:hidden">
+        <div className="ml-auto flex items-center gap-1 lg:hidden">
           <button
             type="button"
             onClick={openCmd}
@@ -242,7 +216,7 @@ export default function Nav() {
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
               initial="hidden"
               animate="show"
               exit="exit"
@@ -255,13 +229,13 @@ export default function Nav() {
               role="dialog"
               aria-modal="true"
               aria-label={t(lang, "nav_menu")}
-              className="glass-card fixed inset-y-0 right-0 z-50 flex w-[84%] max-w-xs flex-col gap-0.5 p-4 pt-[calc(var(--nav-h)+0.5rem)] md:hidden"
+              className="glass-card fixed inset-y-0 right-0 z-50 flex w-[84%] max-w-xs flex-col gap-0.5 p-4 pt-[calc(var(--nav-h)+0.5rem)] lg:hidden"
               style={{ borderRadius: 0 }}
               initial="hidden"
               animate="show"
               exit="exit"
-              // Reduced motion loses the slide, not the panel: the drawer still
-              // has to arrive, it just stops travelling to get there.
+              // Reduced motion loses the slide, not the panel: the drawer still has to arrive,
+              // it just stops travelling to get there.
               variants={reduce ? drawerFade : drawerSlideFast}
             >
               {LINKS.map((l) => {

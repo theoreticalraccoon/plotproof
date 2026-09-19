@@ -1,11 +1,4 @@
-/**
- * Local, offline-first data model for plot intake.
- *
- * These are the shapes the DEVICE holds. They mirror SCHEMA.md but are the
- * source of truth in the field: a plot exists and is valid locally long before
- * it ever reaches Supabase. IDs are generated client-side (crypto.randomUUID)
- * so a record is stable from the moment of capture, offline.
- */
+/** Local, offline-first data model for plot intake. */
 
 /** [longitude, latitude], GeoJSON axis order. Never [lat, lng]. */
 export type LngLat = [number, number];
@@ -76,11 +69,7 @@ export interface PlotValidation {
 /** How the farmer confirmed the plot at attestation. */
 export type ConfirmationMethod = "signature" | "thumbprint";
 
-/**
- * A binary media asset (plot photo or farmer signature) held locally until it
- * syncs. The blob is dropped once uploaded (remotePath set) to reclaim space -
- * see storage strategy in DECISIONS.md D-009.
- */
+/** A binary media asset (plot photo or farmer signature) held locally until it syncs. */
 export interface LocalMedia {
   id: string;
   plotId: string;
@@ -100,13 +89,7 @@ export interface LocalMedia {
   createdAt: string;
 }
 
-/**
- * What turns a polygon into evidence (PROJECT.md "Attestation"). Officer
- * identity + timestamp are recorded automatically; the geotagged photo and the
- * farmer's confirmation are captured in the field. Farmer name/ID are
- * snapshotted here so a later edit to the farmer record can't rewrite what was
- * attested.
- */
+/** What turns a polygon into evidence (PROJECT.md "Attestation"). */
 export interface LocalAttestation {
   id: string;
   plotId: string;
@@ -120,20 +103,11 @@ export interface LocalAttestation {
   confirmationMethod: ConfirmationMethod;
   photoMediaId: string;
   signatureMediaId?: string;
-  /**
-   * When the farmer gave explicit, informed consent to this record being taken
-   * and stored (SCHEMA.md consent_at, DECISIONS.md D-007). Required, never
-   * optional: a thumbprint is biometric data, which under GDPR Art. 9 and Sri
-   * Lanka's PDPA needs explicit consent, not implied consent. An attestation
-   * without it is not lawful to hold, so the type does not permit one.
-   */
+  // When the farmer gave explicit, informed consent to this record being taken and stored
+  // (SCHEMA.md consent_at, DECISIONS.md D-007).
   consentAt: string; // ISO UTC
-  /**
-   * Tamper-evidence (lib/intake/integrity.ts): SHA-256 over the canonical
-   * record + media bytes + plot ring, chained to the previous attestation on
-   * this device. Optional only because records saved before the integrity
-   * layer existed have none; every new save populates it.
-   */
+  // Tamper-evidence (lib/intake/integrity.ts): SHA-256 over the canonical record + media bytes +
+  // plot ring, chained to the previous attestation on this device.
   integrity?: import("./integrity").AttestationIntegrity;
   syncStatus: SyncStatus;
   createdAt: string;

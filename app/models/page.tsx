@@ -1,28 +1,10 @@
-/**
- * /models — the technical evidence page.
- *
- * Audience: someone evaluating whether the ML in this project is real. Not a
- * farmer. Everything a farmer needs is phrased for them elsewhere; this page is
- * allowed to say "macro-F1" and "expected calibration error".
- *
- * THE RULE THIS FILE EXISTS TO OBEY: not one metric is typed into this
- * component. Every number below is imported from the authoritative artifact
- * that produced it — the published model card, the evaluation dump, the
- * taxonomy, the provenance record. A page that restated the numbers would agree
- * with the card right up until the day it didn't, and the disagreement would
- * favour whichever one someone happened to read.
- *
- * It is a Server Component on purpose: the JSON is read at build time, so there
- * is no fetch, no loading state, and no way for the page to render half a claim.
- */
+/** /models, the technical evidence page. */
 import type { Metadata } from "next";
 import Image from "next/image";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import PendingLink from "@/components/motion/PendingLink";
 
-// The authoritative artifacts. `models/tea/` is the working record; the two
-// files under `public/` are the ones the running app actually consumes, and
-// `scripts/audit_release.py` fails the build if they ever disagree.
+// The authoritative artifacts.
 import card from "@/public/models/tea-disease-mnv3s-card.json";
 import evaluation from "@/models/tea/evaluation.json";
 import taxonomy from "@/models/tea/taxonomy.json";
@@ -30,21 +12,21 @@ import provenance from "@/models/tea/provenance.json";
 import prices from "@/public/models/prices.json";
 
 export const metadata: Metadata = {
-  title: "Models, datasets and measured results",
+  title: "How the models work",
   description:
-    "Every model in PlotProof with its architecture, training data, licences, measured results on three separate test sets, calibration, abstention threshold and known limitations.",
+    "What the tea leaf model was trained on, how it scores on four test sets, when it refuses to answer, and what it still gets wrong.",
 };
 
 const CONTENTS = [
-  { id: "classifier", n: "01", label: "Tea leaf classifier" },
-  { id: "classes", n: "02", label: "Classes" },
-  { id: "data", n: "03", label: "Training data and split" },
-  { id: "results", n: "04", label: "Measured results" },
-  { id: "calibration", n: "05", label: "Calibration and abstention" },
-  { id: "limits", n: "06", label: "Limitations and failure modes" },
-  { id: "provenance", n: "07", label: "Datasets, licences, provenance" },
-  { id: "others", n: "08", label: "The other models" },
-  { id: "reproduce", n: "09", label: "Reproducing this" },
+  { id: "classifier", n: "01", label: "The leaf model" },
+  { id: "classes", n: "02", label: "What it can name" },
+  { id: "data", n: "03", label: "Training data" },
+  { id: "results", n: "04", label: "Test results" },
+  { id: "calibration", n: "05", label: "When it refuses" },
+  { id: "limits", n: "06", label: "Known problems" },
+  { id: "provenance", n: "07", label: "Datasets and licences" },
+  { id: "others", n: "08", label: "Everything else" },
+  { id: "reproduce", n: "09", label: "Running it yourself" },
 ];
 
 // --- small typed views over the JSON -------------------------------------
@@ -94,16 +76,7 @@ const crossDatasetCovered = new Set(
     .flatMap((t) => t.classes_present),
 );
 
-/**
- * Majority-class share of a test set, from its own published support counts.
- *
- * The tea artifact ships NO trained baseline — unlike `prices.json`, which
- * carries a naive forecast to print beside its model. Rather than invent one or
- * show accuracy with nothing to compare it against, this is the floor any
- * classifier clears by always guessing the commonest class. It is arithmetic
- * over numbers the artifact already publishes, and the page says so where it
- * appears.
- */
+/** Majority-class share of a test set, from its own published support counts. */
 function majorityShare(t: TestRow): number {
   const supports = Object.values(t.per_class).map((c) => c.support);
   return Math.max(...supports) / t.samples;
@@ -125,23 +98,23 @@ export default function ModelsPage() {
       <header className="mt-8">
         <div style={{ height: 3, width: 44, background: "var(--accent)" }} aria-hidden="true" />
         <h1 className="font-display mt-5 text-[2.3rem] leading-[1.04] sm:text-[3.1rem]">
-          Models, datasets and measured results
+          How the models work, and how well
         </h1>
         <p
           className="mt-6 text-[1.08rem] leading-[1.58] muted sm:text-[1.15rem]"
           style={{ maxWidth: "62ch" }}
         >
-          Every number on this page is read at build time from the artifact that produced it — the
-          published model card, the evaluation dump, the taxonomy, the licence record. None of them
-          is typed into the page, so none of them can drift away from the model they describe.
+          Nothing on this page is typed in by hand. Each number is pulled from the model card, the
+          evaluation report or the licence record when the site builds, so if the model changes,
+          the page changes with it.
         </p>
         <p className="mt-4 text-[0.92rem] faint" style={{ maxWidth: "62ch" }}>
-          Written for a reviewer, not a farmer. The same facts are phrased for the person holding
-          the phone on{" "}
+          This is the long version, for anyone checking our work. Farmers get the short version
+          on{" "}
           <PendingLink inline href="/grow/diagnose" className="underline underline-offset-4">
             the diagnosis screen
           </PendingLink>{" "}
-          and inventoried plainly on{" "}
+          and{" "}
           <PendingLink inline href="/whats-real" className="underline underline-offset-4">
             what is real
           </PendingLink>
@@ -177,12 +150,11 @@ export default function ModelsPage() {
 
         <div className="min-w-0">
           {/* ============ 01 CLASSIFIER ============ */}
-          <Part id="classifier" n="01" title="Tea leaf classifier">
+          <Part id="classifier" n="01" title="The leaf model">
             <P>
-              A convolutional network that looks at one photograph of a tea leaf and returns one of
-              six conditions, a calibrated confidence, or — more often than not on a farm it has
-              never seen — a refusal to answer. It runs entirely in the browser; no photograph is
-              uploaded anywhere.
+              A small neural network looks at one photo of a tea leaf and names one of six
+              conditions, with a confidence score. If it isn&apos;t sure enough, it says so and
+              names nothing. It runs on the phone. The photo never leaves it.
             </P>
 
             <Facts
@@ -199,11 +171,12 @@ export default function ModelsPage() {
               ]}
             />
 
-            <h3 className="mt-8 text-[0.95rem] font-semibold">Artifact identity</h3>
+            <h3 className="mt-8 text-[0.95rem] font-semibold">Which file this is</h3>
             <P small>
-              The SHA-256 below is the hash of the file the browser downloads. The app re-hashes what
-              it actually received when run with <Code>?diag=1</Code>, because a served <Code>200</Code>{" "}
-              is not proof that the published bytes arrived — a stale cache or a proxy returns 200 too.
+              The SHA-256 below is the fingerprint of the file the browser downloads. Add{" "}
+              <Code>?diag=1</Code> to the diagnosis page and the app hashes what it actually received.
+              A <Code>200</Code> response doesn&apos;t prove you got this file; a stale cache returns
+              200 too.
             </P>
             <pre
               className="mt-3 overflow-x-auto rounded-[var(--radius-sm)] p-3.5 text-[0.72rem] leading-relaxed"
@@ -218,12 +191,12 @@ export default function ModelsPage() {
               </code>
             </pre>
 
-            <h3 className="mt-8 text-[0.95rem] font-semibold">Input and preprocessing</h3>
+            <h3 className="mt-8 text-[0.95rem] font-semibold">How a photo is prepared</h3>
             <P small>
-              The browser reproduces this exactly. A cross-language check runs the real TypeScript
-              preprocessing against the Python transform the model was evaluated under and compares
-              predictions through the published ONNX — because if the two ever diverged, nothing
-              would fail and the model would simply get quietly worse in the field than on the bench.
+              The browser has to prepare each photo exactly the way training did. A check script
+              runs the app&apos;s TypeScript and the training Python on the same images and compares
+              the answers. If they ever drifted apart nothing would crash. The model would just get
+              worse, quietly.
             </P>
             <Facts
               rows={[
@@ -235,14 +208,12 @@ export default function ModelsPage() {
                 ["Std", card.preprocessing.std.join(", ")],
               ]}
             />
-            <h4 className="mt-6 text-[0.85rem] font-semibold muted">Training augmentation</h4>
+            <h4 className="mt-6 text-[0.85rem] font-semibold muted">Making studio photos look like field photos</h4>
             <P small>
-              Geometric and colour augmentation on every image. On top of that, half of each epoch
-              is re-rendered as a field photograph, because every image in every available dataset is
-              a picked leaf on white paper — and a farmer photographs one still on the bush. The leaf
-              is cut off its studio background and placed into an out-of-focus canopy built from
-              other leaves, then relit with shade and sunflecks and passed through a simulated phone
-              camera (white balance, exposure, blur, noise, JPEG).
+              Every public tea dataset we found is picked leaves on white paper. Farmers photograph
+              leaves still on the bush. So half of every training round, each leaf is cut out of its
+              photo, dropped into a blurry background made of other leaves, given patchy sunlight and
+              shade, and run through a fake phone camera: off white balance, blur, noise, heavy JPEG.
             </P>
             <ul className="mt-3 flex flex-wrap gap-2">
               {card.preprocessing.augmentation_train.map((a) => (
@@ -254,16 +225,16 @@ export default function ModelsPage() {
           </Part>
 
           {/* ============ 02 CLASSES ============ */}
-          <Part id="classes" n="02" title="Classes">
+          <Part id="classes" n="02" title="What it can name">
             <P>
-              The taxonomy is the contract. It is a single JSON file that the Python training code
-              and the TypeScript app both read; neither hardcodes a class name, and the app refuses
-              to load a card whose classes are out of output order, because a reordered taxonomy
-              would rename every diagnosis while passing every other check.
+              The class list lives in one JSON file that both the training code and the app read.
+              Neither has a class name typed into it. If the order ever got shuffled, every diagnosis
+              would come out under the wrong name and nothing else would notice, so the app refuses
+              to load a model whose classes are out of order.
             </P>
 
             <h3 className="mt-7 text-[0.95rem] font-semibold">
-              Active — {activeClasses.length} classes, taxonomy v{taxonomy.taxonomy_version}
+              Active, {activeClasses.length} classes, taxonomy v{taxonomy.taxonomy_version}
             </h3>
             <Table
               head={["#", "Class", "Kind", "Cross-dataset tested?"]}
@@ -277,28 +248,25 @@ export default function ModelsPage() {
                   </span>
                 ) : (
                   <span key={c.key} style={{ color: "var(--warn)" }}>
-                    no — in-distribution evidence only
+                    no, in-distribution evidence only
                   </span>
                 ),
               ])}
             />
             <Callout tone="warn">
-              <strong>Blister blight and red rust have no external validation at all.</strong> Neither
-              appears in any cross-dataset test set in the audited corpus, so their only numbers come
-              from Test 1, which shares the training domain. Blister blight is simultaneously the most
-              important class in the product — it is the disease the weather engine models — and the
-              least externally verifiable one. The app states this next to every prediction of either,
-              and must never imply otherwise.
+              <strong>Nobody outside the training data has checked blister blight or red rust.</strong>{" "}
+              No other dataset contains either one, so their scores come only from Test 1, which uses
+              the same source as training. That hurts most for blister blight, the disease the weather
+              engine is built around. The app says so under every blister blight or red rust result.
             </Callout>
 
             <h3 className="mt-8 text-[0.95rem] font-semibold">
-              Reserved but inactive — {reservedClasses.length} classes
+              Reserved but inactive, {reservedClasses.length} classes
             </h3>
             <P small>
-              Declared with permanent IDs and not trained. Reserving an ID costs nothing and stops a
-              future renumbering from silently relabelling predictions already saved on a phone. None
-              of these appears in the training set, and presence in a test set is not a reason to
-              activate a class.
+              These have permanent ID numbers but the model never learned them. Keeping the numbers
+              reserved means adding a class later can&apos;t relabel results already saved on
+              someone&apos;s phone.
             </P>
             <Table
               head={["#", "Class", "Kind"]}
@@ -311,20 +279,19 @@ export default function ModelsPage() {
           </Part>
 
           {/* ============ 03 DATA ============ */}
-          <Part id="data" n="03" title="Training data and split">
+          <Part id="data" n="03" title="Training data">
             <P>
-              Trained on one dataset only: <strong>{card.training.dataset_ref.name}</strong>. The two
-              other corpora are never touched during training — they exist so that the transfer gap
-              can be measured rather than assumed.
+              Trained on one dataset: <strong>{card.training.dataset_ref.name}</strong>. The other two
+              are kept out of training completely. They&apos;re there to show how the model copes with
+              photos from somewhere else.
             </P>
 
             <Callout>
-              <strong>The finding that made the rest of this defensible.</strong> CS-D advertises
-              80,329 images. It is actually 9,000 photographs, each published nine times with
-              augmentations at nearest-neighbour similarity 0.9988 — effectively identical. The
-              grouping is undocumented; it was recovered empirically. Splitting on images rather than
-              source groups would have put near-identical siblings on both sides of the train/test
-              boundary and inflated every number below into meaninglessness.
+              <strong>CS-D says it has 80,329 images. It has 9,000.</strong> Each photo was published
+              nine times with small edits that leave the copies nearly identical. The dataset doesn&apos;t
+              mention this; we found it by comparing images. Had we split by image, copies of the same
+              photo would have landed in both training and testing, and every score below would be
+              inflated. So we split by original photo.
             </Callout>
 
             <Facts
@@ -341,35 +308,33 @@ export default function ModelsPage() {
               ]}
             />
             <P small>
-              <strong>Why one sample per group:</strong> {card.training.samples_per_group_rationale}
+              <strong>One copy per photo per round:</strong> {card.training.samples_per_group_rationale}
             </P>
             <P small>
-              <strong>Why no class weighting:</strong> {card.training.class_weighting_rationale}
+              <strong>No class weighting:</strong> {card.training.class_weighting_rationale}
             </P>
             <P small>
-              Selection metric: <Code>{evaluation.selection_metric}</Code>, on validation only, at
-              epoch {evaluation.selected_epoch}. Accuracy on a set this balanced would be dominated
-              by the easy classes and would hide one collapsing entirely. A leakage check runs six
-              assertions and exits non-zero before training is allowed to start.
+              The saved model is the one with the best <Code>{evaluation.selection_metric}</Code> on
+              validation, from round {evaluation.selected_epoch}. Plain accuracy can look fine while one
+              class fails completely; macro-F1 can&apos;t. Before training starts, a script runs six
+              checks for leaks between the splits and stops everything if one fails.
             </P>
           </Part>
 
           {/* ============ 04 RESULTS ============ */}
-          <Part id="results" n="04" title="Measured results">
+          <Part id="results" n="04" title="Test results">
             <Callout tone="warn">
-              <strong>{card.evaluation.never_pool_note}</strong> Tests 1–3 are all studio
-              photographs of detached leaves — one from the training source, two from other
-              countries and cameras. Test 4 is the training source&apos;s held-out leaves rendered
-              into simulated field conditions. An average would describe none of them. There is deliberately no single
-              headline accuracy anywhere in this project.
+              <strong>Four tests, four different questions, so no single accuracy figure.</strong>{" "}
+              Tests 1 to 3 are all leaves photographed on paper: one set from the same source as
+              training, two from other labs in Bangladesh. Test 4 takes the held-out training-source
+              leaves and fakes field conditions around them. Averaging them would answer none of the
+              four questions.
             </Callout>
 
             <P small>
-              This artifact ships <strong>no trained baseline</strong> — unlike the price model
-              below, which carries a naive forecast to print beside it. The comparison offered here
-              instead is the majority-class share of each test set, computed from that set&rsquo;s own
-              published support counts: the floor any classifier clears by always guessing the
-              commonest class. It is arithmetic over the artifact, not a model that was run.
+              There&apos;s no second model to compare against. What you get instead is the
+              &ldquo;majority-class floor&rdquo;: the score you&apos;d get by always guessing the most
+              common class in that test set. Anything worth using has to clear it comfortably.
             </P>
 
             {tests.map((t) => {
@@ -418,35 +383,34 @@ export default function ModelsPage() {
             })}
 
             <Callout tone="warn">
-              <strong>The honest headline is the gap, not a number.</strong>{" "}
-              {pct2(inDist.accuracy)} on held-out data from the set it learned from;{" "}
-              {cross.map((t) => pct2(t.accuracy)).join(" and ")} on photographs from farms it has
-              never seen. Calibration collapses the same way — expected calibration error rises from{" "}
-              {inDist.calibration.ece.toFixed(4)} in-distribution to{" "}
-              {cross.map((t) => t.calibration.ece.toFixed(4)).join(" and ")} under domain shift. A
-              model that is confidently wrong is more dangerous than one that is visibly unsure,
-              which is why the next section exists.
+              <strong>The drop is what matters.</strong> On unseen photos from its own source the
+              model gets {pct2(inDist.accuracy)} right. On the two other labs&apos; photos it gets{" "}
+              {cross.map((t) => pct2(t.accuracy)).join(" and ")}. Its confidence goes wrong too:
+              calibration error goes from {inDist.calibration.ece.toFixed(4)} to{" "}
+              {cross.map((t) => t.calibration.ece.toFixed(4)).join(" and ")}, meaning it sounds surer
+              than it should on photos it hasn&apos;t seen before. That&apos;s why it has a rule for
+              refusing to answer, below.
             </Callout>
 
             <figure className="mt-8">
               <Image
                 src="/models/tea-reliability.png"
-                alt="Reliability diagrams for the three test sets: predicted confidence against observed accuracy, with the in-distribution set close to the diagonal and both cross-dataset sets far above it."
+                alt="Reliability diagrams: for each test set, how confident the model said it was against how often it was right."
                 width={1600}
                 height={520}
                 className="w-full rounded-[var(--radius-sm)]"
                 style={{ border: "1px solid var(--glass-hairline)", background: "var(--bg-1)" }}
               />
               <figcaption className="mt-2 text-[0.78rem] faint">
-                Reliability diagrams, one per test set. Points above the diagonal are
-                over-confidence. Generated by the evaluation run; full numeric report in{" "}
+                One chart per test set. A point above the diagonal means the model was more confident
+                than it had any right to be. Full numbers in{" "}
                 <Code>{card.evaluation.full_report}</Code>.
               </figcaption>
             </figure>
           </Part>
 
           {/* ============ 05 CALIBRATION ============ */}
-          <Part id="calibration" n="05" title="Calibration and abstention">
+          <Part id="calibration" n="05" title="When it refuses">
             <h3 className="text-[0.95rem] font-semibold">Calibration</h3>
             <Facts
               rows={[
@@ -457,10 +421,9 @@ export default function ModelsPage() {
               ]}
             />
             <P small>
-              Temperature scaling was chosen over Platt scaling or isotonic regression for one
-              property: it cannot change the argmax. Accuracy is untouched and only the confidence
-              moves, which matters because the abstention threshold is applied to the calibrated
-              confidence — a calibration that reshuffled predictions would make the two interact.
+              Temperature scaling only stretches or squeezes the confidence. It can&apos;t change
+              which class wins, so accuracy stays exactly the same. That matters here because the
+              refusal threshold below is applied to this adjusted confidence.
             </P>
 
             <h3 className="mt-8 text-[0.95rem] font-semibold">Abstention</h3>
@@ -476,51 +439,47 @@ export default function ModelsPage() {
             />
 
             <Callout>
-              <strong>How this threshold was arrived at, including the two that failed.</strong>{" "}
-              The first rule, the 5% quantile of confidence on studio validation images, gave 0.9976
-              and refused about two real photographs in three. {card.abstention.superseded_rule.why_superseded}{" "}
-              The second, an accuracy target on clean and simulated-field validation pooled, gave
-              0.53: the clean half is right nearly every time, so it carried the average past the
-              target at almost any threshold, and the model answered 95% of cross-dataset photos
-              while getting more than a quarter of those wrong. The threshold above is chosen on the
-              simulated-field half alone, because only the hard half can say where the model stops
-              being reliable.
+              <strong>Third try.</strong> The first threshold, 0.9976, was set from paper-background
+              photos only. It refused about two photos in three. The second, 0.53, mixed easy and hard
+              validation photos. The easy ones were nearly always right, which dragged the threshold
+              down until the model answered 95% of photos from other labs and got over a quarter of
+              those wrong. The current one is set on the fake-field photos alone, since those are the
+              ones that show where the model starts failing.
             </Callout>
 
             <h3 className="mt-8 text-[0.95rem] font-semibold">
-              What the threshold costs, per test set
+              How often it answers, per test set
             </h3>
             <P small>
-              Coverage is <em>reported as an outcome</em> and was never used to choose the threshold —
-              doing so would have consumed the only held-out evidence available.
+              These numbers are results, not inputs. The threshold was picked without looking at any
+              test set; otherwise the tests would stop being tests.
             </P>
             <Table
-              head={["Test set", "Coverage (answers given)", "Accuracy on accepted", "Accuracy overall"]}
+              head={["Test set", "Answers given", "Right when it answers", "Right overall"]}
               rows={Object.entries(card.abstention.coverage_by_test_set).map(([name, v]) => {
                 const t = tests.find((x) => x.test_set === name);
                 return [
                   name,
                   pct(v.coverage),
                   pct2(v.accuracy_on_accepted),
-                  t ? pct2(t.accuracy) : "—",
+                  t ? pct2(t.accuracy) : "-",
                 ];
               })}
             />
 
             <Callout tone="warn">
-              <strong>Abstention is a mitigation, not proof of correctness.</strong> No dataset
-              in existence contains photographs of tea leaves on Sri Lankan bushes, so the accuracy
-              on a real farmer&apos;s photograph is unmeasured. Test 4 is the closest available
-              stand-in, and it is simulated. The product states its decline rate on screen so that a
-              refusal reads as a model that knows its limits rather than a broken app.
+              <strong>We don&apos;t know how accurate it is on a real farm photo.</strong> There are
+              no public photos of tea leaves on Sri Lankan bushes to test with. Test 4 is the closest
+              we have, and it&apos;s simulated. When the app refuses, it tells the farmer how often
+              that happens, so a refusal doesn&apos;t look like a bug.
             </Callout>
           </Part>
 
           {/* ============ 06 LIMITS ============ */}
-          <Part id="limits" n="06" title="Limitations and failure modes">
+          <Part id="limits" n="06" title="Known problems">
             <P>
-              These ship inside the model card, so correcting one is a JSON edit rather than a code
-              change, and the app renders them from the same source it reads its thresholds from.
+              These live in the model card next to the thresholds, so the list can&apos;t fall out of
+              date with the model.
             </P>
             <ol className="mt-5 space-y-3">
               {card.known_limitations.map((l, i) => (
@@ -533,32 +492,26 @@ export default function ModelsPage() {
               ))}
             </ol>
 
-            <h3 className="mt-8 text-[0.95rem] font-semibold">Not yet verified</h3>
+            <h3 className="mt-8 text-[0.95rem] font-semibold">Still unchecked</h3>
             <Callout tone="warn">
-              In-browser inference has <strong>not</strong> been observed on a real device. The
-              published artifact loads and runs under Python, the TypeScript preprocessing matches
-              the Python transform, the pure decision logic is unit-tested and the assets serve — but
-              the span from WebAssembly instantiation to <Code>session.run</Code> has never been
-              watched on an actual phone. The checklist for closing that gap is in{" "}
-              <Code>BROWSER-SMOKE-TEST.md</Code>, and until a human works through it on an Android
-              device and a desktop browser, no claim here should be read as saying browser inference
-              is verified.
+              Nobody has watched the model run on a real phone yet. The model file runs in Python,
+              the photo preparation matches, the decision code has tests, and desktop Chrome runs it
+              fine. A mid-range Android phone is still untested. The steps for checking one are in{" "}
+              <Code>BROWSER-SMOKE-TEST.md</Code>.
             </Callout>
           </Part>
 
           {/* ============ 07 PROVENANCE ============ */}
-          <Part id="provenance" n="07" title="Datasets, licences, provenance">
+          <Part id="provenance" n="07" title="Datasets and licences">
             <P>
-              Every licence was read from the original repository record at the pinned DOI, never
-              from a mirror, a blog or a copied README. The full record, including the datasets that
-              were examined and rejected, is in <Code>models/tea/provenance.json</Code>; it was
-              verified on {provenance.verified_on}.
+              Each licence below was checked on the dataset&apos;s original page, not a mirror or a
+              copied README. The full record, including datasets we looked at and turned down, is in{" "}
+              <Code>models/tea/provenance.json</Code>. Last checked {provenance.verified_on}.
             </P>
             <Callout>
-              <strong>Why this step comes before training, not after.</strong> A predecessor model in
-              this repository was built on a benchmark licensed CC BY-<em>NC</em>, which meant the
-              trained weights could never ship. Licence problems are unrecoverable once you have
-              trained — so nothing is downloaded here until the licence is verified at source.{" "}
+              <strong>We check licences before downloading anything.</strong> An earlier model in
+              this project was trained on a CC BY-<em>NC</em> dataset, which meant it could never
+              ship. You can&apos;t fix that after training.{" "}
               {provenance.licence_conflict_finding ? String(provenance.licence_conflict_finding) : ""}
             </Callout>
 
@@ -624,7 +577,7 @@ export default function ModelsPage() {
               ))}
             </ul>
 
-            <h3 className="mt-8 text-[0.95rem] font-semibold">Where the artifacts live</h3>
+            <h3 className="mt-8 text-[0.95rem] font-semibold">Where the files are</h3>
             <Table
               head={["File", "What it is"]}
               rows={[
@@ -641,19 +594,19 @@ export default function ModelsPage() {
           </Part>
 
           {/* ============ 08 OTHERS ============ */}
-          <Part id="others" n="08" title="The other models">
+          <Part id="others" n="08" title="Everything else">
             <P>
-              The classifier is the only trained network in the project. The rest of the quantitative
-              surface is deterministic and citable, which is a deliberate choice rather than an
-              absence: a farmer acting on a watering instruction deserves arithmetic they could check.
+              The leaf classifier is the only neural network here. Everything else is plain formulas
+              from published sources. If a farmer is told to water, someone should be able to check
+              the sum.
             </P>
 
             <h3 className="mt-7 text-[0.95rem] font-semibold">
-              Price forecast — {prices.source.name}
+              Price forecast, {prices.source.name}
             </h3>
             <P small>
-              The one artifact in the project that ships its own baseline, and the pattern every
-              later model card copied: print the naive comparison next to your own error, every time.
+              Each forecast is shown next to the simplest possible guess, &ldquo;next month equals
+              this month&rdquo;, so you can see whether the model is actually earning its keep.
             </P>
             <Table
               head={["Commodity", "Model", "Backtest MAPE (1m)", "Naive baseline MAPE", "Window"]}
@@ -669,53 +622,51 @@ export default function ModelsPage() {
               ])}
             />
             <P small>
-              Several of these beat the naive forecast by a margin too small to be worth much, and
-              the card says so rather than rounding it into a claim. Source:{" "}
+              For some of these the model barely beats that guess, and the table shows it.
+              Source:{" "}
               <a href={prices.source.url} className="underline underline-offset-4" rel="noreferrer noopener" target="_blank">
                 {prices.source.name}
               </a>{" "}
               ({prices.source.license}).
             </P>
 
-            <h3 className="mt-8 text-[0.95rem] font-semibold">Deterministic engines</h3>
+            <h3 className="mt-8 text-[0.95rem] font-semibold">The formula-based parts</h3>
             <Table
               head={["Engine", "Method", "Why not learned"]}
               rows={[
                 [
-                  "Irrigation — lib/grow/irrigation.ts",
+                  "Irrigation, lib/grow/irrigation.ts",
                   "FAO-56 soil-water balance; soil properties from Table 19, crop coefficients from Tables 12 and 22",
-                  "Published, citable and checkable by an agronomist. There is no training data that would beat it and no caveat it needs.",
+                  "An agronomist can check every step against the FAO paper. No training data would do better.",
                 ],
                 [
-                  "Disease pressure — lib/grow/risk.ts",
+                  "Disease pressure, lib/grow/risk.ts",
                   "Trapezoidal fuzzy membership over leaf wetness, temperature, humidity and sunshine, with wetness and temperature as gates rather than weights",
-                  "Computed from this plot's own weather, so unlike the classifier it carries no transfer gap. The decision logic stays in readable code because it is the part an agronomist will question.",
+                  "It uses this plot's own weather, so it doesn't have the classifier's problem with unfamiliar photos. The rules stay readable because they're what an agronomist will question.",
                 ],
                 [
-                  "HS code — lib/compliance/hs.ts",
+                  "HS code, lib/compliance/hs.ts",
                   "Token-overlap baseline over a curated product catalogue",
-                  "Labelled as a baseline with an explicit seam for an embedding classifier. Not dressed up as more than it is.",
+                  "It's a simple word match, labelled as one. A smarter classifier can replace it later.",
                 ],
               ]}
             />
 
             <Callout>
-              <strong>There is deliberately no fusion model.</strong> The obvious move is to combine
-              the classifier&rsquo;s output with the weather-driven infection pressure into a single
-              confidence. A calibrated posterior over six classes and a fuzzy index over weather
-              conditions are not commensurable, so any average of them is a number with no referent —
-              and worse, merging them would hide the disagreement, which is the most useful thing on
-              the screen. When the photograph and the weather point different ways the app says so
-              and recommends inspection. Environmental evidence can never change the predicted class.
+              <strong>Why the photo and the weather aren&apos;t combined into one score.</strong> One
+              is a probability over six diseases, the other is a 0 to 1 weather index, and averaging
+              them gives a number that means nothing. It would also hide the most useful case: when the
+              photo says one thing and the weather says another. The app shows both and suggests a
+              closer look. The weather can never change what the photo result says.
             </Callout>
           </Part>
 
           {/* ============ 09 REPRODUCE ============ */}
-          <Part id="reproduce" n="09" title="Reproducing this">
+          <Part id="reproduce" n="09" title="Running it yourself">
             <P>
-              Images are not committed — the licences do not require it and it would add about a
-              gigabyte. Every dataset is fetched from the DOI pinned in the provenance record, and
-              CS-D&rsquo;s archive is verified by SHA-256 against the manifest before use.
+              The images aren&apos;t in the repo; they&apos;re about a gigabyte. Download each dataset
+              from the DOI in the provenance record. CS-D&apos;s archive is checked against a SHA-256
+              in the manifest before anything uses it.
             </P>
             <pre
               className="mt-4 overflow-x-auto rounded-[var(--radius-sm)] p-4 text-[0.75rem] leading-relaxed"
@@ -731,12 +682,11 @@ python ml/tea/check_ts_parity.py --csd <d>                       # TypeScript vs
 python scripts/audit_release.py                                  # card vs artifact vs docs`}</code>
             </pre>
             <P small>
-              The split is a pure function of identity — <Code>{card.training.split_rule}</Code> —
-              so there is no split file to lose and the same groups land in the same places on any
-              machine. Training seed is fixed. <Code>smoke_infer.py</Code> deliberately loads the{" "}
-              <em>published</em> ONNX rather than the checkpoint: an earlier export silently wrote a
-              graph with its weights stripped into a sidecar file, and only testing the artifact that
-              actually ships caught it.
+              Which split a photo lands in is worked out from a hash of the original photo it came
+              from (<Code>{card.training.split_rule}</Code>), so every machine gets the same split and
+              there&apos;s no split file to lose. The random seed is fixed too. <Code>smoke_infer.py</Code> tests the
+              published model file, not the training checkpoint. That&apos;s how we caught an export that
+              had quietly left its weights in a separate file.
             </P>
           </Part>
         </div>
@@ -748,10 +698,10 @@ python scripts/audit_release.py                                  # card vs artif
 // --- presentational helpers ----------------------------------------------
 
 function roleOf(id: string): string {
-  if (id === "cs_d") return "Training, validation and Test 1 (in-distribution)";
-  if (id === "ewu_tea_leaf_disease") return "Test 2 — cross-dataset, detached leaf. Never seen in training.";
-  if (id === "tld_bd") return "Test 3 — cross-dataset, detached leaf (studio). Never seen in training.";
-  return "Examined during the audit; not used. See provenance.json for why.";
+  if (id === "cs_d") return "Training, validation and Test 1";
+  if (id === "ewu_tea_leaf_disease") return "Test 2. Leaves on paper, never used in training.";
+  if (id === "tld_bd") return "Test 3. Leaves on paper, from Bangladesh, never used in training.";
+  return "Looked at and not used. provenance.json says why.";
 }
 
 function Part({

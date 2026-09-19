@@ -1,8 +1,5 @@
-/**
- * Device storage budgeting for the offline queue. The attestation photos are
- * the only heavy payload; this module keeps the officer informed and the
- * browser from evicting us. See DECISIONS.md D-009 for the full strategy.
- */
+// Device storage budgeting for the offline queue. The attestation photos are the only heavy
+// payload; this module keeps the officer informed and the browser from evicting us.
 import { db } from "./db";
 
 export interface StorageEstimate {
@@ -19,11 +16,7 @@ export async function estimateStorage(): Promise<StorageEstimate | null> {
   return { usage, quota, ratio: quota > 0 ? usage / quota : 0 };
 }
 
-/**
- * Ask the browser to keep our IndexedDB from being evicted under storage
- * pressure. Field devices fill up; without this, a full phone could silently
- * drop unsynced plots. Best-effort, returns whether persistence is granted.
- */
+/** Ask the browser to keep our IndexedDB from being evicted under storage pressure. */
 export async function requestPersistence(): Promise<boolean> {
   if (typeof navigator === "undefined" || !navigator.storage?.persist) return false;
   if (navigator.storage.persisted && (await navigator.storage.persisted())) return true;

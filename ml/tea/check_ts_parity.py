@@ -1,32 +1,5 @@
-"""
-Cross-language parity check: does the app's TypeScript preprocessing agree with
-the Python transform the model was evaluated under?
-
-    python ml/tea/check_ts_parity.py --csd <dir> --n 40
-
-This is the check nothing else can make. If `lib/grow/tea/preprocess.ts` and
-`ml/tea/train.py`'s eval transform diverge, no test fails and no error is raised
-— the model simply gets quietly worse in the browser than it did on the bench,
-which is the hardest class of bug to notice and the easiest to ship.
-
-Method, so that the ACTUAL TypeScript runs rather than a Python imitation of it:
-
-  1. Python decodes a real JPEG and dumps raw RGBA.
-  2. Node runs the real `preprocessRgba` from lib/grow/tea/ over those bytes.
-  3. Python feeds BOTH tensors — the TS one and torchvision's — through the
-     PUBLISHED ONNX file and compares predictions.
-
-PASS CRITERION: the two must agree on every image where BOTH are confident.
-
-That is deliberately not "agree on every image". The resampling differs —
-torchvision is bilinear, the pure-TS fallback here is nearest-neighbour — so
-borderline images can land on opposite sides of a class boundary. What matters
-is whether a disagreement can ever reach a farmer, and it cannot if at least one
-side falls below the abstention threshold: that input is declined, not answered.
-Measured at n=40, agreement was 39/40 overall and 37/37 where both were
-confident, i.e. the only disagreement was in the region abstention already
-rejects.
-"""
+"""Cross-language parity check: does the app's TypeScript preprocessing agree with the Python
+transform the model was evaluated under?"""
 
 from __future__ import annotations
 
@@ -163,11 +136,11 @@ def main() -> None:
         print("  disagreements (python -> ts):")
         for n, p_, t_ in disagreements[:8]:
             print(f"    {n}: {p_} -> {t_}")
-    print("\n  Note: a small tensor difference is expected — the pure-TS fallback resamples")
+    print("\n  Note: a small tensor difference is expected, the pure-TS fallback resamples")
     print("  nearest-neighbour while torchvision uses bilinear. The browser's canvas path")
     print("  resamples smoothly and sits closer to torchvision than this test does.")
-    # Disagreements below the threshold never reach a farmer: those inputs are
-    # declined. Only a confident disagreement is a real defect.
+    # Disagreements below the threshold never reach a farmer: those inputs are declined. Only a
+    # confident disagreement is a real defect.
     ok = both_confident_agree == both_confident
     verdict = "PASS" if ok else "FAIL"
     print(f"\n  {verdict}: confident predictions agree "

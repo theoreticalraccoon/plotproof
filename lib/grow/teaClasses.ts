@@ -1,26 +1,4 @@
-/**
- * Canonical tea-condition classes — the contract between the trained model and
- * the app.
- *
- * TypeScript mirror of `models/tea/taxonomy.json`, which is the source of truth
- * and carries the full evidence for every merge decision. If you change one,
- * change both; `test/teaClasses.test.ts` fails if they drift.
- *
- * Two rules this file exists to enforce:
- *
- * 1. **Class IDs are stable forever.** The model emits a vector whose positions
- *    are `ACTIVE_CLASS_IDS`, in order. Raw dataset folder names ("Gray Blight",
- *    "Tea_Mosquito_Bug") never reach the app — three datasets spell the same
- *    condition three different ways, and one of those pairs is the same insect
- *    under two common names.
- *
- * 2. **Pests are not pathogens.** Two of the six active classes are insects and
- *    mites, not fungi. `lib/grow/risk.ts` models weather-driven infection
- *    windows for FUNGAL pathogens only, so the two label spaces are related but
- *    not equal. `riskEngineKey` is the explicit, auditable bridge between them,
- *    and it is `null` wherever no bridge exists. Fusion must consult it rather
- *    than assuming the two taxonomies line up — they do not.
- */
+/** Canonical tea-condition classes, the contract between the trained model and the app. */
 import type { TeaDisease } from "./types";
 
 export type TeaClassKey =
@@ -52,11 +30,8 @@ export interface TeaClass {
   kind: TeaConditionKind;
   /** Emitted by the v1 model? Reserved classes are declared but not predicted. */
   active: boolean;
-  /**
-   * Bridge to `lib/grow/risk.ts`. Null where the risk engine has no model for
-   * this condition — every pest, and every disease outside its three pathogens.
-   * Null means "no environmental prior exists", NOT "prior is neutral".
-   */
+  // Bridge to `lib/grow/risk.ts`. Null where the risk engine has no model for this condition,
+  // every pest, and every disease outside its three pathogens.
   riskEngineKey: TeaDisease | null;
   /** Can this class be tested on a dataset it was not trained on? */
   crossDatasetTestable: boolean;
@@ -64,11 +39,8 @@ export interface TeaClass {
   sourceLabels: string[];
 }
 
-/**
- * Ordered by classId. IDs 6–10 are declared but inactive: they exist so that a
- * later dataset can activate them without renumbering anything the v1 model
- * already emitted.
- */
+// Ordered by classId. IDs 6–10 are declared but inactive: they exist so that a later dataset
+// can activate them without renumbering anything the v1 model already emitted.
 export const TEA_CLASSES: readonly TeaClass[] = [
   {
     classId: 0,
@@ -78,8 +50,8 @@ export const TEA_CLASSES: readonly TeaClass[] = [
     active: true,
     riskEngineKey: null,
     crossDatasetTestable: true,
-    // "Healthy leaf" / "Healthy Leaf" differ only in case across two datasets,
-    // and normalise to the same key, so only one spelling is listed.
+    // "Healthy leaf" / "Healthy Leaf" differ only in case across two datasets, and normalise to
+    // the same key, so only one spelling is listed.
     sourceLabels: ["Healthy_leaves", "Healthy", "Healthy leaf"],
   },
   {
@@ -89,9 +61,8 @@ export const TEA_CLASSES: readonly TeaClass[] = [
     kind: "fungal_disease",
     active: true,
     riskEngineKey: "blister_blight",
-    // Single-source: no other tea dataset examined contains this class, so
-    // there is nothing to test it against. The most important class in the
-    // product is also the least verifiable one.
+    // Single-source: no other tea dataset examined contains this class, so there is nothing to
+    // test it against.
     crossDatasetTestable: false,
     sourceLabels: ["Blister_Blight"],
   },
@@ -204,28 +175,14 @@ export function teaClassByKey(key: TeaClassKey): TeaClass | undefined {
   return TEA_CLASSES.find((c) => c.key === key);
 }
 
-/**
- * Map a raw dataset folder name to a canonical class.
- *
- * Case- and separator-insensitive, because the same condition is spelled
- * "Brown_Blight", "Brown Blight" and "brown blight" across three datasets.
- * Returns undefined rather than guessing: an unmapped folder is a dataset
- * change that a human should look at, not something to silently bucket.
- */
+/** Map a raw dataset folder name to a canonical class. */
 export function teaClassFromSourceLabel(label: string): TeaClass | undefined {
   const norm = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, " ").trim();
   const target = norm(label);
   return TEA_CLASSES.find((c) => c.sourceLabels.some((l) => norm(l) === target));
 }
 
-/**
- * Does an environmental infection-risk prior exist for this class?
- *
- * The honest answer is no for every pest and for any disease outside the risk
- * engine's three pathogens. Fusion uses this to decide whether the weather
- * evidence is even applicable — a red-spider-mite prediction must not be
- * up- or down-weighted by a fungal infection window that says nothing about mites.
- */
+/** Does an environmental infection-risk prior exist for this class? */
 export function hasEnvironmentalPrior(c: TeaClass): boolean {
   return c.riskEngineKey !== null;
 }

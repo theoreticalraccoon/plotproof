@@ -1,10 +1,5 @@
--- PlotProof: per-user saved state (the sale intent + document progress the app
--- otherwise keeps only in the browser). One row per user, protected by RLS so a
--- user can only ever read or write their own row.
---
--- Apply this via the Supabase dashboard SQL editor (no CLI or DB password
--- needed): Dashboard > SQL Editor > New query > paste > Run.
--- Or with the CLI once linked: supabase db push
+-- PlotProof: per-user saved state (the sale intent + document progress the app otherwise keeps
+-- only in the browser).
 
 create table if not exists public.user_state (
   user_id     uuid primary key references auth.users (id) on delete cascade,

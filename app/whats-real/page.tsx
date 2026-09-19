@@ -1,13 +1,4 @@
-/**
- * The honesty page: what in PlotProof is real, working software, and what is
- * not yet. Kept deliberately blunt. If a feature's status changes, this page
- * changes in the same commit — a stale claim here is worse than no page.
- *
- * Set as a document: a contents rail that stays with the reader, numbered
- * parts, and prose capped at a readable measure. The one elevated block on the
- * page is the admission of what does NOT work — on a page whose whole argument
- * is candour, that is the part that has to be impossible to skim past.
- */
+/** The honesty page: what in PlotProof is real, working software, and what is not yet. */
 import type { Metadata } from "next";
 import PendingLink from "@/components/motion/PendingLink";
 import Breadcrumb from "@/components/shell/Breadcrumb";
@@ -85,14 +76,14 @@ export default function WhatsRealPage() {
               <Entry term="Disease pressure from weather.">
                 How far the last two weeks favoured blister blight, brown blight or grey blight,
                 with the measured conditions that produced the score. This is infection pressure,
-                not a diagnosis — weather favouring a disease is not the same as having it.
+                not a diagnosis, weather favouring a disease is not the same as having it.
               </Entry>
               <Entry term="Leaf disease diagnosis from a photo.">
-                Photograph a leaf and a small neural network runs in your browser — the image never
+                Photograph a leaf and a small neural network runs in your browser, the image never
                 leaves the phone. It declines to answer when it is not confident enough. Version 1.1
-                is trained with half of every epoch re-rendered as a field photograph — the leaf cut
+                is trained with half of every epoch re-rendered as a field photograph, the leaf cut
                 out and placed among other leaves, under uneven light, through a simulated phone
-                camera — because every public tea dataset is picked leaves on white paper. On
+                camera, because every public tea dataset is picked leaves on white paper. On
                 held-out leaves rendered that way it now answers about three photos in four and is
                 right on about 96% of those; the version before it answered one in twelve, and got
                 most of those wrong.
@@ -111,18 +102,18 @@ export default function WhatsRealPage() {
                 Every attestation is SHA-256 hashed (photo bytes, signature bytes, boundary,
                 identity fields) and chained to the previous record on the device. Later edits are
                 detectable. Limits, stated plainly: the hashes are computed by the same device that
-                captured the data, and are not yet anchored to an external timestamping service —
+                captured the data, and are not yet anchored to an external timestamping service,
                 this proves the record hasn&apos;t changed, not that the capture was honest.
               </Entry>
               <Entry term="Server persistence.">
                 When Supabase is configured and the officer is signed in, farmers, plots,
                 attestations, and media sync to the server under row-level security (own rows only).
-                When it is not configured, the sync bar says so — records stay on the device and
+                When it is not configured, the sync bar says so, records stay on the device and
                 nothing pretends otherwise.
               </Entry>
               <Entry term="The consignment workspace.">
                 One record per sale holds every detail the paperwork needs, and the commercial
-                invoice, packing list and certificate-of-origin draft are all written from it — so
+                invoice, packing list and certificate-of-origin draft are all written from it, so
                 they cannot disagree with each other about quantity or value, which is a real reason
                 consignments are held at the border. Each document can be opened and corrected on
                 its own; the correction goes back to the record and appears on the others. An
@@ -130,14 +121,14 @@ export default function WhatsRealPage() {
               </Entry>
               <Entry term="Documents we will not produce.">
                 The phytosanitary certificate, the customs declaration, the certificate of origin
-                once certified — these are issued by an authority, and a generated look-alike would
+                once certified, these are issued by an authority, and a generated look-alike would
                 be a forgery. They appear as a checklist naming who issues each one and how to
                 apply, checked against the cited authorities on the date shown on the page.
               </Entry>
               <Entry term="Deforestation screening inside the sale.">
                 For the EUDR commodities bound for the EU, each attested plot is measured against
-                three published satellite products — JRC Global Forest Cover 2020, Hansen/UMD tree
-                cover loss, and the WRI/Google loss-driver model — and a stated rule reads the
+                three published satellite products, JRC Global Forest Cover 2020, Hansen/UMD tree
+                cover loss, and the WRI/Google loss-driver model, and a stated rule reads the
                 result. Details below.
               </Entry>
               <Entry term="An export assistant that can see the consignment.">
@@ -160,8 +151,8 @@ export default function WhatsRealPage() {
               </Entry>
               <Entry term="Price intelligence.">
                 World reference prices (World Bank Pink Sheet, monthly, CC BY) for tea, coffee,
-                rubber, cocoa, and coconut, shown in the sell flow with honest backtested forecasts
-                — the chosen model&apos;s error is displayed next to the naive baseline&apos;s.
+                rubber, cocoa, and coconut, shown in the sell flow with honest backtested forecasts,
+                the chosen model&apos;s error is displayed next to the naive baseline&apos;s.
                 Reference prices, not farm-gate offers; the screen says so. Products with no public
                 series (cinnamon, pepper, cardamom) say so instead of showing an invented number.
               </Entry>
@@ -188,7 +179,7 @@ export default function WhatsRealPage() {
                 className="text-[1.05rem] font-semibold tracking-tight sm:text-[1.2rem]"
                 style={{ color: "var(--warn)" }}
               >
-                Not real yet — and never faked on screen
+                Not real yet, and never faked on screen
               </h2>
             </div>
             <Entries className="mt-6">
@@ -196,9 +187,9 @@ export default function WhatsRealPage() {
                 We still do not run one. An earlier in-house analysis service was removed after
                 review: it could not be trained or validated honestly by one developer, and
                 inventing a verdict was worse than having none. What the sale flow now shows is area
-                statistics over three products published and validated by other people — JRC Global
+                statistics over three products published and validated by other people, JRC Global
                 Forest Cover 2020, Hansen/UMD Global Forest Change, and the WRI/Google loss-driver
-                model — plus a rule, written down and tested, that reads them against the EUDR
+                model, plus a rule, written down and tested, that reads them against the EUDR
                 question. The numbers are theirs; the reasoning is ours and is stated on screen.
               </Entry>
               <Entry term="An EUDR certificate.">
@@ -214,13 +205,13 @@ export default function WhatsRealPage() {
               <Entry term="Tea disease detection outside its training domain.">
                 The model scores 99.6% on held-out data from the set it was trained on, and about
                 70% on leaves photographed by other people in other countries. That gap is the
-                honest number. Every dataset we could find — Assam, Bangladesh, and a third from a
-                Bangladeshi university — photographs picked leaves on white paper; none contains a
+                honest number. Every dataset we could find, Assam, Bangladesh, and a third from a
+                Bangladeshi university, photographs picked leaves on white paper; none contains a
                 leaf on a bush, and none contains Sri Lankan tea. The field performance quoted above
                 is measured on a simulation of field conditions, not on real field photographs,
                 because there are no real ones to measure against. An earlier version of this page
                 and of the model card called one of those studio datasets a field set. It is not.
-                Two classes — blister blight and red rust — appear in no other dataset at all, so
+                Two classes, blister blight and red rust, appear in no other dataset at all, so
                 they have no independent check whatsoever.
               </Entry>
               <Entry term="Acoustic chainsaw detection.">
@@ -235,7 +226,7 @@ export default function WhatsRealPage() {
                 against real hardware. The firmware compiles for the ESP32 with no errors or
                 warnings, but it has never been flashed, the serial path has never seen a real board, and no probe has been pushed into real soil. Until that
                 happens, treat the lane as untested hardware code, and note that the calibration is a
-                field one &mdash; air and water remove the probe&rsquo;s arbitrary scale, but a water
+                field one, air and water remove the probe&rsquo;s arbitrary scale, but a water
                 content that is accurate for a specific soil needs oven-dried samples. The simulated
                 probe on that screen is labelled as simulated everywhere it appears, including in
                 storage.
@@ -251,7 +242,7 @@ export default function WhatsRealPage() {
             <Entries>
               <Entry term="Who files, legally.">
                 Under the EU Deforestation Regulation the operator placing goods on the EU market
-                files the due diligence statement — not the farmer. A smallholder has no legal duty
+                files the due diligence statement, not the farmer. A smallholder has no legal duty
                 and no budget for this. PlotProof&apos;s output is therefore built to be consumed by
                 the cooperative or exporter who does file.
               </Entry>
@@ -259,7 +250,7 @@ export default function WhatsRealPage() {
                 Regulation (EU) 2025/2650 (OJ, 23 December 2025) postponed EUDR application to 30
                 December 2026 for medium and large operators and 30 June 2027 for micro and small
                 enterprises. The window before those dates is exactly when supply chains must
-                assemble smallholder evidence — which is what this tool captures. (An earlier
+                assemble smallholder evidence, which is what this tool captures. (An earlier
                 version of this page misstated these dates; corrected against the regulation.)
               </Entry>
               <Entry term="Plots under 4 hectares.">
@@ -315,9 +306,7 @@ function Entries({ children, className = "" }: { children: React.ReactNode; clas
   return <dl className={`mt-6 flex flex-col gap-7 ${className}`}>{children}</dl>;
 }
 
-/** Term on its own line, description beneath at a capped measure. A run of
- *  disc bullets flattens everything to one weight; a definition list gives the
- *  claim and its qualification two different ones. */
+/** Term on its own line, description beneath at a capped measure. */
 function Entry({ term, children }: { term: string; children: React.ReactNode }) {
   return (
     <div>

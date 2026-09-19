@@ -1,18 +1,6 @@
 "use client";
 
-/**
- * One document, with only the fields that document prints beside it.
- *
- * This is the answer to "change the information inside a single document". The
- * fields come from the same registry the questionnaire uses and write to the
- * same sale, so correcting the buyer's address on the invoice corrects it on
- * the packing list too — which is what customs expects, and what three
- * independent forms could never guarantee.
- *
- * Fields the document does not print are not shown. Hiding them is honest: an
- * officer editing "the invoice" should not be able to change the shipping
- * marks here and wonder why the invoice looks the same.
- */
+/** One document, with only the fields that document prints beside it. */
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Loader2 } from "lucide-react";

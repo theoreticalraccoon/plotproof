@@ -1,14 +1,7 @@
 "use client";
 
-/**
- * Satellite basemap tracing, the production-default capture path (PROJECT.md).
- * Officer and farmer sit together; the farmer points, the officer taps corners.
- *
- * Every rule runs live as corners are added: area is measured, self-intersection
- * blocks the save, and overlap / area-mismatch surface as warnings. Tiles come
- * from the offline cache. Nothing saves at "end of session", Save persists one
- * plot immediately and queues it for sync.
- */
+// Satellite basemap tracing, the production-default capture path (PROJECT.md). Officer and
+// farmer sit together; the farmer points, the officer taps corners.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";

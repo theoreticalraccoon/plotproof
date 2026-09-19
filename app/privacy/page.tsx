@@ -1,13 +1,5 @@
-/**
- * Privacy notice. Written to be true of what the code actually does today, not
- * of what it is meant to do eventually. If the sync path or the analysis path
- * changes, this page changes in the same commit.
- *
- * Set to match /whats-real so the two read as one pair of documents: a contents
- * rail, numbered clauses, hairline rules, prose at a fixed measure. The single
- * pulled-out block is the consequence of device-only storage, because that is
- * the sentence in here that can cost someone their records.
- */
+// Privacy notice. Written to be true of what the code actually does today, not of what it is
+// meant to do eventually.
 import type { Metadata } from "next";
 import PendingLink from "@/components/motion/PendingLink";
 import Breadcrumb from "@/components/shell/Breadcrumb";
@@ -49,7 +41,7 @@ export default function PrivacyPage() {
 
       <div className="grid gap-x-16 lg:grid-cols-[12rem_1fr]">
         {/* In-page anchors: the jump is instant, so the colour change on press
-            is the whole acknowledgement — a spinner here would be a lie. */}
+            is the whole acknowledgement, a spinner here would be a lie. */}
         <nav
           aria-label="On this page"
           className="sticky hidden self-start lg:block"
@@ -209,8 +201,8 @@ export default function PrivacyPage() {
 
 // --- document furniture ---------------------------------------------------
 
-/** A numbered clause: rule, margin number, title, then prose at a fixed
- *  measure. No card, no border — the rule and the whitespace do the work. */
+// A numbered clause: rule, margin number, title, then prose at a fixed measure. No card, no
+// border, the rule and the whitespace do the work.
 function Clause({
   id,
   n,

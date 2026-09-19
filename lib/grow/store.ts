@@ -1,12 +1,4 @@
-/**
- * Dexie accessors for the GROW lane.
- *
- * Mirrors `lib/intake/store.ts` in posture: browser-only, every write lands
- * immediately, nothing waits for a session to end. It deliberately does NOT
- * queue to the outbox — grow data is advisory and locally recomputable, unlike
- * an attested plot boundary, so putting it in the sync contract would add
- * server surface for no evidentiary gain.
- */
+/** Dexie accessors for the GROW lane. */
 import { db } from "../intake/db";
 import { guardVwc } from "./sensorGuard";
 import type { CachedWeatherDay, ProbeCalibration, SensorReading } from "./growTypes";
@@ -26,24 +18,13 @@ export async function saveGrowProfile(profile: GrowProfile): Promise<void> {
 
 // --- weather cache -------------------------------------------------------
 
-/**
- * Cache a fetched range. `bulkPut` against the compound `[plotId+date]` key
- * updates overlapping days in place, so repeatedly loading "the last 30 days"
- * converges on one row per day instead of accumulating.
- */
+/** Cache a fetched range. */
 export async function cacheWeather(plotId: string, days: DailyWeather[], fetchedAt: string): Promise<void> {
   const rows: CachedWeatherDay[] = days.map((d) => ({ ...d, plotId, fetchedAt }));
   await db().weatherCache.bulkPut(rows);
 }
 
-/**
- * Read cached weather back, oldest first.
- *
- * This is what makes the grow lane work offline: a farmer who loaded the page
- * in town keeps a usable advisory in the field with no signal. The caller is
- * responsible for telling them how old it is — `fetchedAt` rides on every row
- * precisely so that staleness can be shown rather than silently tolerated.
- */
+/** Read cached weather back, oldest first. */
 export async function cachedWeather(plotId: string): Promise<CachedWeatherDay[]> {
   const rows = await db().weatherCache.where("plotId").equals(plotId).toArray();
   return rows.sort((a, b) => a.date.localeCompare(b.date));
@@ -62,24 +43,14 @@ export async function recentSensorReadings(plotId: string, limit = 500): Promise
   return rows.sort((a, b) => b.at.localeCompare(a.at)).slice(0, limit);
 }
 
-/**
- * The latest calibrated soil-moisture value, or null.
- *
- * Returns null when the newest reading is uncalibrated OR older than
- * `maxAgeHours`. A stale soil reading is worse than none: it would override a
- * correctly-accumulating water balance with yesterday's state. Same staleness
- * posture as `PriceCard`'s three-month price gate.
- */
+/** The latest calibrated soil-moisture value, or null. */
 export async function latestSoilMoisture(plotId: string, maxAgeHours = 24): Promise<number | null> {
   const rows = await recentSensorReadings(plotId, 1);
   const latest = rows[0];
   if (!latest) return null;
   const ageHours = (Date.now() - new Date(latest.at).getTime()) / 3_600_000;
   if (!Number.isFinite(ageHours) || ageHours > maxAgeHours) return null;
-  // Guard the VALUE as well as its age. A miscalibrated probe can emit anything,
-  // and computeIrrigation clamps depletion into [0, TAW] — so an absurd reading
-  // does not crash, it quietly becomes a confident wrong verdict from the
-  // highest tier of the anchoring ladder. A fault must demote, never outrank.
+  // Guard the VALUE as well as its age.
   return guardVwc(latest.vwc);
 }
 
@@ -87,10 +58,8 @@ export async function clearSensorReadings(plotId: string): Promise<void> {
   await db().sensorReadings.where("plotId").equals(plotId).delete();
 }
 
-// --- probe calibration ---------------------------------------------------
-// localStorage, not Dexie: it is a handful of scalars per plot, it is read on
-// every reading parsed, and it must be available synchronously in the serial
-// read loop without awaiting IndexedDB.
+// --- probe calibration --------------------------------------------------- localStorage, not
+// Dexie: it is a handful of scalars per plot, it is read on every reading parsed.
 
 function readCalibrations(): Record<string, ProbeCalibration> {
   if (typeof localStorage === "undefined") return {};

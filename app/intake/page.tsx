@@ -1,17 +1,7 @@
 "use client";
 
-/**
- * Plot intake hub. One screen for the officer: sync status, the capture surface
- * (import or on-map capture), and the running list of captured plots.
- *
- * Field register, deliberately different from the marketing pages: this screen
- * is read outdoors, in sunlight, on a cheap Android. Blur and translucency are
- * a liability there, so the surfaces are solid fills and hairline rules, the
- * type runs larger, and every control clears a 44px target. Nothing on this
- * page is decorative.
- *
- * TraceMap is loaded with ssr:false because Leaflet touches `window`.
- */
+// Plot intake hub. One screen for the officer: sync status, the capture surface (import or
+// on-map capture), and the running list of captured plots.
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -30,8 +20,8 @@ import { warmup } from "@/lib/net";
 
 const TraceMap = dynamic(() => import("@/components/intake/TraceMap"), {
   ssr: false,
-  // Shaped like the map it becomes: a blank rectangle where a map belongs is
-  // indistinguishable from a map that failed to load.
+  // Shaped like the map it becomes: a blank rectangle where a map belongs is indistinguishable
+  // from a map that failed to load.
   loading: () => <SkeletonMap className="h-[58vh]" label="Loading map" />,
 });
 
@@ -43,19 +33,15 @@ export default function IntakePage() {
   const reduce = useReducedMotion();
   const [tab, setTab] = useState<Tab>("import");
   const [refresh, setRefresh] = useState(0);
-  // The panel below is server-rendered. Giving it an entrance on first mount
-  // ships HTML with opacity:0 that only becomes visible once Framer hydrates —
-  // invisible on a slow connection, and a hydration mismatch. So the entrance
-  // starts only once the officer has actually switched tabs.
+  // The panel below is server-rendered.
   const [switched, setSwitched] = useState(false);
   const bump = () => setRefresh((n) => n + 1);
 
   // Wake the serverless analysis routes early, so opening a pack later is warm.
   useEffect(() => warmup(), []);
 
-  // Account isolation: if a different account (or an anonymous session) than the
-  // last one used this browser, wipe local field data so each account opens on a
-  // genuine clean slate rather than inheriting the previous user's plots.
+  // Account isolation: if a different account (or an anonymous session) than the last one used
+  // this browser.
   useEffect(() => {
     if (loading) return;
     const KEY = "plotproof.intakeOwner";
@@ -145,13 +131,8 @@ export default function IntakePage() {
   );
 }
 
-/**
- * The farmer's right to have their record deleted has to be exercisable by the
- * person holding the device, without contacting anyone. Two taps, no recovery.
- *
- * Kept quiet and last: a permanently red panel halfway up the screen trains an
- * officer to stop seeing red.
- */
+// The farmer's right to have their record deleted has to be exercisable by the person holding
+// the device, without contacting anyone. Two taps, no recovery.
 function DangerZone({ onCleared }: { onCleared: () => void }) {
   const [armed, setArmed] = useState(false);
 
@@ -198,10 +179,8 @@ function DangerZone({ onCleared }: { onCleared: () => void }) {
   );
 }
 
-/**
- * Segmented path selector. Choosing a path is synchronous, so the fill flip IS
- * the acknowledgement; a spinner here would be a lie.
- */
+// Segmented path selector. Choosing a path is synchronous, so the fill flip IS the
+// acknowledgement; a spinner here would be a lie.
 function PathButton({
   active,
   onClick,

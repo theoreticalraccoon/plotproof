@@ -1,13 +1,4 @@
-/**
- * Offline → server sync. Drains the outbox when the device is online.
- *
- * The server write is behind the `SyncTransport` interface. The default is the
- * REAL Supabase transport (lib/intake/supabaseTransport.ts, tables from
- * migration 0002). When Supabase is not configured or nobody is signed in,
- * drains report `unavailable: true` and leave everything queued — there is
- * deliberately no transport that pretends to succeed: a farmer's plot marked
- * "synced" that exists in no server is data loss wearing a green tick.
- */
+/** Offline → server sync. Drains the outbox when the device is online. */
 import { db, type OutboxItem } from "./db";
 
 export interface PushResult {
@@ -35,11 +26,8 @@ export interface DrainResult {
   unavailable?: boolean;
 }
 
-/**
- * Drain the outbox. Safe to call often (e.g. on 'online', after each save, on
- * an interval), it no-ops if already running or offline. Deletes items on
- * success and flips the corresponding plot/farmer to 'synced'.
- */
+// Drain the outbox. Safe to call often (e.g. on 'online', after each save, on an interval), it
+// no-ops if already running or offline.
 export async function drainOutbox(transport?: SyncTransport): Promise<DrainResult> {
   if (running || !isOnline()) return { synced: 0, failed: 0 };
   if (!transport) {
@@ -62,8 +50,8 @@ export async function drainOutbox(transport?: SyncTransport): Promise<DrainResul
         const result = (await transport.push(item)) ?? {};
         await database.outbox.delete(item.seq);
         await setEntitySync(item, "synced");
-        // Reclaim device space: once a photo/signature is actually uploaded,
-        // drop the local blob and keep only the remote path.
+        // Reclaim device space: once a photo/signature is actually uploaded, drop the local blob
+        // and keep only the remote path.
         if (item.entity === "media" && result.remotePath) {
           await database.media.update(item.entityId, {
             remotePath: result.remotePath,

@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * Turn document models into a PDF file and hand it to the browser.
- *
- * The renderer and the PDF component are both imported here, on click, rather
- * than at module load: `@react-pdf/renderer` is several hundred kilobytes that
- * an officer filling in the questionnaire never needs.
- */
+/** Turn document models into a PDF file and hand it to the browser. */
 import { createElement } from "react";
 import type { ExportDoc } from "./documents";
 

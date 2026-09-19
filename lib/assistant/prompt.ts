@@ -1,20 +1,4 @@
-/**
- * What the export assistant knows, and the rules it answers under.
- *
- * Two parts with deliberately different lifetimes:
- *
- *   - `SYSTEM_PROMPT` is fixed: the role, the rules, and the whole sourced
- *     document catalog. It is identical on every request so the API can cache
- *     it, and it contains nothing an officer typed — so nothing they typed can
- *     rewrite the rules.
- *   - `saleContext()` is per request: a compact summary of the open consignment,
- *     derived with the same pure functions that drive the page, wrapped in a
- *     tag the rules tell the model to treat as data.
- *
- * The grounding is the point. The catalog cites a real authority for every
- * requirement; an assistant answering from that is checkable, and one answering
- * from general knowledge about export law is not.
- */
+/** What the export assistant knows, and the rules it answers under. */
 import { CATALOG_VERIFIED_AT, DOCUMENT_TYPES } from "../compliance/catalog.ts";
 import { screenPlot } from "../eudr/verdict.ts";
 import { countryName } from "../geo/countries.ts";
@@ -64,14 +48,7 @@ function clean(s: string, max = 200): string {
   return s.replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
-/**
- * The open consignment, summarised for the assistant.
- *
- * Built from the same functions as the page, so the assistant and the screen
- * cannot disagree about what is missing or what the EUDR screening found.
- * Free-text fields are cleaned and truncated; they are officer-supplied and are
- * the one place a prompt injection could arrive from.
- */
+/** The open consignment, summarised for the assistant. */
 export function saleContext(sale: Sale): string {
   const product = saleProduct(sale);
   const t = saleTotals(sale);
@@ -148,13 +125,7 @@ export interface ChatTurn {
 
 export type TurnProblem = "empty" | "too_long" | "bad_shape" | "must_end_with_user";
 
-/**
- * Validate and trim the conversation the browser sent.
- *
- * The browser is not trusted to send a well-formed history: roles are checked,
- * oversized messages are refused rather than truncated (silently cutting a
- * question changes its meaning), and only the most recent turns are kept.
- */
+/** Validate and trim the conversation the browser sent. */
 export function checkTurns(raw: unknown): { turns: ChatTurn[] } | { problem: TurnProblem } {
   if (!Array.isArray(raw) || raw.length === 0) return { problem: "empty" };
   const turns: ChatTurn[] = [];

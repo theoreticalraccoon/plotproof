@@ -1,16 +1,6 @@
 "use client";
 
-/**
- * A generated document, on screen, exactly as it will print.
- *
- * It takes an `ExportDoc` and nothing else — the same model the PDF renderer
- * consumes — so what the officer proofreads here and what the buyer receives
- * cannot drift apart. It computes nothing: every value shown was decided in
- * `lib/sale/documents.ts`.
- *
- * Deliberately plain: black on white, no theme colours, because this is paper,
- * not app chrome.
- */
+/** A generated document, on screen, exactly as it will print. */
 import type { ExportDoc, PartyBlock } from "@/lib/sale/documents";
 
 export default function DocPreview({ doc }: { doc: ExportDoc }) {
@@ -30,7 +20,7 @@ export default function DocPreview({ doc }: { doc: ExportDoc }) {
         <div>
           <h2 className="text-[1.05rem] font-bold uppercase tracking-wide">{TITLE[doc.kind]}</h2>
           <p className="mt-0.5 font-mono text-[0.75rem] text-gray-600">
-            No. {doc.number || "—"} · {doc.date}
+            No. {doc.number || "-"} · {doc.date}
           </p>
         </div>
         <p className="text-right text-[0.72rem] uppercase tracking-wide text-gray-500">
@@ -82,8 +72,8 @@ function Invoice({ doc }: { doc: Extract<ExportDoc, { kind: "invoice" }> }) {
         </thead>
         <tbody>
           <tr className="border-b border-gray-200 align-top">
-            <td className="py-2 pr-3">{doc.line.description || "—"}</td>
-            <td className="py-2 pr-3 font-mono text-[0.78rem]">{doc.line.hsCode || "—"}</td>
+            <td className="py-2 pr-3">{doc.line.description || "-"}</td>
+            <td className="py-2 pr-3 font-mono text-[0.78rem]">{doc.line.hsCode || "-"}</td>
             <td className="py-2 text-right tabular-nums">{doc.line.quantityKg.toLocaleString()}</td>
             <td className="py-2 text-right tabular-nums">{money(doc.line.unitPrice)}</td>
             <td className="py-2 text-right tabular-nums">{money(doc.line.amount)}</td>
@@ -92,7 +82,7 @@ function Invoice({ doc }: { doc: Extract<ExportDoc, { kind: "invoice" }> }) {
         <tfoot>
           <tr>
             <td colSpan={4} className="py-2 text-right font-medium">
-              Total, {doc.incoterm} {doc.incotermPlace || "—"}
+              Total, {doc.incoterm} {doc.incotermPlace || "-"}
             </td>
             <td className="py-2 text-right font-bold tabular-nums">
               {doc.currency} {money(doc.line.amount)}
@@ -159,7 +149,7 @@ function Packing({ doc }: { doc: Extract<ExportDoc, { kind: "packing-list" }> })
         <tbody>
           <tr className="border-b border-gray-200 align-top">
             <td className="py-2 pr-3">
-              {doc.description || "—"}
+              {doc.description || "-"}
               {doc.packageType && <span className="block text-gray-500">in {doc.packageType}</span>}
             </td>
             <td className="py-2 text-right tabular-nums">{doc.packages.toLocaleString()}</td>
@@ -200,9 +190,9 @@ function Origin({ doc }: { doc: Extract<ExportDoc, { kind: "certificate-of-origi
 
       <div className="mt-5 border-t border-gray-300 pt-3">
         <p className="text-[0.72rem] uppercase tracking-wide text-gray-500">Marks, numbers and description of goods</p>
-        <p className="mt-1 whitespace-pre-line">{doc.marks || "—"}</p>
+        <p className="mt-1 whitespace-pre-line">{doc.marks || "-"}</p>
         <p className="mt-2">
-          {doc.packages.toLocaleString()} {doc.packageType || "packages"} — {doc.description || "—"}
+          {doc.packages.toLocaleString()} {doc.packageType || "packages"}, {doc.description || "-"}
         </p>
         <p className="mt-1">Gross weight: {doc.grossKg.toLocaleString()} kg</p>
       </div>
@@ -221,7 +211,7 @@ function Party({ caption, block }: { caption: string; block: PartyBlock }) {
   return (
     <div>
       <p className="text-[0.72rem] uppercase tracking-wide text-gray-500">{caption}</p>
-      <p className="mt-0.5 font-semibold">{block.name || "—"}</p>
+      <p className="mt-0.5 font-semibold">{block.name || "-"}</p>
       {block.lines.map((l, i) => (
         <p key={i} className="text-gray-600">
           {l}
@@ -235,7 +225,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-2">
       <dt className="shrink-0 text-gray-500">{label}:</dt>
-      <dd className="min-w-0 font-medium">{value.trim() || "—"}</dd>
+      <dd className="min-w-0 font-medium">{value.trim() || "-"}</dd>
     </div>
   );
 }

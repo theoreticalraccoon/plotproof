@@ -1,14 +1,4 @@
-/**
- * Direct-export compliance domain. The pivot: the farmer is the user, and the
- * product is "get my harvest legally into EU/UK/US markets so I can sell direct
- * and keep the margin." This models the documents/certifications a B2B export
- * needs, resolved from simple farmer inputs.
- *
- * Design rule (like the EUDR caveats): the app NEVER invents law. Requirements
- * come from a curated, sourced catalog; every item cites its basis and says to
- * verify with the issuing authority. AI classifies/explains/translates, it does
- * not decide legal requirements.
- */
+/** Direct-export compliance domain. */
 
 export type Market = "EU" | "UK" | "US";
 

@@ -1,11 +1,6 @@
 "use client";
 
-/**
- * What /documents shows when there is no sale to make documents from.
- *
- * A document without a consignment behind it would be a blank form pretending
- * to be paperwork, so there is nothing to show here but the way back.
- */
+/** What /documents shows when there is no sale to make documents from. */
 import Link from "next/link";
 import { FilePlus2 } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";

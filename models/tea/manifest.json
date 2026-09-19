@@ -14,7 +14,7 @@
   "audited_on": "2026-09-16",
   "taxonomy_version": 1,
   "raw_data_committed": false,
-  "raw_data_note": "Images are NOT committed to this repository — not required by CC BY 4.0 and it would add ~1 GB. Fetch from the pinned DOIs in provenance.json; CS-D's archive is verified by SHA-256 below.",
+  "raw_data_note": "Images are NOT committed to this repository, not required by CC BY 4.0 and it would add ~1 GB. Fetch from the pinned DOIs in provenance.json; CS-D's archive is verified by SHA-256 below.",
   "datasets": [
     {
       "id": "cs_d",
@@ -86,12 +86,12 @@
       "groupBy": {
         "unit": "source_group",
         "rule": "groupId = ((imageIndex - 1) mod 1500) + 1, where imageIndex is the integer in the filename, within each class folder.",
-        "derivation": "Not documented by the publisher — recovered empirically. For every class, the nearest neighbour of an image (by rotation/flip-invariant colour histogram) sits at index delta exactly 1500 for 96.5–96.8% of images, and at a multiple of 1500 for 99.5–99.9%. Mean nearest-neighbour similarity 0.9986–0.9988, i.e. siblings are near-identical. Reproduce with `verify_stride` in scripts/audit_tea_datasets.py.",
+        "derivation": "Not documented by the publisher, recovered empirically. For every class, the nearest neighbour of an image (by rotation/flip-invariant colour histogram) sits at index delta exactly 1500 for 96.5–96.8% of images, and at a multiple of 1500 for 99.5–99.9%. Mean nearest-neighbour similarity 0.9986–0.9988, i.e. siblings are near-identical. Reproduce with `verify_stride` in scripts/audit_tea_datasets.py.",
         "consequence": "The nine images of a group are augmentations of one original photograph. They must never be separated across splits."
       },
       "known_limitations": [
         "Only the augmented form is published. The 9,000 originals are not in the archive and cannot be recovered.",
-        "No estate, field, date, device or plant metadata of any kind. The paper describes seven Assam estates over seven months on three phone models, but none of that survives into the published files — so a geographic or temporal hold-out is impossible.",
+        "No estate, field, date, device or plant metadata of any kind. The paper describes seven Assam estates over seven months on three phone models, but none of that survives into the published files, so a geographic or temporal hold-out is impossible.",
         "Images are pre-resized to 256x256 and median-filtered by the publisher, so the model cannot be trained at higher resolution and inherits their preprocessing."
       ]
     },
@@ -108,7 +108,7 @@
         "total_images": 5180,
         "distinct_source_images": 3060,
         "images_per_source_mean": 1.69,
-        "dimensions": "640x640 (Roboflow 'Resize (Stretch)' — aspect ratio NOT preserved)",
+        "dimensions": "640x640 (Roboflow 'Resize (Stretch)', aspect ratio NOT preserved)",
         "images_with_no_boxes": 79,
         "images_with_multiple_classes": 0,
         "per_class_images": {
@@ -138,7 +138,7 @@
         "decision": "DISCARD the shipped split entirely and re-split by source stem."
       },
       "known_limitations": [
-        "Roboflow's export log states augmentation created 2 versions of each source image via random horizontal and vertical flips, then split randomly — which is how siblings ended up straddling splits.",
+        "Roboflow's export log states augmentation created 2 versions of each source image via random horizontal and vertical flips, then split randomly, which is how siblings ended up straddling splits.",
         "Images are of DETACHED leaves against varied backgrounds, closer to a lab protocol than a farmer photographing a bush.",
         "Filenames fall into three distinct families (2,424 camera-timestamp, 2,336 generic image_N_N, ~330 UNADJUSTEDNONRAW_thumb), suggesting three different sub-collections merged into one dataset with different capture conditions.",
         "79 images carry no bounding box at all and therefore have no usable label."
@@ -154,7 +154,7 @@
       "role": "UNAVAILABLE",
       "doi": "10.17632/744vznw5k2.4",
       "status": "NO IMAGES PUBLISHED",
-      "finding": "The Mendeley record — the CC BY 4.0 grant this dataset's licence clearance rests on — contains no image files in ANY version. Versions 1, 2 and 3 are empty; version 4 contains a single 187 KB read_me.pdf and nothing else.",
+      "finding": "The Mendeley record, the CC BY 4.0 grant this dataset's licence clearance rests on, contains no image files in ANY version. Versions 1, 2 and 3 are empty; version 4 contains a single 187 KB read_me.pdf and nothing else.",
       "documented_contents_from_readme": {
         "total_images": 5278,
         "dimensions": "1200x1600 JPG, ~226 KB each",
@@ -289,7 +289,7 @@
         "Red Rust"
       ],
       "rejected_because": "Every leaf is photographed against a BLACK BACKGROUND. As a held-out set it would measure background shift rather than generalisation, and as training data it would teach the background. 7 GB for a domain we do not serve.",
-      "useful_finding": "This team also ships 'Algal Leaf Spot' and 'Red Rust' as SEPARATE classes — independent corroboration for keeping them unmerged in the taxonomy."
+      "useful_finding": "This team also ships 'Algal Leaf Spot' and 'Red Rust' as SEPARATE classes, independent corroboration for keeping them unmerged in the taxonomy."
     }
   ],
   "blister_blight_availability": {
@@ -315,7 +315,7 @@
     "method": "sha256(datasetId|className|groupId) → first 4 bytes as uint32 → mod 100 → <70 train, <85 val, else test",
     "implementation": "assign_split() in scripts/audit_tea_datasets.py",
     "properties": [
-      "Deterministic and machine-independent — no stored split file to lose or diverge.",
+      "Deterministic and machine-independent, no stored split file to lose or diverge.",
       "Stable under growth: adding a class or more images never reshuffles what is already assigned.",
       "Whole groups move together, so an augmented sibling can never straddle a boundary.",
       "Keyed by dataset id too, so CS-D group 7 and EWU group 7 are unrelated."

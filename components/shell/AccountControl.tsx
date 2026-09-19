@@ -1,18 +1,7 @@
 "use client";
 
-/**
- * Nav auth affordance. Signed out: a "Sign in" link. Signed in: the account
- * initial + email, and a sign-out button. Hidden entirely when Supabase isn't
- * configured (the app still runs anonymously). Used in both the desktop nav
- * cluster and the mobile drawer.
- *
- * Feedback: signing out is a network round trip followed by a navigation, so it
- * goes through ActionButton (spinner → check → toast) rather than sitting inert
- * while the session is torn down. Signing in is a navigation, so it is a
- * PendingLink. Resolving the session is async too, which is why the control
- * renders a placeholder of its own size first instead of flashing "Sign in" at
- * a user who is already signed in.
- */
+// Nav auth affordance. Signed out: a "Sign in" link. Signed in: the account initial + email,
+// and a sign-out button.
 import { useRouter } from "next/navigation";
 import { LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -28,8 +17,8 @@ export default function AccountControl({ full = false }: { full?: boolean }) {
 
   if (!configured) return null;
 
-  // Sized to the widest state this slot can settle into, so the nav row does
-  // not reflow when the session resolves.
+  // Sized to the widest state this slot can settle into, so the nav row does not reflow when the
+  // session resolves.
   if (loading) {
     return (
       <span

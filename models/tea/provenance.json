@@ -18,7 +18,7 @@
   "intended_use": "Train a tea leaf disease classifier, ship the trained weights inside PlotProof as a static ONNX artifact served to the browser. PlotProof may be commercialised.",
   "licence_conflict_finding": {
     "summary": "For BOTH primary datasets the Data in Brief ARTICLE is CC BY-NC while the Mendeley DATASET is CC BY 4.0. These govern different artifacts and are not in conflict, but they are trivially easy to conflate.",
-    "why_it_matters": "A web search for teaLeafBD's licence returns 'CC BY-NC' — that is the article licence being reported as the data licence. Relying on that summary would have wrongly blocked this dataset. Relying on the inverse mistake elsewhere could wrongly ship non-commercial data.",
+    "why_it_matters": "A web search for teaLeafBD's licence returns 'CC BY-NC', that is the article licence being reported as the data licence. Relying on that summary would have wrongly blocked this dataset. Relying on the inverse mistake elsewhere could wrongly ship non-commercial data.",
     "rule_adopted": "The licence that governs the IMAGES is the one displayed on the repository record hosting the images. The article licence governs the article text and figures only.",
     "residual_risk": "If a rightsholder intended the CC BY-NC of their paper to extend to their data, the repository record still says otherwise and is the operative grant. Low risk, recorded rather than ignored."
   },
@@ -169,7 +169,7 @@
         "collection": "Captured manually using DETACHED tea leaves under varied lighting and backgrounds."
       },
       "data_quality_flags": [
-        "Detached-leaf imagery photographed against varied backgrounds is closer to a lab protocol than to a farmer holding a phone over a bush. Mixing it into training risks teaching the background rather than the lesion — the PlantVillage failure mode ML.md already warns about for satellite chips.",
+        "Detached-leaf imagery photographed against varied backgrounds is closer to a lab protocol than to a farmer holding a phone over a bush. Mixing it into training risks teaching the background rather than the lesion, the PlantVillage failure mode ML.md already warns about for satellite chips.",
         "Object-detection annotations, not plain classification folders. Usable but needs a different loader."
       ],
       "role": "PROMOTED to cross-dataset test set, replacing teaLeafBD.",
@@ -276,9 +276,9 @@
   ],
   "cc_by_4_0_obligations": {
     "verified_from": "https://creativecommons.org/licenses/by/4.0/",
-    "permits_commercial_use": "Yes — 'copy and redistribute the material in any medium or format for any purpose, even commercially'.",
-    "permits_derivatives": "Yes — 'remix, transform, and build upon the material for any purpose, even commercially'.",
-    "model_weights_note": "Whether trained weights are legally a derivative work of the training images is unsettled. CC BY 4.0 grants the adaptation right explicitly, so the question does not need resolving here — the grant covers it either way.",
+    "permits_commercial_use": "Yes, 'copy and redistribute the material in any medium or format for any purpose, even commercially'.",
+    "permits_derivatives": "Yes, 'remix, transform, and build upon the material for any purpose, even commercially'.",
+    "model_weights_note": "Whether trained weights are legally a derivative work of the training images is unsettled. CC BY 4.0 grants the adaptation right explicitly, so the question does not need resolving here, the grant covers it either way.",
     "attribution_required": [
       "name of the creator and attribution parties",
       "a copyright notice",
@@ -291,7 +291,7 @@
   },
   "obligations_on_plotproof": [
     "Ship full attribution for every training source on the model card and on /models: creator, title, DOI link, 'CC BY 4.0' with its URL, and a statement that the images were modified (de-duplicated, resized, re-split, augmented).",
-    "State plainly that the images were modified. They will be — de-duplication and re-splitting are modifications.",
+    "State plainly that the images were modified. They will be, de-duplication and re-splitting are modifications.",
     "Do NOT commit the raw image corpora to this repository. Not required by the licence, and it would bloat the repo. Ship weights plus a download script that fetches from the pinned DOIs.",
     "Apply no terms to the shipped weights that would restrict downstream users more than CC BY 4.0 allows, per the no-additional-restrictions clause.",
     "Re-verify every licence immediately before publishing weights, and bump record_version."

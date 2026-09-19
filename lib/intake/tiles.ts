@@ -1,12 +1,4 @@
-/**
- * Basemap tile pre-caching for offline field work. Before going out (on wifi),
- * the officer downloads a district's satellite tiles into IndexedDB; in the
- * field, the map reads them from there with no signal.
- *
- * Provider is configuration, not hardcoded per country (PROJECT.md global rule).
- * Default: Esri World Imagery, free, global, no API key. Note the {z}/{y}/{x}
- * order (y before x).
- */
+/** Basemap tile pre-caching for offline field work. */
 import { db, type CachedTile } from "./db";
 
 export interface TileProvider {
@@ -88,11 +80,8 @@ export interface CacheProgress {
   failed: number;
 }
 
-/**
- * Download and store every tile for a district. Bounded concurrency keeps a 3G
- * link and a mid-range phone from choking. Skips tiles already cached, so it's
- * safe to resume.
- */
+// Download and store every tile for a district. Bounded concurrency keeps a 3G link and a
+// mid-range phone from choking. Skips tiles already cached, so it's safe to resume.
 export async function cacheDistrict(
   district: string,
   bounds: LatLngBounds,

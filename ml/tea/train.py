@@ -1,27 +1,4 @@
-"""
-Train the tea-leaf classifier. CS-D only; EWU and TLD-BD are never touched here.
-
-    python ml/tea/train.py --csd <dir> --smoke          # fast sanity run
-    python ml/tea/train.py --csd <dir>                  # real run
-
-Selection metric is validation MACRO-F1, not accuracy. Accuracy on a 6-class
-set this balanced would be dominated by the easy classes and would hide a class
-collapsing entirely; macro-F1 will not.
-
-Two decisions worth stating up front because they look like corners cut:
-
-1. SAMPLES PER GROUP. CS-D publishes nine augmentations of each photograph with
-   nearest-neighbour similarity 0.9988 — they are near-identical. Training on
-   all nine costs 9x the time for almost no additional information, so each
-   epoch draws `--samples-per-group` members (default 2) from each group, with
-   a different draw each epoch so the full set is still seen over training. Our
-   own field augmentation then supplies the variation that matters.
-
-2. NO CLASS WEIGHTING. Training counts run 8,881-9,504 per class, a max/min
-   ratio of 1.07. Weighting a distribution that balanced adds a knob without
-   addressing a problem. The instruction was to apply it only if the
-   distribution warrants it; it does not. Recorded rather than silently skipped.
-"""
+"""Train the tea-leaf classifier. CS-D only; EWU and TLD-BD are never touched here."""
 
 from __future__ import annotations
 
@@ -55,9 +32,8 @@ OUT_DIR = REPO / "models" / "tea"
 
 SEED = 1337
 IMG_SIZE = 224
-# ImageNet statistics: the backbone is pretrained, so its inputs must be
-# normalised the way it was trained. These values are also written into the
-# artifact metadata so the browser preprocesses identically.
+# ImageNet statistics: the backbone is pretrained, so its inputs must be normalised the way it was
+# trained.
 MEAN = [0.485, 0.456, 0.406]
 STD = [0.229, 0.224, 0.225]
 
@@ -69,19 +45,11 @@ def seed_everything(seed: int = SEED) -> None:
     torch.use_deterministic_algorithms(False)  # cudnn-only knob; CPU path is already deterministic
 
 
-# --------------------------------------------------------------------------
-# transforms
+# -------------------------------------------------------------------------- transforms
 # --------------------------------------------------------------------------
 
 def build_transforms(img_size: int = IMG_SIZE) -> tuple[transforms.Compose, transforms.Compose, dict]:
-    """Field-oriented augmentation for training; deterministic for evaluation.
-
-    The augmentation targets the things that actually vary when a farmer
-    photographs a leaf, rather than the things that look impressive in a config:
-    framing and distance, arbitrary leaf orientation, and — most importantly —
-    illumination, since the same lesion under noon sun and under shade is the
-    single biggest appearance shift in the field.
-    """
+    """Field-oriented augmentation for training; deterministic for evaluation."""
     train_tf = transforms.Compose([
         transforms.RandomResizedCrop(img_size, scale=(0.55, 1.0), ratio=(0.8, 1.25)),
         transforms.RandomHorizontalFlip(),
@@ -118,17 +86,11 @@ def build_transforms(img_size: int = IMG_SIZE) -> tuple[transforms.Compose, tran
     return train_tf, eval_tf, spec
 
 
-# --------------------------------------------------------------------------
-# dataset
+# -------------------------------------------------------------------------- dataset
 # --------------------------------------------------------------------------
 
 class TeaDataset(Dataset):
-    """Image-level view of a list of Samples.
-
-    `samples_per_group` subsamples each source group per epoch (see module
-    docstring). `resample(epoch)` reshuffles that draw so different members are
-    seen across epochs while a group never spans a split.
-    """
+    """Image-level view of a list of Samples."""
 
     def __init__(self, samples, tf, samples_per_group: int | None = None, seed: int = SEED,
                  field_sim: "FieldSimulator | None" = None, field_prob: float = 0.0):
@@ -137,11 +99,8 @@ class TeaDataset(Dataset):
         self.spg = samples_per_group
         self.seed = seed
         self.items = samples
-        # The field simulation (ml/tea/fieldsim.py) runs BEFORE the tensor
-        # pipeline, because it is a photographic transformation of the scene,
-        # not a tensor augmentation: it needs the leaf matte and a full-colour
-        # canvas. The simulator's donors come from this dataset's own split, so
-        # no held-out leaf can appear in a training background.
+        # The field simulation (ml/tea/fieldsim.py) runs BEFORE the tensor pipeline, because it is
+        # a photographic transformation of the scene, not a tensor augmentation.
         self.field_sim = field_sim
         self.field_prob = field_prob
         self.epoch = 0
@@ -170,8 +129,8 @@ class TeaDataset(Dataset):
         with Image.open(s.path) as im:
             img = im.convert("RGB")
         if self.field_sim is not None and self.field_prob > 0:
-            # Seeded from (epoch, index) rather than global state: DataLoader
-            # workers each fork their own RNG, and a run has to be reproducible.
+            # Seeded from (epoch, index) rather than global state: DataLoader workers each fork
+            # their own RNG, and a run has to be reproducible.
             rng = random.Random((self.seed * 1_000_003) ^ (self.epoch * 7919) ^ i)
             if rng.random() < self.field_prob:
                 img = self.field_sim.apply(img, rng)
@@ -179,12 +138,7 @@ class TeaDataset(Dataset):
 
 
 def build_model(num_classes: int) -> nn.Module:
-    """MobileNetV3-Small, ImageNet-pretrained, new classifier head.
-
-    Chosen for the deployment target rather than the leaderboard: this has to
-    run in a browser on a mid-range Android phone, so ~2.5M parameters and a
-    ~6 MB quantised export matter more than a point of accuracy.
-    """
+    """MobileNetV3-Small, ImageNet-pretrained, new classifier head."""
     m = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.IMAGENET1K_V1)
     in_f = m.classifier[3].in_features
     m.classifier[3] = nn.Linear(in_f, num_classes)
@@ -240,8 +194,8 @@ def main() -> None:
 
     if a.smoke:
         rng = random.Random(SEED)
-        # Keep whole groups even in the smoke run, so the smoke test exercises
-        # the real grouping code rather than a shortcut around it.
+        # Keep whole groups even in the smoke run, so the smoke test exercises the real grouping
+        # code rather than a shortcut around it.
         groups = sorted({(s.source_label, s.group) for s in tr})
         keep = set(rng.sample(groups, 120))
         tr = [s for s in tr if (s.source_label, s.group) in keep]
@@ -250,10 +204,7 @@ def main() -> None:
         va = [s for s in va if (s.source_label, s.group) in vkeep]
         a.epochs = 1
 
-    # Two simulators, each with donors from its own split. Validation is
-    # simulated too, at the same rate: selecting the epoch on clean studio
-    # images would pick the model that is best at the domain we are trying to
-    # stop depending on.
+    # Two simulators, each with donors from its own split.
     train_sim = val_sim = None
     if a.field_prob > 0:
         t0 = time.time()
@@ -277,8 +228,8 @@ def main() -> None:
                         num_workers=a.workers, persistent_workers=a.workers > 0)
 
     model = build_model(len(tax.active)).to(device)
-    # Label smoothing slightly discourages the over-confidence that near-duplicate
-    # training data invites, which matters because the model is calibrated later.
+    # Label smoothing slightly discourages the over-confidence that near-duplicate training data
+    # invites, which matters because the model is calibrated later.
     crit = nn.CrossEntropyLoss(label_smoothing=0.05)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=a.weight_decay)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, a.epochs))
@@ -320,8 +271,8 @@ def main() -> None:
         print(f"  EPOCH {epoch}: train_acc={rec['train_acc']:.4f} "
               f"val_acc={vacc:.4f} val_macro_f1={vf1:.4f} ({rec['seconds']}s)", flush=True)
 
-        # Selection on macro-F1 only. Validation is the ONLY signal used here;
-        # no test set is loaded anywhere in this file.
+        # Selection on macro-F1 only. Validation is the ONLY signal used here; no test set is
+        # loaded anywhere in this file.
         if vf1 > best:
             best = vf1
             torch.save({"model": model.state_dict(), "epoch": epoch, "val_macro_f1": vf1,

@@ -1,12 +1,4 @@
-/**
- * Every editable field on a sale, described once.
- *
- * The questionnaire on /sell shows all of them, grouped by section. The editor
- * beside each document on /documents shows only the fields that document
- * actually prints. Both read this list, so a field cannot exist in one place
- * and be missing from the other — which is how the old per-page forms drifted
- * apart.
- */
+/** Every editable field on a sale, described once. */
 import type { DocKind } from "./documents";
 import type { SaleSection } from "./model";
 import type { Sale } from "./types";
@@ -106,19 +98,7 @@ export function setPath(sale: Sale, path: string, value: unknown): Sale {
   return { ...sale, [head]: { ...inner, [rest.join(".")]: value } } as Sale;
 }
 
-/**
- * Set a field and apply what follows from it.
- *
- * Two fields decide others, and doing it here — rather than in whichever
- * component happened to change them — means the questionnaire and the document
- * editor cannot disagree about the consequences:
- *
- *  - The buyer's country decides the market (a German buyer is an EU sale),
- *    removing a question the officer could otherwise answer inconsistently.
- *  - Switching to air freight invalidates FOB, CFR and CIF, which are sea-only.
- *    The incoterm moves to its multimodal counterpart instead of silently
- *    printing a term a bank would reject.
- */
+/** Set a field and apply what follows from it. */
 export function applyField(
   sale: Sale,
   path: string,

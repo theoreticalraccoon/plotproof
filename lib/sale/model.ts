@@ -1,9 +1,4 @@
-/**
- * Pure rules over a sale: defaults, derived totals, validation, and which
- * requirements apply. No DOM, no storage — `test/sale.test.ts` runs it under
- * plain Node, so the arithmetic printed on a customs document is the arithmetic
- * that was tested.
- */
+/** Pure rules over a sale: defaults, derived totals, validation, and which requirements apply. */
 import { DOCUMENT_TYPES, getProduct } from "../compliance/catalog.ts";
 import { computePackingTotals, docNumber, lineAmount } from "../compliance/documents.ts";
 import { resolveRequirements } from "../compliance/resolver.ts";
@@ -19,13 +14,7 @@ import {
 
 // --- creation ------------------------------------------------------------
 
-/**
- * A blank sale with every document number already assigned.
- *
- * Numbers share one timestamp so the three documents of a consignment read as
- * a set (INV-…, PL-…, COO-… with the same suffix), which is how a bank or a
- * shipping line matches them up. Deterministic given `now` and `id`.
- */
+/** A blank sale with every document number already assigned. */
 export function newSale(now: Date, id: string): Sale {
   const at = now.getTime();
   const iso = now.toISOString();
@@ -65,14 +54,7 @@ export function newSale(now: Date, id: string): Sale {
   };
 }
 
-/**
- * Fill in any field a stored sale is missing.
- *
- * Sales live in localStorage and in the account for months, and the record
- * grows over time. A sale saved before `eudrChecks` existed would otherwise
- * crash the first component that reads it. Every nested object is merged, so a
- * party saved before `rexNumber` was added gains an empty one.
- */
+/** Fill in any field a stored sale is missing. */
 export function normalizeSale(raw: Sale): Sale {
   const base = newSale(new Date(raw.createdAt || Date.now()), raw.id);
   return {
@@ -88,15 +70,7 @@ export function normalizeSale(raw: Sale): Sale {
   };
 }
 
-/**
- * Start the next sale for the same exporter.
- *
- * An officer typically prepares several consignments for one exporter to
- * different buyers. Carrying the exporter and farmer forward saves retyping the
- * parts that do not change; the buyer, quantities and prices are cleared
- * because carrying THOSE forward is how a document ends up addressed to last
- * month's buyer.
- */
+/** Start the next sale for the same exporter. */
 export function nextSaleFrom(prev: Sale, now: Date, id: string): Sale {
   const fresh = newSale(now, id);
   return {
@@ -121,13 +95,7 @@ export interface SaleTotals {
   amount: number;
 }
 
-/**
- * The quantities and value every document prints.
- *
- * Computed in exactly one place so the invoice, the packing list and the
- * certificate of origin are guaranteed to agree — the check a customs officer
- * makes first.
- */
+/** The quantities and value every document prints. */
 export function saleTotals(sale: Sale): SaleTotals {
   const p = computePackingTotals({
     packages: sale.packages,
@@ -153,11 +121,7 @@ export function saleTitle(sale: Sale): string {
   return buyer ? `${product} → ${buyer}` : product;
 }
 
-/**
- * Incoterms valid for a mode. FOB, CFR and CIF are defined for sea and inland
- * waterway transport only; putting one on an air waybill is a genuine and
- * common error that a bank will reject a letter of credit over.
- */
+/** Incoterms valid for a mode. */
 export function incotermsFor(mode: ShipMode): Incoterm[] {
   const sea = mode === "sea_fcl" || mode === "sea_lcl";
   return sea ? INCOTERMS : INCOTERMS.filter((i) => !SEA_ONLY_INCOTERMS.includes(i));
@@ -206,13 +170,7 @@ export interface SaleIssue {
 
 const blank = (s: string | undefined) => !s || s.trim().length === 0;
 
-/**
- * What still stops the documents from being issued.
- *
- * Deliberately lists every problem rather than the first: an officer filling a
- * form for someone else wants to see the whole gap at once, not be walked
- * through it one error at a time.
- */
+/** What still stops the documents from being issued. */
 export function saleIssues(sale: Sale): SaleIssue[] {
   const out: SaleIssue[] = [];
   const add = (section: SaleSection, field: string, messageKey: string) =>

@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * Which sale is open, a way to switch, and a way to start the next one.
- *
- * Shown at the top of both /sell and /documents, so the officer always knows
- * WHICH consignment a document belongs to — the old app had one implicit sale
- * and no way to tell.
- */
+/** Which sale is open, a way to switch, and a way to start the next one. */
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Cloud, CloudOff, Loader2, Plus, Trash2 } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";

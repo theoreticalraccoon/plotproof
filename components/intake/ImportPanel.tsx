@@ -1,11 +1,6 @@
 "use client";
 
-/**
- * CSV / registry import, highest-priority intake path. Cooperative registries,
- * cadastre exports and prior certification schemes already hold coordinates;
- * importing beats field capture. Columns vary by source, so the officer maps
- * them. Every row runs the SAME save-gate as tracing before it becomes a plot.
- */
+/** CSV / registry import, highest-priority intake path. */
 import { useMemo, useState } from "react";
 import { FileUp, Package } from "lucide-react";
 import {
@@ -70,8 +65,8 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
   const [results, setResults] = useState<RowResult[] | null>(null);
   const [existing, setExisting] = useState<ExistingPlot[]>([]);
   const [message, setMessage] = useState<string | null>(null);
-  // Reading a multi-MB CSV off a cheap phone's storage is genuinely slow, so
-  // the file picker gets a real in-flight state rather than looking inert.
+  // Reading a multi-MB CSV off a cheap phone's storage is genuinely slow, so the file picker
+  // gets a real in-flight state rather than looking inert.
   const [reading, setReading] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -116,8 +111,6 @@ export default function ImportPanel({ onImported }: { onImported?: () => void })
   }
 
   // Loads the bundled real seed (public/seed/plots.csv) if it's been added.
-  // Throws on every path that did not end in loaded rows, so the button shows
-  // failure instead of a checkmark over nothing.
   async function loadSeed() {
     let res: Response;
     try {

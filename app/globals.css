@@ -1,21 +1,7 @@
 @import "tailwindcss";
 
-/*
- * PlotProof design system v3, refined liquid glass, minimalist.
- * Direction: Linear / Vercel / Raycast restraint, NOT loud gradients or neon
- * glows. Depth comes from layered rim-lighting and hairline borders, not color.
- *
- * Sourced from:
- *   - 21st.dev "Liquid Glass Card" (designali-in / ui.dalim.in), the authentic
- *     Apple-style technique: an SVG feTurbulence→feDisplacementMap refraction
- *     filter (injected once in AppShell as #lg-filter) PLUS a multi-layer inset
- *     box-shadow that paints the beveled glass rim. That rim is the reusable
- *     part applied to every .glass surface; the displacement filter is reserved
- *     for signature surfaces (.lg) because it distorts content behind it.
- *   - ui-ux-pro-max skill: palette discipline (semantic tokens, 4.5:1 contrast),
- *     typography (Space Grotesk display + Hanken Grotesk body, distinctive,
- *     readable, not Inter), and motion timing.
- */
+/* PlotProof design system v3, refined liquid glass, minimalist. Direction: Linear / Vercel /
+ * Raycast restraint, NOT loud gradients or neon glows. */
 
 :root {
   color-scheme: light dark;
@@ -77,9 +63,8 @@
   --aurora-2: rgba(31, 95, 191, 0.05);
   --grain-opacity: 0.03;
 
-  /* skeleton: the resting tint must read as a placeholder on its own, because
-     under reduced-motion it is ALL that is left (the travelling band is pure
-     decoration and gets switched off). */
+  /* skeleton: the resting tint must read as a placeholder on its own, because under
+   * reduced-motion it is ALL that is left (the travelling band is pure decoration and gets switched off). */
   --skeleton-tint: rgba(16, 22, 15, 0.055);
   --skeleton-sheen: rgba(255, 255, 255, 0.62);
   --skeleton-sheen-accent: rgba(15, 107, 70, 0.09);
@@ -180,12 +165,8 @@
   }
   p { line-height: 1.62; }
 
-  /* Two rings: a page-colored spacer that punches the focus free of whatever
-     glass sits under it, then a SOLID accent edge. The old outer ring used
-     --accent-ring (26% alpha), which dissolved against translucent surfaces;
-     the solid edge carries the contrast and the halo only softens it. The
-     transparent outline is the forced-colors/Windows-HCM fallback, where
-     box-shadow is dropped entirely. */
+  /* Two rings: a page-colored spacer that punches the focus free of whatever glass sits under it,
+   * then a SOLID accent edge. */
   :focus-visible {
     outline: 2px solid transparent;
     outline-offset: 2px;
@@ -249,9 +230,8 @@
     box-shadow: var(--glass-shadow-raised);
     border-color: var(--accent-ring);
   }
-  /* Anchors carrying a card surface ARE clickable, so they get the same lift
-     without opting in. Scoped to a/button so a static .glass panel never fakes
-     interactivity it does not have. */
+  /* Anchors carrying a card surface ARE clickable, so they get the same lift without opting in.
+   * Scoped to a/button so a static .glass panel never fakes interactivity it does not have. */
   a.glass, a.glass-card, a.lg, button.glass, button.glass-card {
     transition: transform var(--dur-base) var(--ease-out-2),
       box-shadow var(--dur-base) var(--ease-out-1), border-color var(--dur-base) ease;
@@ -262,8 +242,8 @@
     box-shadow: var(--glass-shadow-raised);
     border-color: var(--accent-ring);
   }
-  /* Press lands inside 100ms: the lift collapses and the surface takes a hair
-     of scale, so a tap is acknowledged before any route or handler responds. */
+  /* Press lands inside 100ms: the lift collapses and the surface takes a hair of scale, so a tap
+   * is acknowledged before any route or handler responds. */
   .glass-link:active,
   a.glass:active, a.glass-card:active, a.lg:active,
   button.glass:active, button.glass-card:active {
@@ -301,8 +281,8 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
   .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
-  /* One hairline sheen pass on hover. It plays ONCE per hover (not on a loop)
-     so it reads as a surface catching light, not as an attention-grabber. */
+  /* One hairline sheen pass on hover. It plays ONCE per hover (not on a loop) so it reads as a
+   * surface catching light, not as an attention-grabber. */
   .btn-primary::after {
     content: "";
     position: absolute;
@@ -313,8 +293,8 @@
   }
   .btn-primary:hover:not(:disabled)::after {
     opacity: 1;
-    /* `forwards` parks the band off the right edge; without it the band would
-       snap back to the button's center and just sit there while hovered. */
+    /* `forwards` parks the band off the right edge; without it the band would snap back to the
+     * button's center and just sit there while hovered. */
     animation: pp-sheen 620ms var(--ease-out-1) 1 forwards;
   }
   @keyframes pp-sheen {
@@ -339,8 +319,8 @@
   .btn-danger:hover:not(:disabled) { background: var(--danger-soft); }
   .btn-sm { min-height: 38px; padding: 0 0.8rem; font-size: 0.85rem; }
   .btn-lg { min-height: 52px; padding: 0 1.6rem; font-size: 1.0rem; border-radius: var(--radius); }
-  /* Large buttons need a shallower press: the same 0.97 on a 52px target reads
-     as a lurch rather than a click. */
+  /* Large buttons need a shallower press: the same 0.97 on a 52px target reads as a lurch rather
+   * than a click. */
   .btn-lg:active { transform: scale(0.985); }
 
   /* ---- pills / chips / tags --------------------------------------------- */
@@ -356,8 +336,8 @@
     background: var(--glass);
     box-shadow: var(--glass-shadow);
     color: var(--fg-muted);
-    /* was `all 250ms`, which made a press feel 250ms late; transform is split
-       out onto the fast track so the tap registers visually inside 100ms. */
+    /* was `all 250ms`, which made a press feel 250ms late; transform is split out onto the fast
+     * track so the tap registers visually inside 100ms. */
     transition: transform var(--dur-fast) var(--ease-out-2),
       background-color var(--dur-base) ease, border-color var(--dur-base) ease,
       color var(--dur-base) ease, box-shadow var(--dur-base) ease;
@@ -397,9 +377,8 @@
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
-  /* An .eyebrow is usually a static label, so hover/press are scoped to the
-     cases where it is genuinely clickable, rather than making every badge in
-     the app pretend to be a control. */
+  /* An .eyebrow is usually a static label, so hover/press are scoped to the cases where it is
+   * genuinely clickable, rather than making every badge in the app pretend to be a control. */
   a.eyebrow, button.eyebrow {
     transition: transform var(--dur-fast) var(--ease-out-2),
       border-color var(--dur-base) ease, color var(--dur-base) ease;
@@ -435,8 +414,8 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-ring);
   }
-  /* native <select> arrow + a SOLID opaque dropdown list so the options are
-     readable (translucent glass backgrounds made them invisible). */
+  /* native <select> arrow + a SOLID opaque dropdown list so the options are readable (translucent
+   * glass backgrounds made them invisible). */
   select.field {
     appearance: none;
     -webkit-appearance: none;
@@ -447,8 +426,8 @@
     transition: transform var(--dur-fast) var(--ease-out-2),
       border-color var(--dur-base) ease, box-shadow var(--dur-base) ease;
   }
-  /* A native select swallows :active on some platforms, so the press cue is
-     kept to a border flash that fires reliably. */
+  /* A native select swallows :active on some platforms, so the press cue is kept to a border
+   * flash that fires reliably. */
   select.field:active:not(:disabled) { border-color: var(--accent); }
   select.field option,
   select option {
@@ -538,11 +517,8 @@
   }
 
   /* ---- skeleton loading --------------------------------------------------- */
-  /* Two layers, deliberately separable: a resting TINT that does the actual
-     job of saying "content is coming", and a travelling highlight band that is
-     decoration only. The band is a transform sweep on a masked ::after rather
-     than an animated background-position, because background-position repaints
-     the whole element every frame and janks on lists of twenty skeletons. */
+  /* Two layers, deliberately separable: a resting TINT that does the actual job of saying
+   * "content is coming", and a travelling highlight band that is decoration only. */
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -565,8 +541,8 @@
     );
     animation: pp-shimmer 2s var(--ease-in-out) infinite;
   }
-  /* The sweep occupies the first 80% of the cycle (~1.6s) and the tail is a
-     hold, so passes breathe instead of strobing back-to-back. */
+  /* The sweep occupies the first 80% of the cycle (~1.6s) and the tail is a hold, so passes
+   * breathe instead of strobing back-to-back. */
   @keyframes pp-shimmer {
     0% { transform: translateX(-100%); }
     80%, 100% { transform: translateX(100%); }
@@ -577,9 +553,8 @@
   .skeleton-circle { border-radius: 999px; }
 
   /* ---- pending (awaiting an async result) --------------------------------- */
-  /* Dims and marks the wait WITHOUT hiding what is there, so a user can still
-     read the values they are waiting on. Purely presentational: it never
-     implies progress, and it never disables anything on its own. */
+  /* Dims and marks the wait WITHOUT hiding what is there, so a user can still read the values
+   * they are waiting on. */
   .is-pending {
     opacity: 0.6;
     cursor: progress;
@@ -587,8 +562,8 @@
   }
 
   /* ---- route navigation progress (components/shell/NavProgress) ----------- */
-  /* Sits directly under the sticky nav, so it never collides with
-     ScrollProgress at top:0. Shown only while a real navigation is in flight. */
+  /* Sits directly under the sticky nav, so it never collides with ScrollProgress at top:0. Shown
+   * only while a real navigation is in flight. */
   .nav-progress {
     position: fixed;
     top: var(--nav-h);
@@ -605,8 +580,8 @@
     width: 34%;
     border-radius: 999px;
     background: linear-gradient(90deg, transparent, var(--accent) 40%, var(--accent) 60%, transparent);
-    /* Indeterminate on purpose: we do not know how long the route will take,
-       so the bar never pretends to report a percentage. */
+    /* Indeterminate on purpose: we do not know how long the route will take, so the bar never
+     * pretends to report a percentage. */
     animation: pp-nav-travel 1.1s var(--ease-in-out) infinite;
   }
   @keyframes pp-nav-travel {
@@ -646,15 +621,14 @@ html.lenis body { height: auto; }
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  /* Skeletons keep their resting tint and lose only the travelling band, so a
-     placeholder still reads as a placeholder. */
+  /* Skeletons keep their resting tint and lose only the travelling band, so a placeholder still
+   * reads as a placeholder. */
   .skeleton::after { display: none; }
-  /* The button sheen is decoration; drop it rather than let the 0.001ms
-     duration above park a frozen band across the button. */
+  /* The button sheen is decoration; drop it rather than let the 0.001ms duration above park a
+   * frozen band across the button. */
   .btn-primary::after { display: none; }
-  /* Travel was the whole signal for the nav bar, so it degrades to a static
-     full-width bar: still honest, because it is on screen only while a
-     navigation is actually in flight. */
+  /* Travel was the whole signal for the nav bar, so it degrades to a static full-width bar: still
+   * honest, because it is on screen only while a navigation is actually in flight. */
   .nav-progress-bar {
     width: 100%;
     transform: none !important;

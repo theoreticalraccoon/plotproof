@@ -1,18 +1,7 @@
 "use client";
 
-/**
- * One plot on satellite imagery, with the two forest layers the EUDR screening
- * is built from drawn over it.
- *
- * Loaded through `next/dynamic` with SSR off (Leaflet touches `window`), the same
- * way the plot-capture map is.
- *
- * The layers are here so the officer can SEE what the numbers say rather than
- * take a verdict on trust: green is where the JRC map says forest stood on the
- * cut-off date, pink is where Hansen records tree-cover loss. When the two
- * disagree — pink over no green — the screening says so in words, and here the
- * officer can see it.
- */
+// One plot on satellite imagery, with the two forest layers the EUDR screening is built from
+// drawn over it.
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";

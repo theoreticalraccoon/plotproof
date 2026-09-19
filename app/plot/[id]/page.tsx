@@ -1,20 +1,6 @@
 "use client";
 
-/**
- * Evidence pack (on-screen). The demo's "show the generated pack" step.
- *
- * The pack is assembled entirely from records on this device, so it cannot
- * stall on a network call. Forest status is deliberately NOT inferred here: it
- * is read from published datasets (JRC GFC2020, Hansen GFC) and cited as
- * theirs. Print / Save-as-PDF is the pack output; there is deliberately no
- * server-side PDF generator.
- *
- * Layout note: the sheet is set like a filed document, section label in the
- * left margin and the body in a single measured column, so a reader scans the
- * labels down the edge and reads across only where they stop. Page chrome
- * (toolbar, actions) lives OUTSIDE the sheet — it is not part of the record
- * and it must not print.
- */
+/** Evidence pack (on-screen). The demo's "show the generated pack" step. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
@@ -33,28 +19,20 @@ import type { LocalAttestation, LocalFarmer, LocalPlot } from "@/lib/intake/type
 
 const CUTOFF = "2020-12-31";
 
-/**
- * The sheet is white paper in BOTH themes (see .doc-sheet), so anything drawn
- * on it uses paper ink rather than theme tokens — a themed colour would go
- * orange-on-white in dark mode and fail contrast. These are the only hardcoded
- * colours in this file, and they are hardcoded for the same reason .doc-sheet
- * hardcodes its background.
- */
+// The sheet is white paper in BOTH themes (see .doc-sheet), so anything drawn on it uses paper
+// ink rather than theme tokens.
 const INK_OK = "#15803d";
 const INK_BAD = "#b91c1c";
 
-/** Skeletons drawn on the paper sheet need paper-coloured tint and sheen for
- *  the same reason; the shimmer and its reduced-motion fallback still come
- *  from the shared .skeleton rules. */
+// Skeletons drawn on the paper sheet need paper-coloured tint and sheen for the same reason;
+// the shimmer and its reduced-motion fallback still come from the shared .skeleton rules.
 const PAPER_SKELETON = {
   "--skeleton-tint": "rgba(17, 24, 39, 0.075)",
   "--skeleton-sheen": "rgba(255, 255, 255, 0.75)",
   "--skeleton-sheen-accent": "rgba(15, 107, 70, 0.07)",
 } as React.CSSProperties;
 
-/** Only the device read can stall now: the pack is assembled entirely from
- *  local records. Remote layers (forest facts, credibility) arrive as their own
- *  sections with their own states, so neither can hold up the record itself. */
+/** Only the device read can stall now: the pack is assembled entirely from local records. */
 type PackState = "loading" | "notfound" | "ready";
 
 export default function EvidencePackPage() {
@@ -65,8 +43,8 @@ export default function EvidencePackPage() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [state, setState] = useState<PackState>("loading");
 
-  // Assemble the pack from the device. Everything here is local, so there is
-  // nothing to poll and nothing that can time out.
+  // Assemble the pack from the device. Everything here is local, so there is nothing to poll and
+  // nothing that can time out.
   useEffect(() => {
     let revoked: string | null = null;
     (async () => {
@@ -216,7 +194,7 @@ export default function EvidencePackPage() {
               Not yet assessed for this plot.
             </p>
             <p className="doc-faint mt-2 text-[0.85rem] leading-relaxed" style={{ maxWidth: "68ch" }}>
-              PlotProof runs no deforestation model of its own — deliberately. Forest status is a
+              PlotProof runs no deforestation model of its own, deliberately. Forest status is a
               question of published record, not of our inference, and it is answered against the
               EU JRC Global Forest Cover 2020 layer and Hansen Global Forest Change. Until that
               layer is attached to this pack, check the coordinates on Global Forest Watch using
@@ -261,8 +239,8 @@ export default function EvidencePackPage() {
             <ul className="flex flex-col gap-2 text-[0.87rem] leading-relaxed" style={{ maxWidth: "70ch" }}>
               <Bullet>
                 <strong>No in-house deforestation model.</strong> PlotProof does not infer forest
-                loss. Forest status is read from published record — the EU JRC Global Forest Cover
-                2020 layer and Hansen Global Forest Change (UMD/Google/USGS/NASA) — so the claim
+                loss. Forest status is read from published record, the EU JRC Global Forest Cover
+                2020 layer and Hansen Global Forest Change (UMD/Google/USGS/NASA), so the claim
                 belongs to those datasets and is checkable against them, not to us.
               </Bullet>
               <Bullet>
@@ -339,9 +317,7 @@ export default function EvidencePackPage() {
 
 // --- pieces ---------------------------------------------------------------
 
-/** A quiet tertiary action that leaves the app. Not a PendingLink: it opens a
- *  new tab, so there is no in-app navigation to report — the press scale and
- *  the outbound arrow are the whole acknowledgement. */
+/** A quiet tertiary action that leaves the app. */
 function ExternalAction({
   href,
   rel = "noopener noreferrer",
@@ -406,12 +382,8 @@ function Caveat({ term, children }: { term: string; children: React.ReactNode })
   );
 }
 
-/**
- * The attestation's tamper-evidence seal. Shows the content hash and chain
- * position, and re-verifies every hash from the stored bytes on demand. The
- * caveat is stated on screen: this proves the record hasn't changed since
- * capture on the device, it does not independently prove the capture.
- */
+// The attestation's tamper-evidence seal. Shows the content hash and chain position, and
+// re-verifies every hash from the stored bytes on demand.
 function IntegritySeal({ attestation, plot }: { attestation: LocalAttestation; plot: LocalPlot | null }) {
   const [result, setResult] = useState<VerifyResult | null>(null);
   const reduce = useReducedMotion();
@@ -516,7 +488,7 @@ function CheckRow({ check, bare }: { check: VerifyResult["checks"][number]; bare
       </span>
       <span className="min-w-0">
         <span style={{ color: check.ok ? INK_OK : INK_BAD }}>{check.label}</span>
-        {check.detail && <span className="doc-faint"> — {check.detail}</span>}
+        {check.detail && <span className="doc-faint">, {check.detail}</span>}
       </span>
     </span>
   );
@@ -528,8 +500,8 @@ function PaperSkeleton({ className = "", style }: { className?: string; style?: 
   return <Skeleton className={className} style={{ ...PAPER_SKELETON, ...style }} />;
 }
 
-/** Placeholder for the whole pack while the plot is read off the device. Same
- *  sheet, same margin-label grid, so nothing moves when the record arrives. */
+// Placeholder for the whole pack while the plot is read off the device. Same sheet, same
+// margin-label grid, so nothing moves when the record arrives.
 function PackSkeleton() {
   return (
     <main
@@ -580,12 +552,7 @@ function PackSkeleton() {
 }
 
 
-/**
- * TRACES-ready geolocation file. EUDR due diligence statements carry producer
- * geolocation as GeoJSON (WGS84, EPSG:4326); this emits one Feature per plot
- * with the property names the EU Information System expects, so an exporter or
- * cooperative can attach it to their DDS without reformatting.
- */
+/** TRACES-ready geolocation file. */
 function downloadDds(plot: LocalPlot, farmer: LocalFarmer | null): void {
   const fc = {
     type: "FeatureCollection" as const,

@@ -1,18 +1,6 @@
 "use client";
 
-/**
- * The officer's sales, on this device and — when signed in — in their account.
- *
- * localStorage rather than IndexedDB: a sale is a couple of kilobytes of text,
- * reads must be synchronous so a document renders on first paint instead of
- * flashing empty, and the account sync is a single JSON column. Plots, photos
- * and sensor traces stay in IndexedDB where their size belongs.
- *
- * One `useSyncExternalStore` source, so the sale list, the questionnaire and
- * every document re-render together the moment any of them edits the sale.
- * That shared subscription is the whole cure for the old "type the buyer on
- * the invoice, retype it on the packing list" behaviour.
- */
+/** The officer's sales, on this device and, when signed in, in their account. */
 import { useSyncExternalStore } from "react";
 import { getSupabaseBrowser, isSupabaseConfigured } from "../supabase/client";
 import {
@@ -45,10 +33,8 @@ function read(): SaleBook {
   return cache;
 }
 
-/**
- * One-time carry-over from the single-intent model, so an officer who had a
- * sale open before this release does not find an empty workspace.
- */
+// One-time carry-over from the single-intent model, so an officer who had a sale open before
+// this release does not find an empty workspace.
 function migrateLegacy(): SaleBook {
   try {
     const raw = JSON.parse(localStorage.getItem(LEGACY_INTENT_KEY) ?? "null") as {
@@ -126,10 +112,8 @@ export function selectSale(id: string): void {
   if (book.sales.some((s) => s.id === id)) write({ ...book, currentId: id }, { push: true });
 }
 
-/**
- * Apply an edit to a sale. Every document, the questionnaire and the sale list
- * re-render from the one subscription.
- */
+// Apply an edit to a sale. Every document, the questionnaire and the sale list re-render from
+// the one subscription.
 export function updateSale(id: string, edit: (s: Sale) => Sale): void {
   const book = read();
   const existing = book.sales.find((s) => s.id === id);
@@ -185,9 +169,7 @@ async function pushNow(): Promise<void> {
     sales: { currentId: book.currentId, sales: book.sales },
     updated_at: new Date().toISOString(),
   });
-  // A missing `sales` column (migration 0004 not applied) lands here. The work
-  // is still safe on this device; the badge says it has not reached the account
-  // rather than pretending it has.
+  // A missing `sales` column (migration 0004 not applied) lands here.
   setSync(error ? "failed" : "saved");
   if (!error && book.owner !== data.user.id) {
     cache = { ...book, owner: data.user.id };

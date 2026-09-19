@@ -1,11 +1,6 @@
 "use client";
 
-/**
- * Lightweight animated toast system. Wrap the app once in <ToastProvider> (done
- * in AppShell); call useToast().toast(msg) anywhere for confirming feedback on
- * actions that otherwise happen silently (mark done, sync, acknowledge). Toasts
- * spring in, auto-dismiss, stack, and announce via aria-live for screen readers.
- */
+/** Lightweight animated toast system. */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Info, AlertTriangle, XCircle } from "lucide-react";

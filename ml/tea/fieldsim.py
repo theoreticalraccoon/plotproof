@@ -1,48 +1,5 @@
-"""
-Turn a studio photograph of a picked leaf into something that looks like a
-photograph taken in a tea field.
-
-WHY THIS EXISTS. Every image in every dataset this project could obtain — CS-D
-(Assam), EWU, TLD-BD (Bangladesh) — is a **detached leaf laid on white paper or
-cloth, lit evenly, filling the frame**. Look at the three contact sheets and
-they are indistinguishable in this respect. But a farmer photographs a leaf that
-is still on the bush: other leaves behind and in front of it, dappled sun
-through the canopy, hard shadows, a phone camera's auto-white-balance guessing
-wrong under a green canopy, motion blur, and the leaf occupying a third of the
-frame rather than all of it.
-
-So the classifier had never, in any epoch, seen the thing it is deployed to see.
-Its low confidence in the field was not a bug in the threshold — it was the
-model correctly reporting that the input was unlike anything it was trained on.
-Lowering the threshold would have converted honest uncertainty into confident
-wrong labels, which is the one thing this project has consistently refused to do.
-
-WHAT THIS DOES INSTEAD. It manufactures the missing domain from the data that
-exists:
-
-  1. **Matting.** The studio background is bright, unsaturated and connected to
-     the image border; the leaf is darker and greener. That makes a reliable
-     mask without a segmentation model.
-  2. **Canopy.** The leaf is composited onto a background built from OTHER tea
-     leaves — scaled, rotated, blurred and darkened into an out-of-focus mass —
-     over a soil/shade base. Distractor leaves are drawn behind and in front of
-     the target, because "there is more than one leaf in the frame" is the
-     single largest difference between the two domains.
-  3. **Light.** A directional shading gradient, elliptical sunflecks with
-     clipped highlights, gamma, and a per-channel white-balance shift.
-  4. **Camera.** Downscale-then-upscale (a phone photo resized by the app),
-     motion blur, sensor noise and JPEG recompression.
-
-WHAT THIS IS NOT. It is a simulation, not evidence. A model that handles
-simulated canopy is not thereby proven to handle a real one, and every number
-measured on these images is labelled synthetic wherever it is reported. The real
-field number remains unmeasured until real field photographs exist, and the
-model card says so. What this legitimately buys is that the model stops being
-astonished by clutter and uneven light, which is a real and separable part of
-the gap.
-
-Pure PIL and numpy, no torch: it runs inside the DataLoader workers.
-"""
+"""Turn a studio photograph of a picked leaf into something that looks like a photograph taken in
+a tea field."""
 
 from __future__ import annotations
 
@@ -53,33 +10,21 @@ import random
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
-# The studio background across all three corpora is bright and grey-ish. These
-# are the thresholds that separate it from leaf tissue; they are deliberately
-# forgiving, because a mask that clips a little leaf is far less harmful than
-# one that drags a rectangle of paper into the composite.
+# The studio background across all three corpora is bright and grey-ish.
 _BG_MIN_VALUE = 118     # 0-255; paper is brighter than this
 _BG_MAX_SATURATION = 74  # 0-255; paper is greyer than this
 # Longest side the mask is computed at, before being scaled back up.
 _MASK_WORK = 96
-# A studio leaf photo mattes to roughly 0.12-0.55 of the frame. Outside that
-# band the matte is not trustworthy, and pasting it would drop a slab of white
-# paper into the canopy — which is both wrong and a shortcut feature.
+# A studio leaf photo mattes to roughly 0.12-0.55 of the frame.
 _DONOR_MIN_COVER = 0.08
 _DONOR_MAX_COVER = 0.72
 
 
 def leaf_mask(img: Image.Image) -> np.ndarray:
-    """Alpha for the leaf, as float32 in [0, 1].
-
-    Studio background is bright AND unsaturated AND touches the frame edge.
-    Requiring all three keeps a pale lesion — which is bright and unsaturated
-    but in the middle of the leaf — out of the background.
-    """
+    """Alpha for the leaf, as float32 in [0, 1]."""
     full_w, full_h = img.size
-    # The border-connected flood fill below is the entire cost of this function
-    # and it is quadratic in image side. The mask is blurred by 1.6px at the end
-    # regardless, so computing it on a small copy and scaling back loses nothing
-    # that survives the feather — and turns 550ms per composite into 20ms.
+    # The border-connected flood fill below is the entire cost of this function and it is
+    # quadratic in image side.
     work = img if max(full_w, full_h) <= _MASK_WORK else img.copy()
     if max(full_w, full_h) > _MASK_WORK:
         work.thumbnail((_MASK_WORK, _MASK_WORK), Image.BILINEAR)
@@ -89,8 +34,6 @@ def leaf_mask(img: Image.Image) -> np.ndarray:
     bg = (val >= _BG_MIN_VALUE) & (sat <= _BG_MAX_SATURATION)
 
     # Keep only background connected to the border, by flood-filling inwards.
-    # A four-way dilation repeated a bounded number of times is enough at these
-    # image sizes and avoids a scipy dependency.
     h, w = bg.shape
     reach = np.zeros_like(bg)
     reach[0, :] = bg[0, :]
@@ -110,9 +53,8 @@ def leaf_mask(img: Image.Image) -> np.ndarray:
 
     alpha = (~reach).astype(np.float32)
     if alpha.mean() < 0.04 or alpha.mean() > 0.98:
-        # Either nothing was found or everything was: the image does not look
-        # like the studio setup this assumes. Treat it as fully opaque, so the
-        # composite degrades to "the original photo, relit" rather than to junk.
+        # Either nothing was found or everything was: the image does not look like the studio
+        # setup this assumes.
         return np.ones((full_h, full_w), dtype=np.float32)
 
     # Feather, so the leaf does not sit on the canopy with a cut-out edge.
@@ -132,8 +74,8 @@ def _mottled(size: int, rgb: tuple[int, int, int], rng: random.Random) -> Image.
     """A low-frequency colour field: shade under a canopy is never flat."""
     small = max(4, size // 24)
     gen = np.random.default_rng(rng.randrange(1 << 30))
-    # Mostly luminance, a little chroma. Independent per-channel noise produced
-    # magenta and cyan blotches that exist in no tea field.
+    # Mostly luminance, a little chroma. Independent per-channel noise produced magenta and cyan
+    # blotches that exist in no tea field.
     lum = gen.normal(0, 22, (small, small, 1))
     chroma = gen.normal(0, 5, (small, small, 3))
     base = np.clip(np.array(rgb, dtype=np.float32) + lum + chroma, 0, 255).astype(np.uint8)
@@ -145,12 +87,7 @@ def _mottled(size: int, rgb: tuple[int, int, int], rng: random.Random) -> Image.
 def _place_leaf(canvas: Image.Image, donor: Image.Image, size: int, rng: random.Random,
                 scale: tuple[float, float], blur: tuple[float, float],
                 bright: tuple[float, float], alpha_scale: float = 1.0) -> None:
-    """Paste ONE matted donor leaf somewhere on the canvas.
-
-    Matting the donor is the whole point: pasting the donor image directly puts
-    a rotated rectangle of the studio's white paper into the canopy, which is
-    both wrong and an obvious shortcut feature for the model to latch onto.
-    """
+    """Paste ONE matted donor leaf somewhere on the canvas."""
     s = rng.uniform(*scale)
     side = max(12, int(size * s))
     leaf = donor.resize((side, side), Image.BILINEAR)
@@ -179,7 +116,7 @@ def _place_leaf(canvas: Image.Image, donor: Image.Image, size: int, rng: random.
 
 def _foliage_background(size: int, donors: list[Image.Image], rng: random.Random) -> Image.Image:
     """An out-of-focus tea canopy, built from matted donor leaves over shade."""
-    # Base: the colour under a canopy — deep green through to leaf litter brown.
+    # Base: the colour under a canopy, deep green through to leaf litter brown.
     if rng.random() < 0.75:
         base_rgb = (rng.randint(18, 70), rng.randint(45, 105), rng.randint(20, 60))
     else:
@@ -206,8 +143,8 @@ def _sunlight(img: Image.Image, rng: random.Random) -> Image.Image:
     depth = rng.uniform(0.15, 0.6)
     arr *= (1.0 - depth / 2 + depth * g)[..., None]
 
-    # Sunflecks: small blown-out ellipses, the thing that makes canopy photos
-    # hard and that a studio light never produces.
+    # Sunflecks: small blown-out ellipses, the thing that makes canopy photos hard and that a
+    # studio light never produces.
     if rng.random() < 0.65:
         fleck = Image.new("L", (w, h), 0)
         d = ImageDraw.Draw(fleck)
@@ -259,12 +196,7 @@ def _camera(img: Image.Image, rng: random.Random) -> Image.Image:
 
 
 def to_field(img: Image.Image, donors: list[Image.Image], rng: random.Random) -> Image.Image:
-    """One studio photograph, rendered as if taken on the bush.
-
-    `donors` are other leaf images used to build the canopy and the distractors.
-    They are drawn from the SAME split as `img` by the caller, so no test image
-    can leak into a training background.
-    """
+    """One studio photograph, rendered as if taken on the bush."""
     size = max(img.size)
     img = img.convert("RGB")
     alpha = leaf_mask(img)
@@ -272,8 +204,8 @@ def to_field(img: Image.Image, donors: list[Image.Image], rng: random.Random) ->
     bg = _foliage_background(size, donors, rng)
     canvas = bg.copy()
 
-    # Some distractor leaves sit behind the subject, sharper than the canopy but
-    # not in focus, so the subject is not the only crisp leaf in the frame.
+    # Some distractor leaves sit behind the subject, sharper than the canopy but not in focus, so
+    # the subject is not the only crisp leaf in the frame.
     for d in donors[: rng.randint(0, 2)]:
         _place_leaf(canvas, d, size, rng, scale=(0.4, 0.9), blur=(0.8, 2.5), bright=(0.5, 0.95))
 
@@ -289,8 +221,8 @@ def to_field(img: Image.Image, donors: list[Image.Image], rng: random.Random) ->
     oy = rng.randint(0, max(0, size - sh))
     _paste_soft(canvas, subject, sub_alpha, (ox, oy))
 
-    # And one leaf in front, partly occluding — a farmer's hand pushing the
-    # canopy aside rarely produces a clean view.
+    # And one leaf in front, partly occluding, a farmer's hand pushing the canopy aside rarely
+    # produces a clean view.
     if donors and rng.random() < 0.45:
         _place_leaf(canvas, donors[rng.randrange(len(donors))], size, rng,
                     scale=(0.5, 1.1), blur=(1.0, 3.5), bright=(0.6, 1.05),
@@ -299,8 +231,8 @@ def to_field(img: Image.Image, donors: list[Image.Image], rng: random.Random) ->
     return _camera(_sunlight(canvas, rng), rng)
 
 
-# The description written into the model card, so the artifact carries the
-# recipe rather than pointing at a file that may have moved on.
+# The description written into the model card, so the artifact carries the recipe rather than
+# pointing at a file that may have moved on.
 SPEC = [
     "leaf matted from the studio background (bright + unsaturated + border-connected), feathered",
     "composited onto an out-of-focus canopy: 3-7 MATTED donor leaves per donor, blurred and darkened, over a mottled shade/litter base",
@@ -314,24 +246,7 @@ SPEC = [
 
 
 class FieldSimulator:
-    """`to_field` with the repeated work done once.
-
-    Building a canopy from scratch for every training image costs about half a
-    second, which is eight hours an epoch — the simulation would cost more than
-    the training. Two caches remove almost all of it:
-
-      - **Matted donors.** Each donor leaf is matted once, at thumbnail size,
-        and kept as RGBA. Compositing then costs an alpha paste.
-      - **A background pool.** Canopies are built once and reused, with the
-        photometric stage — which is where most of the visible variation comes
-        from and is cheap — still drawn fresh per image. A pool of a few hundred
-        is far more background variety than the model ever sees in a real field,
-        where every photo on one estate shares one canopy.
-
-    Donors must come from the SAME split as the images being simulated, so a
-    test leaf can never appear in a training background. The caller enforces
-    that by passing the right list.
-    """
+    """`to_field` with the repeated work done once."""
 
     def __init__(self, donor_paths, size: int = 256, backgrounds: int = 192,
                  donors: int = 160, seed: int = 0):
@@ -422,8 +337,8 @@ class FieldSimulator:
                     (rng.randint(min(0, size - sw), max(0, size - sw)),
                      rng.randint(min(0, size - sh), max(0, size - sh))))
 
-        # One leaf in front, partly occluding: a hand pushing the canopy aside
-        # rarely produces a clean view of the leaf you wanted.
+        # One leaf in front, partly occluding: a hand pushing the canopy aside rarely produces a
+        # clean view of the leaf you wanted.
         if rng.random() < 0.45:
             self._blit(canvas, rng, scale=(0.5, 1.1), blur=(1.0, 3.5), bright=(0.6, 1.05),
                        alpha_scale=rng.uniform(0.6, 1.0))

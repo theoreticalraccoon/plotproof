@@ -1,15 +1,6 @@
 "use client";
 
-/**
- * The sale questionnaire: everything the export documents need, on one page.
- *
- * It replaced a four-screen wizard. A wizard suits someone doing a thing once;
- * an export certification officer prepares consignments all day, often with
- * the exporter's paperwork already in front of them, and needs to fill fields
- * in whatever order the information arrives and to see at a glance what is
- * still missing. So: every section visible, each with its own count of what is
- * left, and nothing lost by jumping around.
- */
+/** The sale questionnaire: everything the export documents need, on one page. */
 import { useState } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";

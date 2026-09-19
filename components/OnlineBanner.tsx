@@ -1,7 +1,7 @@
 "use client";
 
-/** Global offline reassurance. On conference wifi dropping out, the officer sees
- *  a calm explanation, not broken UI, capture keeps working offline. */
+// Global offline reassurance. On conference wifi dropping out, the officer sees a calm
+// explanation, not broken UI, capture keeps working offline.
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { WifiOff } from "lucide-react";

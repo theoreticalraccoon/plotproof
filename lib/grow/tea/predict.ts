@@ -1,23 +1,9 @@
-/**
- * Logits -> calibrated probabilities -> a prediction state.
- *
- * Pure. No DOM, no ONNX, no network — so `test/teaPredict.test.ts` exercises
- * the exact code that runs in production, including the abstention decision
- * that the whole safety story rests on.
- *
- * The abstention threshold is never written down here. It comes from the card,
- * and `decide()` cannot be called without one.
- */
+/** Logits -> calibrated probabilities -> a prediction state. */
 import type { TeaClassKey } from "../teaClasses.ts";
 import type { TeaModelCard, TeaPrediction } from "./types";
 import { isCrossDatasetValidated } from "./card.ts";
 
-/**
- * Temperature-scaled softmax, matching `ml/tea/evaluate.py`.
- *
- * Max-subtraction before exponentiating is not cosmetic: without it a logit of
- * ~800 overflows to Infinity and every probability becomes NaN.
- */
+/** Temperature-scaled softmax, matching `ml/tea/evaluate.py`. */
 export function calibratedSoftmax(logits: readonly number[], temperature: number): number[] {
   if (!(temperature > 0)) throw new Error(`Invalid temperature: ${temperature}`);
   const z = logits.map((v) => v / temperature);
@@ -27,15 +13,7 @@ export function calibratedSoftmax(logits: readonly number[], temperature: number
   return exps.map((e) => e / sum);
 }
 
-/**
- * Turn a raw model output into one of three disjoint states.
- *
- * The rule that matters: below the card's threshold this returns `uncertain`
- * with NO class. It does not return the top class with a caveat, and it does not
- * fall back to second place. The model is ~70% accurate outside its training
- * domain while remaining confident, so a low-confidence answer is not a weak
- * answer — it is an answer the model has not earned the right to give.
- */
+/** Turn a raw model output into one of three disjoint states. */
 export function decide(logits: readonly number[], card: TeaModelCard): TeaPrediction {
   const classes = card.taxonomy.classes;
 

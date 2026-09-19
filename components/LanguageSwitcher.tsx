@@ -1,13 +1,7 @@
 "use client";
 
-/** Language pills (English / සිංහල / தமிழ්). Small, always visible on the
- * farmer-facing pages, a traditional farmer should never hunt for their language.
- *
- * Switching is a synchronous store write, so it must never show a spinner: the
- * acknowledgement is the selection itself moving under the finger. The accent
- * pill is a single shared element that slides between options rather than three
- * backgrounds cross-fading, which is what makes the choice read as "moved
- * here", not "something changed somewhere". */
+// Language pills (English / සිංහල / தமிழ්). Small, always visible on the farmer-facing pages, a
+// traditional farmer should never hunt for their language.
 import { useId } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { LANGS, setLang, useLang } from "@/lib/i18n";
@@ -16,8 +10,8 @@ import { EASE_OUT_2, durations } from "@/lib/motion/variants";
 export default function LanguageSwitcher({ full = false }: { full?: boolean }) {
   const lang = useLang();
   const reduce = useReducedMotion();
-  // Several switchers can be mounted at once (nav + drawer + in-page), and a
-  // shared layoutId across them would make the pill teleport between headers.
+  // Several switchers can be mounted at once (nav + drawer + in-page), and a shared layoutId
+  // across them would make the pill teleport between headers.
   const pillId = `lang-pill-${useId()}`;
   const activeLabel = LANGS.find((l) => l.code === lang)?.label ?? "";
 

@@ -1,20 +1,6 @@
 "use client";
 
-/**
- * Site footer. Two link columns between the brand mark and the honesty note, so
- * the "what we won't do" promise sits at the end of every page rather than
- * being something you have to go looking for.
- *
- * It is the last thing on the page and should read like it: everything here is
- * one step quieter than the page above it (small type, muted throughout, a
- * single hairline instead of borders and boxes). The honesty note used to sit
- * in a glass card, which made the quietest region of the page hold the loudest
- * surface; it is now plain text under an accent rule.
- *
- * Links are PendingLink like the rest of navigation: a footer link is often the
- * slowest jump in the app, which is exactly
- * where an unacknowledged tap gets repeated.
- */
+/** Site footer. */
 import { Leaf } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { t, useLang } from "@/lib/i18n";
@@ -70,7 +56,6 @@ function LinkColumn({ heading, links }: { heading: string; links: readonly { hre
 
 export default function Footer() {
   const lang = useLang();
-  const en = lang === "en";
   return (
     <footer className="no-print mt-20 border-t" style={HAIRLINE}>
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-16">
@@ -96,18 +81,9 @@ export default function Footer() {
           <LinkColumn heading={t(lang, "footer_product")} links={PRODUCT_LINKS} />
           <LinkColumn heading={t(lang, "footer_resources")} links={RESOURCE_LINKS} />
 
-          <div className="border-l-2 pl-4 sm:col-span-2 lg:col-span-1" style={{ borderColor: "var(--accent-ring)" }}>
-            <h3
-              className="text-[0.66rem] font-semibold"
-              style={
-                en
-                  ? { textTransform: "uppercase", letterSpacing: "0.16em", color: "var(--fg-faint)" }
-                  : { letterSpacing: "0.01em", color: "var(--fg-faint)" }
-              }
-            >
-              {t(lang, "footer_honesty_title")}
-            </h3>
-            <p className="mt-3 max-w-[46ch] text-[0.8rem] leading-relaxed" style={{ color: "var(--fg-muted)" }}>
+          <div className="sm:col-span-2 lg:col-span-1">
+            <h3 className="text-[0.9rem] font-semibold">{t(lang, "footer_honesty_title")}</h3>
+            <p className="mt-2 max-w-[46ch] text-[0.85rem] leading-relaxed" style={{ color: "var(--fg-muted)" }}>
               {t(lang, "footer_honesty_body")}
             </p>
           </div>

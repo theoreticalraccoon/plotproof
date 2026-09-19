@@ -1,14 +1,5 @@
-/**
- * The real sync transport: pushes outbox items to Supabase (tables from
- * supabase/migrations/0002_field_data.sql, blobs to the private `field-media`
- * Storage bucket). Loaded dynamically by lib/intake/sync.ts so the Supabase
- * bundle stays out of the initial page load.
- *
- * Upserts are idempotent on the client-generated UUID, so a retry after a
- * half-failed drain is safe. FK order is guaranteed by outbox seq order
- * (farmer is always enqueued before its plot, media before its attestation);
- * a violated FK just fails that item and retries after its parent lands.
- */
+// The real sync transport: pushes outbox items to Supabase (tables from
+// supabase/migrations/0002_field_data.sql, blobs to the private `field-media` Storage bucket).
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { db, type OutboxItem } from "./db";
@@ -126,11 +117,8 @@ class SupabaseTransport implements SyncTransport {
   }
 }
 
-/**
- * Resolve the real transport, or null when it honestly cannot sync: Supabase
- * not configured, or nobody signed in. Callers must surface null as "no server
- * sync", never simulate success.
- */
+// Resolve the real transport, or null when it honestly cannot sync: Supabase not configured, or
+// nobody signed in.
 export async function getSupabaseTransport(): Promise<SyncTransport | null> {
   const supabase = await getSupabaseBrowser();
   if (!supabase) return null;

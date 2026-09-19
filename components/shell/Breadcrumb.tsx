@@ -1,19 +1,7 @@
 "use client";
 
-/**
- * Breadcrumb trail for deep pages, reinforces "where am I / how do I get back"
- * alongside the persistent top nav, so a workflow never feels like a dead end.
- * Each crumb except the last is a real link; the last is the current page.
- *
- * Hierarchy: the trail is orientation, not content, so it sits a full step
- * below body text (0.8rem, faint) and only the current page carries any weight.
- * The separator is a typed slash rather than a chevron icon, which removes a
- * rendered SVG per crumb from a component that appears on most routes.
- *
- * The crumbs are the escape hatch out of the document generators, which are the
- * slowest routes in the app, so they use PendingLink: a crumb that takes a
- * moment to load has to look tapped, or it looks broken.
- */
+// Breadcrumb trail for deep pages, reinforces "where am I / how do I get back" alongside the
+// persistent top nav, so a workflow never feels like a dead end.
 import PendingLink from "@/components/motion/PendingLink";
 
 export interface Crumb {

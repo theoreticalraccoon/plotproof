@@ -1,13 +1,7 @@
 "use client";
 
-/**
- * The `?diag=1` panel. Hidden from farmers, visible to whoever is running the
- * real-device smoke test.
- *
- * Presentation only, and deliberately untranslated: its audience is the person
- * holding the phone against a checklist, not a user. It renders whatever
- * `buildDiagnosticRows` produced and knows no model facts of its own.
- */
+// The `?diag=1` panel. Hidden from farmers, visible to whoever is running the real-device smoke
+// test.
 import type { DiagRow } from "@/lib/grow/tea/diagnostics";
 
 function mark(ok: boolean | null): { glyph: string; color: string } {

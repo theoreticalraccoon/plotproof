@@ -1,14 +1,4 @@
-/**
- * Client-side image processing for attestation photos. Runs on the phone before
- * anything is stored, because a raw camera shot is 4–8 MB and hundreds of those
- * would fill the device (DECISIONS.md D-009).
- *
- * Downscaling + JPEG re-encode also strips EXIF (including camera GPS), which is
- * a privacy win, we attach our OWN geolocation reading as data instead of
- * trusting embedded EXIF.
- *
- * Browser-only (uses canvas / createImageBitmap).
- */
+/** Client-side image processing for attestation photos. */
 export interface ProcessedImage {
   blob: Blob;
   width: number;

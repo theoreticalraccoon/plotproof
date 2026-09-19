@@ -1,15 +1,6 @@
 "use client";
 
-/**
- * Where the officer is and what is left, in one column.
- *
- * Every entry is an anchor to a section on this page. What each one reports is
- * deliberately NOT the same number: a questionnaire section owes answers, the
- * generated documents are either draft or final, and the authority documents
- * are a tally of what has actually been obtained. Printing "11 left" beside
- * three documents — which an earlier version did — reads as eleven missing
- * documents, which is not a thing that exists.
- */
+/** Where the officer is and what is left, in one column. */
 import { CheckCircle2, Circle } from "lucide-react";
 import { t, type Lang } from "@/lib/i18n";
 import {
@@ -64,8 +55,8 @@ export default function SectionNav({ sale, lang }: { sale: Sale; lang: Lang }) {
       done: complete,
       note: t(lang, complete ? "sale_ready" : "sale_draft"),
     },
-    // No product or buyer yet means no requirements are known, so this entry
-    // reports nothing rather than a reassuring tick.
+    // No product or buyer yet means no requirements are known, so this entry reports nothing
+    // rather than a reassuring tick.
     {
       href: "#authority",
       label: t(lang, "sale_auth_title"),

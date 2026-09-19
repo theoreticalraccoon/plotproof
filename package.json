@@ -2,7 +2,7 @@
   "name": "plotproof",
   "version": "0.1.0",
   "private": true,
-  "description": "PlotProof — grow, price and export a smallholder crop: weather-driven agronomy, in-browser leaf diagnosis, and the export documentation wall",
+  "description": "PlotProof, grow, price and export a smallholder crop: weather-driven agronomy, in-browser leaf diagnosis, and the export documentation wall",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

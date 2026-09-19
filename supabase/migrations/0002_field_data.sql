@@ -1,15 +1,5 @@
--- PlotProof: server persistence for field data (farmers, plots, attestations,
--- media metadata) so a cleared browser cache no longer loses a farm.
---
--- Mirrors the on-device model in lib/intake/types.ts: IDs are client-generated
--- UUIDs (records are born offline), the plot boundary is stored as the same
--- closed WGS84 ring the device captured (jsonb, GeoJSON axis order). Promotion
--- to PostGIS geometry per SCHEMA.md is a later, additive migration; nothing
--- here blocks it.
---
--- Every row is owned by the authenticated account that synced it, and RLS
--- restricts all access to own rows. Apply via Supabase Dashboard > SQL Editor,
--- or `supabase db push`.
+-- PlotProof: server persistence for field data (farmers, plots, attestations, media metadata) so
+-- a cleared browser cache no longer loses a farm.
 
 -- --- farmers ---------------------------------------------------------------
 create table if not exists public.farmers (
@@ -62,8 +52,8 @@ create table if not exists public.attestations (
   confirmation_method  text not null check (confirmation_method in ('signature','thumbprint')),
   photo_media_id       uuid not null,
   signature_media_id   uuid,
-  -- Explicit informed consent moment; an attestation without one is not lawful
-  -- to hold (GDPR Art. 9 / Sri Lanka PDPA), so the column is NOT NULL.
+  -- Explicit informed consent moment; an attestation without one is not lawful to hold (GDPR Art.
+  -- 9 / Sri Lanka PDPA), so the column is NOT NULL.
   consent_at           timestamptz not null,
   -- Tamper-evidence seal from lib/intake/integrity.ts (hashes + device chain).
   integrity            jsonb,
@@ -107,9 +97,7 @@ begin
   end loop;
 end $$;
 
--- --- Storage bucket for photos/signatures ----------------------------------
--- Private bucket; objects are keyed <auth.uid()>/<plotId>/<mediaId> and each
--- account can only touch its own folder.
+-- --- Storage bucket for photos/signatures ---------------------------------- Private bucket.
 insert into storage.buckets (id, name, public)
 values ('field-media', 'field-media', false)
 on conflict (id) do nothing;

@@ -1,20 +1,4 @@
-/**
- * Public per-lot verification — the page a farmer or cooperative WhatsApps to
- * an exporter. Server-rendered from the de-identified lot_verification view
- * (migration 0003); reachable only by knowing the lot's unguessable UUID.
- *
- * The trust ladder is stated explicitly, strongest claim first, and every
- * self-reported element is labelled as such. This page never overstates:
- * a hash chain proves the record hasn't changed, not that the capture was
- * honest — so it says exactly that, and points at the independent
- * cross-check (Global Forest Watch) for the deforestation question.
- *
- * Set as a document rather than an app screen: it is read cold, on a phone, by
- * a stranger deciding whether to believe it. Hairline rules and one accent
- * carry the structure, and the three rungs of the ladder get three different
- * treatments (filled / ruled / dashed) so the descending strength of the
- * claims is legible before a word is read.
- */
+/** Public per-lot verification, the page a farmer or cooperative WhatsApps to an exporter. */
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
@@ -77,10 +61,8 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
     .maybeSingle<LotRow>();
 
   if (error) {
-    // The public message is identical for "no such lot" and "query failed" so
-    // the page never leaks schema details. Operators need the difference, so
-    // the real cause goes to the server log (e.g. a missing lot_verification
-    // view means migration 0003 was never applied).
+    // The public message is identical for "no such lot" and "query failed" so the page never
+    // leaks schema details.
     console.error("[verify] lot_verification query failed:", error.message);
   }
 
@@ -93,7 +75,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
         </h1>
         <p className="mt-4 text-[1.02rem] leading-[1.6] muted" style={{ maxWidth: "62ch" }}>
           Either the link is wrong, the lot was never attested, or it has not synced from the
-          capture device. An unverifiable lot is shown as exactly that — unverifiable.
+          capture device. An unverifiable lot is shown as exactly that, unverifiable.
         </p>
         <p className="mt-7 text-[0.7rem] font-semibold uppercase tracking-[0.16em] faint">
           Requested ID
@@ -200,7 +182,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
         </Rung>
 
         <Rung tier="external" label="Independently checkable">
-          deforestation status is not our claim to make —{" "}
+          deforestation status is not our claim to make, {" "}
           <a
             className="font-medium underline underline-offset-[3px]"
             style={{ color: "var(--accent)", textDecorationThickness: "1px" }}
@@ -249,7 +231,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
 
       <Part n="04" title="For due diligence" />
       <p className="mt-4 text-[1rem] leading-[1.65] muted" style={{ maxWidth: "66ch" }}>
-        The plot geometry is available as TRACES-shaped GeoJSON (WGS84) from the lot holder —
+        The plot geometry is available as TRACES-shaped GeoJSON (WGS84) from the lot holder,
         the geolocation format an EU due-diligence statement expects. Under Regulation (EU)
         2023/1115 as amended by 2025/2650, the importing operator files the statement; this
         record is the smallholder-side evidence for it.
@@ -270,8 +252,8 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Letterhead: one accent stroke and the smallest type on the page. The name of
- *  the issuer belongs at the top of a document, but it is not the headline. */
+// Letterhead: one accent stroke and the smallest type on the page. The name of the issuer
+// belongs at the top of a document, but it is not the headline.
 function Masthead() {
   return (
     <div>
@@ -297,8 +279,8 @@ function Part({ n, title }: { n: string; title: string }) {
   );
 }
 
-/** One record line: hairline-separated label/value rows read as a certificate,
- *  where a grid of equal cards reads as a dashboard. */
+// One record line: hairline-separated label/value rows read as a certificate, where a grid of
+// equal cards reads as a dashboard.
 function Row({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return (
     <div
@@ -311,11 +293,7 @@ function Row({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   );
 }
 
-/**
- * A rung of the trust ladder. The tier is carried by the rule on the left —
- * filled accent, plain hairline, dashed — plus type weight and colour, so the
- * three claims cannot be mistaken for one another at a glance.
- */
+/** A rung of the trust ladder. */
 function Rung({
   tier,
   label,

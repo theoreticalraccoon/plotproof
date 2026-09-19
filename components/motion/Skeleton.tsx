@@ -1,8 +1,7 @@
 "use client";
 
-/** Shimmering skeleton placeholder (see .skeleton in globals.css). Reserves
- *  layout so async content swaps in without shift (CLS), and the shimmer stops
- *  under prefers-reduced-motion. */
+// Shimmering skeleton placeholder (see .skeleton in globals.css). Reserves layout so async
+// content swaps in without shift (CLS), and the shimmer stops under prefers-reduced-motion.
 
 export function Skeleton({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return <div className={`skeleton ${className}`} style={style} aria-hidden="true" />;
@@ -36,11 +35,11 @@ export function SkeletonList({ count = 3, lines = 3 }: { count?: number; lines?:
   );
 }
 
-/** Stacked text lines with varied widths, so a paragraph placeholder reads as
- *  prose rather than a stack of identical bars. */
+// Stacked text lines with varied widths, so a paragraph placeholder reads as prose rather than
+// a stack of identical bars.
 export function SkeletonText({ lines = 3, className = "" }: { lines?: number; className?: string }) {
-  // Widths cycle rather than shrink monotonically: real paragraphs are ragged,
-  // and only the LAST line is reliably short.
+  // Widths cycle rather than shrink monotonically: real paragraphs are ragged, and only the LAST
+  // line is reliably short.
   const widths = ["100%", "92%", "97%", "88%"];
   return (
     <div className={`flex flex-col gap-2 ${className}`} role="status" aria-label="Loading text" aria-busy="true">
@@ -70,8 +69,8 @@ export function SkeletonStat() {
   );
 }
 
-/** Header row + body rows inside the real .data-wrap shell, so the table does
- *  not resize when the data arrives. */
+// Header row + body rows inside the real .data-wrap shell, so the table does not resize when
+// the data arrives.
 export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="data-wrap" role="status" aria-label="Loading table" aria-busy="true">
@@ -92,8 +91,8 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
   );
 }
 
-/** Map-shaped placeholder. The centered hint matters: a blank rectangle where a
- *  map belongs is indistinguishable from a map that failed to load. */
+// Map-shaped placeholder. The centered hint matters: a blank rectangle where a map belongs is
+// indistinguishable from a map that failed to load.
 export function SkeletonMap({ className = "", label = "Loading map" }: { className?: string; label?: string }) {
   return (
     <div

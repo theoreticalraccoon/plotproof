@@ -1,10 +1,5 @@
-/**
- * On-device database (IndexedDB via Dexie). This is the field source of truth:
- * everything persists here the instant it's captured, so a phone dying at plot
- * 30 loses nothing. Server sync (Supabase) drains the `outbox` when online.
- *
- * Browser-only. Never import this from a Server Component.
- */
+// On-device database (IndexedDB via Dexie). This is the field source of truth: everything
+// persists here the instant it's captured, so a phone dying at plot 30 loses nothing.
 import Dexie, { type Table } from "dexie";
 import type { LocalAttestation, LocalFarmer, LocalMedia, LocalPlot } from "./types";
 import type { GrowProfile } from "../grow/types";
@@ -55,24 +50,19 @@ export class IntakeDB extends Dexie {
       media: "id, plotId, kind, syncStatus",
       attestations: "id, plotId, officerId, syncStatus",
     });
-    // v3: the GROW lane. Purely additive — every v1/v2 table and the outbox
-    // contract are untouched, so a field record captured before this upgrade
-    // still reads back exactly as it was attested. Keyed by plotId rather than
-    // folded into LocalPlot for the same reason.
+    // v3: the GROW lane.
     this.version(3).stores({
       growProfiles: "plotId, crop",
-      // Compound primary key: one row per plot per day, so a re-fetch of an
-      // overlapping date range updates in place instead of duplicating.
+      // Compound primary key: one row per plot per day, so a re-fetch of an overlapping date
+      // range updates in place instead of duplicating.
       weatherCache: "[plotId+date], plotId, date",
       sensorReadings: "++seq, plotId, at",
     });
   }
 }
 
-/**
- * Lazily-created singleton. Guarded so this module can be imported (but not
- * used) in a non-browser context without throwing.
- */
+// Lazily-created singleton. Guarded so this module can be imported (but not used) in a
+// non-browser context without throwing.
 let _db: IntakeDB | null = null;
 export function db(): IntakeDB {
   if (typeof indexedDB === "undefined") {
@@ -82,12 +72,8 @@ export function db(): IntakeDB {
   return _db;
 }
 
-/**
- * Wipe all account-scoped field data (farmers, plots, attestations, media, and
- * the sync outbox). Used to give a newly signed-in account a clean slate on a
- * shared device. The basemap `tiles` cache is left intact, it's not account
- * data and re-downloading it wastes the officer's bandwidth.
- */
+// Wipe all account-scoped field data (farmers, plots, attestations, media, and the sync
+// outbox).
 export async function clearIntakeData(): Promise<void> {
   if (typeof indexedDB === "undefined") return;
   const d = db();
@@ -97,8 +83,8 @@ export async function clearIntakeData(): Promise<void> {
     d.attestations.clear(),
     d.media.clear(),
     d.outbox.clear(),
-    // Grow-lane data is account-scoped too: a new account on a shared device
-    // must not inherit the previous farmer's crop profile or sensor trace.
+    // Grow-lane data is account-scoped too: a new account on a shared device must not inherit
+    // the previous farmer's crop profile or sensor trace.
     d.growProfiles.clear(),
     d.weatherCache.clear(),
     d.sensorReadings.clear(),

@@ -1,17 +1,6 @@
 "use client";
 
-/**
- * Documents only an authority can issue, for this consignment.
- *
- * These are never generated as look-alikes: a phytosanitary certificate the app
- * "made" would be a forgery. Instead each is explained — what it is, why this
- * consignment needs it, who issues it and how — with the authority named and
- * the source cited, and the officer ticks it off once obtained.
- *
- * The list comes from the sourced catalog via the requirement resolver, so it
- * changes with the product and the buyer's market: tea gains the Tea Board, an
- * EU rubber consignment gains EUDR, a US one gains FDA prior notice.
- */
+/** Documents only an authority can issue, for this consignment. */
 import { ArrowDown, ChevronDown, ShieldCheck } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { t, type Lang } from "@/lib/i18n";

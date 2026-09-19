@@ -1,10 +1,7 @@
 "use client";
 
-/**
- * Scroll-triggered reveal, the Framer Motion equivalent of the skill's GSAP
- * ScrollTrigger reveal preset: fade + small rise, plays once, degrades to a
- * plain instant-visible render under prefers-reduced-motion.
- */
+// Scroll-triggered reveal, the Framer Motion equivalent of the skill's GSAP ScrollTrigger
+// reveal preset: fade + small rise, plays once.
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { revealUpDelayed, revealFadeDelayed } from "@/lib/motion/variants";

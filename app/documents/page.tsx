@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * /documents — just the documents.
- *
- * The checklist of what an authority must issue lives on /sell, next to the
- * consignment it belongs to. This page is the other half: the three documents
- * PlotProof produces, opened to correct the details inside one of them.
- */
+/** /documents, just the documents. */
 import Link from "next/link";
 import { Download, FileText, Loader2, Pencil } from "lucide-react";
 import { useState } from "react";

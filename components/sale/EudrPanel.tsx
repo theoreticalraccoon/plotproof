@@ -1,19 +1,6 @@
 "use client";
 
-/**
- * EUDR, as part of the sale rather than a separate tab.
- *
- * It appears only when it applies — an Annex I commodity (rubber, coffee,
- * cocoa…) going to the EU — and it asks the question the regulation asks: were
- * the plots this consignment came from deforested after 31 December 2020?
- *
- * The officer attaches the plots, sees each on satellite imagery with the JRC
- * 2020 forest map and Hansen tree-cover loss drawn over it, and runs a check
- * that pulls the area statistics for exactly that boundary. The verdict is a
- * screening with reasons and a list of evidence to gather, never "compliant":
- * there is no EUDR certificate, and pretending otherwise would be the most
- * dangerous thing this screen could do.
- */
+/** EUDR, as part of the sale rather than a separate tab. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { AlertTriangle, CheckCircle2, HelpCircle, Loader2, MapPinned, Plus, SearchCheck, X } from "lucide-react";

@@ -1,15 +1,7 @@
 "use client";
 
-/**
- * Connectivity + sync backlog indicator. Auto-drains the outbox on reconnect;
- * "Sync now" forces a drain. Reflects the offline-first reality: work happens
- * offline, sync catches up later.
- *
- * The one thing this bar must never do is imply a record left the device when
- * it did not. So the counts render as "unknown" until the local reads actually
- * resolve, and when no server sync exists the button is disabled and says so
- * rather than spinning through a drain that can only ever be a no-op.
- */
+// Connectivity + sync backlog indicator. Auto-drains the outbox on reconnect; "Sync now" forces
+// a drain.
 import { useCallback, useEffect, useState } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
 import { countUnsynced } from "@/lib/intake/store";
@@ -30,8 +22,8 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
   const lang = useLang();
   const { toast } = useToast();
   const [online, setOnline] = useState(true);
-  // null = not read yet. Distinguishing "no backlog" from "don't know yet"
-  // is the whole point: 0 rendered too early reads as "all safe".
+  // null = not read yet. Distinguishing "no backlog" from "don't know yet" is the whole point: 0
+  // rendered too early reads as "all safe".
   const [pending, setPending] = useState<number | null>(null);
   const [media, setMedia] = useState<MediaUsage | null>(null);
   const [readFailed, setReadFailed] = useState(false);
@@ -66,16 +58,16 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
 
   const serverless = !isSupabaseConfigured();
 
-  // Anything short of "everything left the device" throws, so the button lands
-  // on its error state instead of flashing a checkmark over a failed drain.
+  // Anything short of "everything left the device" throws, so the button lands on its error
+  // state instead of flashing a checkmark over a failed drain.
   const syncNow = async () => {
     const result = await drainOutbox();
     refresh();
     if (result.unavailable) {
-      throw new Error("No server sync is connected — records stay on this device only.");
+      throw new Error("No server sync is connected, records stay on this device only.");
     }
     if (result.failed > 0) {
-      throw new Error(`${result.synced} synced, ${result.failed} failed — will retry.`);
+      throw new Error(`${result.synced} synced, ${result.failed} failed, will retry.`);
     }
     toast(t(lang, "toast_synced"), "success");
   };
@@ -123,7 +115,7 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
           <>
             <CloudOff size={15} className="mr-1.5 inline-block align-[-2px]" style={{ color: "var(--fg-faint)" }} aria-hidden="true" />
             <span className="font-semibold">On this device only</span>{" "}
-            <span className="muted">— no server sync connected</span>
+            <span className="muted">, no server sync connected</span>
             {pending > 0 && <span className="tag tag-muted ml-2 tabular-nums">{pending} queued</span>}
           </>
         ) : pending === 0 ? (

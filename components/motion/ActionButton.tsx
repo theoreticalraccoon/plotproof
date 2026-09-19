@@ -1,12 +1,6 @@
 "use client";
 
-/**
- * A button that makes success and failure *visible*. It runs an async action and
- * animates through idle → loading (spinner) → success (checkmark, the button
- * flashes to the accent color) or error (X + a shake, plus an error toast), then
- * settles back. Pass an `onAction` that throws on failure (e.g. a validation
- * error or a rejected request); the thrown message becomes the toast.
- */
+/** A button that makes success and failure *visible*. */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, X } from "lucide-react";

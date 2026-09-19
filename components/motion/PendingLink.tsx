@@ -1,17 +1,6 @@
 "use client";
 
-/**
- * A next/link that acknowledges the click the instant it happens.
- *
- * Routes in this app can take a few hundred ms to stream in (map bundles, the
- * document generators). Without an acknowledgement a user assumes the tap
- * missed and taps again, so every navigation gets an inline spinner driven by
- * the REAL navigation state, never a timer.
- *
- * API detail that dictates the shape below: `useLinkStatus()` only reports the
- * pending state of an ancestor <Link>, so the hook has to live in a child
- * component rendered inside the link, not in the component that renders it.
- */
+/** A next/link that acknowledges the click the instant it happens. */
 import Link, { useLinkStatus } from "next/link";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import type { UrlObject } from "url";
@@ -19,10 +8,8 @@ import type { UrlObject } from "url";
 function PendingInner({ children }: { children: ReactNode }) {
   const { pending } = useLinkStatus();
   return (
-    // `gap-2`, not the whitespace between JSX children: this span is a flex
-    // container, and a flex container drops the anonymous whitespace between an
-    // icon and its label, so every icon+text link rendered here used to print
-    // its icon jammed against the first letter.
+    // `gap-2`, not the whitespace between JSX children: this span is a flex container, and a
+    // flex container drops the anonymous whitespace between an icon and its label.
     <span className="inline-flex items-center gap-2" aria-busy={pending || undefined}>
       {children}
       {/*
@@ -65,12 +52,7 @@ export default function PendingLink({
   rel?: string;
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
   ariaLabel?: string;
-  /**
-   * For a link inside running text. The pending slot is reserved space, which
-   * is right in a button or a nav item and wrong in a sentence: it leaves a
-   * visible gap after every in-prose link. Inline links skip the slot; they
-   * point at fast, static pages where a missed tap is not the risk.
-   */
+  /** For a link inside running text. */
   inline?: boolean;
 }) {
   return (

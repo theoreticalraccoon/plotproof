@@ -1,7 +1,5 @@
-/**
- * Persistence operations over the local DB. Every write commits immediately
- * and enqueues an outbox item, there is no "save at end of session".
- */
+// Persistence operations over the local DB. Every write commits immediately and enqueues an
+// outbox item, there is no "save at end of session".
 import { db } from "./db";
 import type { ExistingPlot } from "./geometry";
 import type { ProcessedImage } from "./image";
@@ -44,8 +42,8 @@ export async function saveFarmer(farmer: LocalFarmer): Promise<void> {
   });
 }
 
-/** Persist a plot and queue it for sync. Atomic: the plot and its outbox row
- *  land together, so a crash can't leave a saved plot that never syncs. */
+// Persist a plot and queue it for sync. Atomic: the plot and its outbox row land together, so a
+// crash can't leave a saved plot that never syncs.
 export async function savePlot(plot: LocalPlot): Promise<void> {
   const database = db();
   await database.transaction("rw", database.plots, database.outbox, async () => {
@@ -85,8 +83,8 @@ export async function existingRings(excludeId?: string): Promise<ExistingPlot[]>
     .map((p) => ({ id: p.id, ring: p.ring }));
 }
 
-/** Pending outbox items. Successfully-synced items are deleted, so the outbox
- *  size IS the backlog. */
+// Pending outbox items. Successfully-synced items are deleted, so the outbox size IS the
+// backlog.
 export async function countUnsynced(): Promise<number> {
   return db().outbox.count();
 }
@@ -106,15 +104,8 @@ export interface AttestationInput {
   consentAt: string;
 }
 
-/**
- * Persist an attestation with its photo and signature, flip the plot to
- * 'attested', and queue everything for sync, all in one transaction, so a
- * crash can never leave a plot marked attested with a missing photo.
- *
- * Also seals the record: media bytes and the plot ring are SHA-256 hashed and
- * the record is chained to the previous attestation on this device
- * (lib/intake/integrity.ts), so any later edit or deletion is detectable.
- */
+// Persist an attestation with its photo and signature, flip the plot to 'attested', and queue
+// everything for sync, all in one transaction.
 export async function saveAttestation(input: AttestationInput): Promise<LocalAttestation> {
   const database = db();
   const now = nowIso();
@@ -203,8 +194,8 @@ export async function getAttestationForPlot(
   return db().attestations.where("plotId").equals(plotId).first();
 }
 
-/** Head of this device's hash chain: the sealed attestation with the highest
- *  chain sequence. Records from before the integrity layer are skipped. */
+// Head of this device's hash chain: the sealed attestation with the highest chain sequence.
+// Records from before the integrity layer are skipped.
 async function latestSealedAttestation(): Promise<LocalAttestation | undefined> {
   const all = await db().attestations.toArray();
   return all

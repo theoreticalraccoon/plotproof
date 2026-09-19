@@ -1,19 +1,6 @@
 "use client";
 
-/**
- * Two questions that set every number on the GROW page: what is growing, and
- * what the soil is.
- *
- * Kept to two because they are the only two the water balance genuinely needs
- * and cannot infer. Crop gives Kc and rooting depth (FAO-56 Table 12/22); soil
- * texture gives field capacity and wilting point (Table 19). Asking for
- * anything more would be collecting data we do not use — the same discipline
- * the four-question sell flow follows.
- *
- * Soil is a tile grid with a field test in the helper text, not a dropdown of
- * soil-science terms, because a farmer knows their soil by how it behaves in a
- * hand, not by its USDA class.
- */
+/** Two questions that set every number on the GROW page: what is growing, and what the soil is. */
 import { useState } from "react";
 import { t, type Lang } from "@/lib/i18n";
 import type { GrowCrop, GrowProfile, SoilTexture } from "@/lib/grow/types";

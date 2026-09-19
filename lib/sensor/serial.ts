@@ -1,33 +1,9 @@
 "use client";
 
-/**
- * Web Serial: the browser talks to the Magicbit over USB directly.
- *
- * No bridge process, no MQTT broker, no gateway, no backend. The board is
- * plugged into the laptop the page is open on, `navigator.serial` opens the
- * port, and readings land in IndexedDB. That is the whole architecture, and it
- * is the same reasoning as the rest of the project: the fewer moving parts
- * between a measurement and the screen, the fewer places a number can be
- * invented.
- *
- * This is the only file in the sensor lane that touches the DOM or the hardware.
- * The wire format lives in `protocol.ts` and the arithmetic in `calibrate.ts`,
- * both pure and both tested, so what is untestable here is kept as thin as it
- * can be: open, loop, hand each line to a parser, close.
- *
- * Web Serial is Chromium-only and requires a secure context. Firefox and Safari
- * have not implemented it and are unlikely to soon. `isSerialSupported()` exists
- * so the UI can say that plainly rather than offering a button that cannot work.
- */
+/** Web Serial: the browser talks to the Magicbit over USB directly. */
 import { LineBuffer, parseFrame, type SensorFrame } from "./protocol";
 
-/**
- * Minimal structural types for the Web Serial API.
- *
- * Declared locally rather than pulled from `@types/w3c-web-serial`: it is one
- * dependency for four shapes, and the shapes are stable. Everything is narrowed
- * through `isSerialSupported()` before use.
- */
+/** Minimal structural types for the Web Serial API. */
 interface SerialPortLike {
   open(options: { baudRate: number }): Promise<void>;
   close(): Promise<void>;
@@ -63,16 +39,7 @@ export interface SerialHandlers {
   onStatus(status: SerialStatus, detail?: string): void;
 }
 
-/**
- * Ask the user to pick a port, then stream frames until closed.
- *
- * MUST be called from a user gesture: `requestPort()` opens a browser-chrome
- * picker and is blocked otherwise. That constraint is a feature — a page cannot
- * silently reach the serial bus.
- *
- * Every failure path resolves into `onStatus("error", …)`. Nothing here throws
- * into React, and no failure produces a reading.
- */
+/** Ask the user to pick a port, then stream frames until closed. */
 export async function connectSensor(handlers: SerialHandlers): Promise<SerialConnection | null> {
   const s = serial();
   if (!s) {
@@ -87,8 +54,8 @@ export async function connectSensor(handlers: SerialHandlers): Promise<SerialCon
     port = await s.requestPort();
     await port.open({ baudRate: BAUD_RATE });
   } catch (e) {
-    // Includes the user dismissing the picker, which is not an error worth
-    // shouting about — the UI treats "cancelled" as a return to idle.
+    // Includes the user dismissing the picker, which is not an error worth shouting about, the
+    // UI treats "cancelled" as a return to idle.
     const msg = e instanceof Error ? e.message : String(e);
     handlers.onStatus("error", /No port selected|cancel/i.test(msg) ? "cancelled" : msg);
     return null;
@@ -113,8 +80,8 @@ export async function connectSensor(handlers: SerialHandlers): Promise<SerialCon
     handlers.onStatus("idle");
   };
 
-  // The read loop runs detached. It is not awaited, because the caller needs the
-  // connection handle back immediately to be able to close it.
+  // The read loop runs detached. It is not awaited, because the caller needs the connection
+  // handle back immediately to be able to close it.
   void (async () => {
     const decoder = new TextDecoder();
     const lines = new LineBuffer();
@@ -129,9 +96,8 @@ export async function connectSensor(handlers: SerialHandlers): Promise<SerialCon
         if (!value) continue;
         for (const line of lines.push(decoder.decode(value, { stream: true }))) {
           const frame = parseFrame(line);
-          // A line that does not parse is dropped in silence. The board's boot
-          // banner is plain text and would otherwise be reported as a fault on
-          // every single connect.
+          // A line that does not parse is dropped in silence. The board's boot banner is plain
+          // text and would otherwise be reported as a fault on every single connect.
           if (frame) handlers.onFrame(frame);
         }
       }
@@ -146,19 +112,7 @@ export async function connectSensor(handlers: SerialHandlers): Promise<SerialCon
   return { close };
 }
 
-/**
- * A deterministic stand-in for the board, clearly labelled everywhere it is used.
- *
- * Web Serial does not exist on Firefox, Safari or any phone, and the app is
- * demonstrated on machines that do not have a probe plugged in. The choice is
- * between a dead button and a simulator — and a simulator is only acceptable if
- * it is impossible to mistake for hardware. So every reading it produces is
- * stored with `source: "simulated"`, the UI labels the trace, and the readings
- * are written to a separate plot-scoped trace the farmer can clear.
- *
- * The signal is a slow drying curve with realistic jitter, seeded so a
- * demonstration is reproducible. It is not a model of anything.
- */
+/** A deterministic stand-in for the board, clearly labelled everywhere it is used. */
 export function simulateSensor(
   handlers: Pick<SerialHandlers, "onFrame" | "onStatus">,
   opts: { dryRaw?: number; wetRaw?: number; intervalMs?: number } = {},
@@ -180,8 +134,8 @@ export function simulateSensor(
   handlers.onStatus("streaming");
   const id = setInterval(() => {
     t += 1;
-    // Start near field capacity and dry out slowly, so the irrigation verdict
-    // visibly changes over a few minutes of a demonstration.
+    // Start near field capacity and dry out slowly, so the irrigation verdict visibly changes
+    // over a few minutes of a demonstration.
     const saturation = Math.max(0.12, 0.42 - t * 0.0015);
     const raw = Math.round(dry - saturation * (dry - wet) + (rand() - 0.5) * 24);
     handlers.onFrame({ raw, uptimeMs: t * interval });

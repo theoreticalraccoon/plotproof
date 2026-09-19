@@ -1,8 +1,7 @@
 "use client";
 
-/** A thin accent bar pinned to the very top that fills as the page scrolls -
- *  a quiet, modern orientation cue on long pages. Spring-smoothed; hidden when
- *  reduced-motion is on (it would otherwise jump). */
+// A thin accent bar pinned to the very top that fills as the page scrolls - a quiet, modern
+// orientation cue on long pages.
 import { motion, useScroll, useSpring, useReducedMotion } from "framer-motion";
 
 export default function ScrollProgress() {

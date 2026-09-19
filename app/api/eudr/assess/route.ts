@@ -1,19 +1,4 @@
-/**
- * POST /api/eudr/assess — zonal forest statistics for one plot boundary.
- *
- * A thin, defensive proxy. It exists only because the Global Forest Watch key
- * must stay on the server; the reasoning over the numbers happens in
- * `lib/eudr/verdict.ts`, in the browser, where it is tested.
- *
- * Guards, each for a specific abuse of a keyed third-party API:
- *   - signed-in users only, when accounts are configured;
- *   - geometry must be a closed ring inside Sri Lanka, under a vertex and area
- *     cap, so the route cannot be used as a free global statistics service;
- *   - a hard timeout, so a slow upstream cannot pin a serverless function.
- *
- * Failures say what failed. They never return zeros, because zero forest and
- * zero loss is the one answer that would read as a clean bill of health.
- */
+/** POST /api/eudr/assess, zonal forest statistics for one plot boundary. */
 import { NextResponse } from "next/server";
 import { computeAreaHa } from "@/lib/intake/geometry";
 import { isSupabaseConfigured } from "@/lib/supabase/client";

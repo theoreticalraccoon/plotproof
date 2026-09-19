@@ -1,28 +1,15 @@
-/**
- * The wire contract between the assistant route and the chat panel.
- *
- * Kept apart from `prompt.ts` so the browser bundle carries these few constants
- * and not the system prompt and document catalog.
- */
+/** The wire contract between the assistant route and the chat panel. */
 
-/**
- * Appended to the streamed answer to report how it ended, then stripped by the
- * client, which says so in the officer's language. Without it a truncated or
- * failed answer is indistinguishable from a complete one. Prefixed with a NUL
- * character, which cannot appear in the model's text.
- */
+// Appended to the streamed answer to report how it ended, then stripped by the client, which
+// says so in the officer's language.
 const NUL = String.fromCharCode(0);
 export const END = {
   cut: NUL + "CUT",
   refused: NUL + "REFUSED",
   /** Transient: the answer stopped part-way and trying again may work. */
   failed: NUL + "FAILED",
-  /**
-   * Not transient: the deployment's API access is rejected outright — a bad key,
-   * a revoked key, or an account with no credit. Kept apart from `failed`
-   * because telling an officer to try again when nothing they do can help is
-   * just a slower way of not answering.
-   */
+  // Not transient: the deployment's API access is rejected outright, a bad key, a revoked key,
+  // or an account with no credit.
   unavailable: NUL + "UNAVAILABLE",
 } as const;
 

@@ -42,14 +42,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * The authentic Apple-style liquid-glass refraction filter (from 21st.dev's
- * "Liquid Glass Card" by designali-in / ui.dalim.in): fractal-noise turbulence,
- * blurred, drives a displacement map so whatever sits behind a `.lg` surface
- * bends like real glass. Injected once here and referenced via
- * `backdrop-filter: url(#lg-filter)`. Reserved for signature surfaces, the
- * everyday .glass rim-lighting doesn't need it.
- */
+// The authentic Apple-style liquid-glass refraction filter (from 21st.dev's "Liquid Glass Card"
+// by designali-in / ui.dalim.in): fractal-noise turbulence, blurred.
 function GlassFilter() {
   return (
     <svg aria-hidden="true" className="pointer-events-none fixed h-0 w-0">

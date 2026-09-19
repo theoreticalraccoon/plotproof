@@ -1,10 +1,5 @@
-/**
- * Shipping suggester. From the product's perishability, the volume, and the
- * destination, propose sensible modes + an Incoterm, in plain language. Pure.
- *
- * These are guidance defaults, not quotes, the farmer confirms with a freight
- * forwarder. Kept honest, like every other output.
- */
+// Shipping suggester. From the product's perishability, the volume, and the destination,
+// propose sensible modes + an Incoterm, in plain language. Pure.
 import type { Market, Product, ShippingOption } from "./types";
 
 const FCL_THRESHOLD_KG = 10_000; // roughly a full 20ft container of dry goods

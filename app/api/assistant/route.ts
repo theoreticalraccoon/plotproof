@@ -1,27 +1,4 @@
-/**
- * POST /api/assistant — the export assistant, streamed.
- *
- * Claude Haiku 4.5, grounded in the sourced document catalog and a summary of
- * the officer's open consignment. The API key lives only here.
- *
- * Guardrails, in the order a request meets them:
- *   1. Signed-in officers only (when accounts are configured).
- *   2. A per-account rate limit, counted in Supabase from a ledger row written
- *      BEFORE the model is called — an abandoned answer still counts, and the
- *      client cannot delete or back-date its own rows. If the ledger cannot be
- *      read the route refuses: an unmetered model endpoint is the failure that
- *      costs money, so it fails closed.
- *   3. The conversation is validated: roles checked, oversized messages refused
- *      rather than silently cut, only recent turns kept.
- *   4. A fixed system prompt with the scope rules and the catalog; officer text
- *      arrives only in the user turn, inside a tag the rules call data.
- *   5. A short output cap, and generation stops if the officer navigates away.
- *
- * The response is plain text streamed as it is written. A trailing control
- * marker tells the client how the answer ended (cut off, refused, failed) so it
- * can say so in the officer's language rather than leave a half-answer looking
- * complete.
- */
+/** POST /api/assistant, the export assistant, streamed. */
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
@@ -34,9 +11,8 @@ export const runtime = "nodejs";
 
 const MODEL = "claude-haiku-4-5";
 
-// --- fallback limiter for a deployment with no accounts ---------------------------
-// Only used when Supabase is not configured (local development). Per-instance
-// memory, so it is a courtesy, not a control; a real deployment has accounts.
+// --- fallback limiter for a deployment with no accounts --------------------------- Only used
+// when Supabase is not configured (local development).
 const devHits = new Map<string, number[]>();
 function devLimited(ip: string): boolean {
   const now = Date.now();
@@ -63,8 +39,7 @@ async function enforceLimit(request: Request): Promise<NextResponse | null> {
     .eq("user_id", auth.user.id)
     .gte("created_at", dayAgo);
   if (error) {
-    // Most likely migration 0004 has not been applied. Refuse rather than run
-    // unmetered.
+    // Most likely migration 0004 has not been applied. Refuse rather than run unmetered.
     console.error("[assistant] usage ledger unavailable:", error.message);
     return NextResponse.json({ error: "limits_unavailable" }, { status: 503 });
   }
@@ -101,8 +76,8 @@ export async function POST(request: Request) {
   const blocked = await enforceLimit(request);
   if (blocked) return blocked;
 
-  // The sale is the officer's own data. It is re-derived here with the same
-  // functions the page uses rather than trusting any summary the browser built.
+  // The sale is the officer's own data. It is re-derived here with the same functions the page
+  // uses rather than trusting any summary the browser built.
   let context = "";
   if (body.sale && typeof body.sale === "object" && typeof (body.sale as Sale).id === "string") {
     try {
@@ -146,11 +121,8 @@ export async function POST(request: Request) {
         if (final.stop_reason === "refusal") controller.enqueue(encoder.encode(END.refused));
       } catch (e) {
         if (!request.signal.aborted) {
-          // An answer that stopped part-way and one that was never going to
-          // start are different problems for the officer reading the screen.
-          // A rejected key, a revoked key or an account out of credit will
-          // fail identically on every retry, so it is reported as such and
-          // the deployment's logs carry the real reason.
+          // An answer that stopped part-way and one that was never going to start are different
+          // problems for the officer reading the screen.
           let terminal = false;
           if (e instanceof Anthropic.RateLimitError) {
             console.error("[assistant] upstream rate limit");

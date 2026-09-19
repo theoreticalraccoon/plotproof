@@ -1,46 +1,4 @@
-/**
- * Global Forest Watch Data API: the per-plot zonal statistics behind the EUDR
- * screening.
- *
- * Server-side only — the API key must never reach a browser. The query and
- * response shapes are kept here as pure functions (`plotQueries`,
- * `statsFromRows`) so the parsing is tested with fixtures and the route handler
- * stays a thin wrapper around `fetch`.
- *
- * Five queries. Four are against JRC Global Forest Cover 2020, one against
- * Hansen:
- *
- *   A. Forest total — plain SUM over the JRC forest layer, NO grouping. This is
- *      the 2020 forest area.
- *   B. Loss on forest by year — JRC pixels that also carry a Hansen loss year
- *      from 2021 on. That is the EUDR question itself.
- *   C. The same loss split by the WRI/Google driver — used ONLY to attribute
- *      a cause. Any loss B has and C does not is reported as unattributed.
- *   D. Plantation type on the forest — for rubber, the difference between
- *      "deforestation risk" and "the crop was mapped as forest".
- *   E. Hansen alone, 2021 on — loss anywhere on the plot, forest or not, so a
- *      disagreement between the two maps is reported rather than hidden.
- *
- * WHY FIVE AND NOT THREE. The Data API only returns pixels that have a value
- * in EVERY layer a query names. An earlier version measured forest area as the
- * sum of a query grouped by loss year and driver, so every forest pixel with
- * no loss and no driver — which is to say intact forest, the common case —
- * fell out of the result. Checked against a 1.2 ha plot inside Sinharaja
- * rainforest it reported 0 ha of forest and a "low" verdict, while a plain
- * SUM over the same layer and plot gave 1.22 ha. Each quantity is therefore
- * measured by a query that names only the layers it needs, and a cause is
- * never allowed to decide whether a loss is counted.
- *
- * CODES, NOT VALUES. Queried through the JRC dataset, the joined layers come
- * back as raster codes, not as the values they stand for: loss year 21 means
- * 2021, driver 1 means permanent agriculture, plantation 8 means rubber. The
- * Hansen dataset queried on its own returns real years. An earlier version
- * filtered JRC loss on `>= 2021`, which no code ever reaches, so loss on 2020
- * forest was invisible everywhere; on a 12,000 ha test box in Uva it reported
- * 0 ha where the data holds 21.7 ha. Every code is decoded below from the
- * publisher's own table, and a code with no entry is reported as such rather
- * than guessed.
- */
+/** Global Forest Watch Data API: the per-plot zonal statistics behind the EUDR screening. */
 import type { ForestStats } from "./verdict.ts";
 
 export const GFW_BASE = "https://data-api.globalforestwatch.org";
@@ -50,19 +8,12 @@ export const HANSEN = { dataset: "umd_tree_cover_loss", version: "v1.13" } as co
 /** EUDR cut-off: 31 December 2020. Loss counts from the first year after it. */
 export const FIRST_YEAR_AFTER_CUTOFF = 2021;
 
-/**
- * `umd_tree_cover_loss__year` as a raster code: 1 = 2001 … 25 = 2025, per the
- * values table the Data API publishes for the field. This is the form it takes
- * when joined onto the JRC dataset.
- */
+// `umd_tree_cover_loss__year` as a raster code: 1 = 2001 … 25 = 2025, per the values table the
+// Data API publishes for the field.
 const LOSS_YEAR_CODE_BASE = 2000;
 const FIRST_CODE_AFTER_CUTOFF = FIRST_YEAR_AFTER_CUTOFF - LOSS_YEAR_CODE_BASE;
 
-/**
- * WRI/Google DeepMind drivers of tree cover loss, 1 km (Sims et al. 2025),
- * classification band. Source: the dataset's class table in the Google Earth
- * Engine catalogue (projects/landandcarbon/assets/wri_gdm_drivers_forest_loss_1km).
- */
+/** WRI/Google DeepMind drivers of tree cover loss, 1 km (Sims et al. 2025), classification band. */
 export const DRIVER_NAMES: Record<number, string> = {
   1: "Permanent agriculture",
   2: "Hard commodities",
@@ -142,11 +93,7 @@ export function queryUrl(q: GfwQuery): string {
 
 // --- geometry guards -----------------------------------------------------------
 
-/**
- * Sri Lanka's land extent with a margin. The endpoint is a proxy to a keyed
- * third-party API; refusing geometry outside the country stops it being used as
- * a free global zonal-statistics service on someone else's quota.
- */
+/** Sri Lanka's land extent with a margin. */
 const LK_BBOX = { minLng: 79.4, maxLng: 82.1, minLat: 5.7, maxLat: 10.1 };
 export const MAX_VERTICES = 500;
 /** A smallholder plot is hectares, not a district. */
@@ -182,8 +129,8 @@ export function rowsOf(body: unknown): Row[] {
 }
 
 const areaOf = (r: Row): number => {
-  // The aggregate column is named after the expression; accept the spellings
-  // the API has used rather than trusting one.
+  // The aggregate column is named after the expression; accept the spellings the API has used
+  // rather than trusting one.
   const v = r["area__ha"] ?? r["sum"] ?? r["SUM(area__ha)"] ?? r["sum_area__ha"];
   const n = typeof v === "number" ? v : Number(v);
   return Number.isFinite(n) && n > 0 ? n : 0;
@@ -218,8 +165,8 @@ export interface PlotRows {
 }
 
 export function statsFromRows(plotHa: number, rows: PlotRows): ForestStats {
-  // Zonal area can exceed the polygon area slightly at the edges; never report
-  // more forest than there is plot.
+  // Zonal area can exceed the polygon area slightly at the edges; never report more forest than
+  // there is plot.
   const forest2020Ha = Math.min(
     rows.forestTotal.reduce((n, r) => n + areaOf(r), 0),
     plotHa,
@@ -235,9 +182,7 @@ export function statsFromRows(plotHa: number, rows: PlotRows): ForestStats {
     add(lossOnForestByYear, String(y), a);
   }
 
-  // Drivers attribute a cause to loss already counted above; they never add to
-  // it. Whatever the driver layer does not cover is named "unattributed", so
-  // the officer sees that a cause is missing rather than a smaller loss.
+  // Drivers attribute a cause to loss already counted above; they never add to it.
   const lossOnForestByDriver: Record<string, number> = {};
   let attributed = 0;
   for (const r of rows.lossDrivers) {

@@ -1,18 +1,7 @@
 "use client";
 
-/**
- * ⌘K / Ctrl-K command palette, jump to any page or run a quick action without
- * hunting through nav. The modern-SaaS convenience (Raycast / Linear / Vercel).
- * Wrap the app once in <CommandPaletteProvider> (done in AppShell); the nav's
- * search affordance calls useCommandPalette().open(). Fully keyboard-driven and
- * translated; closes on Esc / backdrop / route change.
- *
- * Commands are split by what they actually cost. A "navigate" command hands off
- * to the router and may take a beat, so the row it was fired from holds a
- * spinner and the palette stays up until the route lands. An "action" command
- * is a synchronous store write and is finished the instant it is invoked, so it
- * closes immediately: putting a spinner on it would invent a wait.
- */
+// ⌘K / Ctrl-K command palette, jump to any page or run a quick action without hunting through
+// nav.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -37,8 +26,8 @@ type Command =
   | (CommandBase & { kind: "navigate"; href: string })
   | (CommandBase & { kind: "action"; run: () => void });
 
-// A navigation that never lands (blocked by a guard, cancelled) must not leave
-// a row spinning forever. Mirrors the NavProgress failsafe.
+// A navigation that never lands (blocked by a guard, cancelled) must not leave a row spinning
+// forever. Mirrors the NavProgress failsafe.
 const NAV_FAILSAFE_MS = 8000;
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
@@ -52,8 +41,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  // Whatever had focus before the palette took it, so Esc puts the user back
-  // where they were rather than at the top of the document.
+  // Whatever had focus before the palette took it, so Esc puts the user back where they were
+  // rather than at the top of the document.
   const restoreRef = useRef<HTMLElement | null>(null);
   const openRef = useRef(false);
   useEffect(() => {
@@ -72,8 +61,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     setPendingId(null);
     const el = restoreRef.current;
     restoreRef.current = null;
-    // After the dialog unmounts: React parks focus on <body> as the focused
-    // node goes away, which would undo an immediate restore.
+    // After the dialog unmounts: React parks focus on <body> as the focused node goes away,
+    // which would undo an immediate restore.
     if (restoreFocus && el) requestAnimationFrame(() => el.focus());
   }, []);
 
@@ -82,8 +71,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     const actionGroup = t(lang, "cmd_group_actions");
     const nav: Command[] = [
       { id: "home", label: t(lang, "nav_home"), group: navGroup, icon: Home, kind: "navigate", href: "/" },
-      // /grow was missing here while being the first link in the nav bar — an
-      // omission from before the GROW lane existed, caught by the release audit.
+      // /grow was missing here while being the first link in the nav bar, an omission from
+      // before the GROW lane existed, caught by the release audit.
       { id: "grow", label: t(lang, "nav_grow"), group: navGroup, icon: Sprout, kind: "navigate", href: "/grow" },
       { id: "sell", label: t(lang, "nav_sell"), group: navGroup, icon: Leaf, kind: "navigate", href: "/sell" },
       { id: "documents", label: t(lang, "nav_documents"), group: navGroup, icon: FileText, kind: "navigate", href: "/documents" },
@@ -111,8 +100,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     return commands.filter((c) => (c.label + " " + (c.keywords ?? "")).toLowerCase().includes(q));
   }, [commands, query]);
 
-  // Consecutive runs of the same group, keeping each command's index in the
-  // flat `filtered` list so the keyboard model stays one-dimensional.
+  // Consecutive runs of the same group, keeping each command's index in the flat `filtered` list
+  // so the keyboard model stays one-dimensional.
   const groups = useMemo(() => {
     const out: { name: string; items: { cmd: Command; index: number }[] }[] = [];
     filtered.forEach((cmd, index) => {
@@ -150,16 +139,14 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => setActive(0), [query]);
 
-  // Keep the highlighted row on screen when it is being moved by the keyboard
-  // rather than the pointer, otherwise ArrowDown walks the selection out of
-  // view and the list looks frozen.
+  // Keep the highlighted row on screen when it is being moved by the keyboard rather than the
+  // pointer, otherwise ArrowDown walks the selection out of view and the list looks frozen.
   useEffect(() => {
     if (!isOpen) return;
     listRef.current?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.scrollIntoView({ block: "nearest" });
   }, [active, isOpen]);
 
-  // The route landed (or the user navigated some other way): the palette has
-  // done its job.
+  // The route landed (or the user navigated some other way): the palette has done its job.
   useEffect(() => {
     close(false);
     // Intentionally keyed on pathname alone, this observes the landing only.
@@ -180,8 +167,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
       close();
       return;
     }
-    // Already on that route: nothing will navigate, so there is nothing to
-    // wait for and claiming otherwise would be a lie.
+    // Already on that route: nothing will navigate, so there is nothing to wait for and claiming
+    // otherwise would be a lie.
     if (c.href === pathname) {
       close();
       return;
@@ -218,9 +205,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
         close();
         break;
       case "Tab":
-        // The input is the only tab stop inside the dialog; swallowing Tab is
-        // the whole focus trap, and it also keeps the browser from walking
-        // into the page still rendered behind the backdrop.
+        // The input is the only tab stop inside the dialog; swallowing Tab is the whole focus
+        // trap.
         e.preventDefault();
         inputRef.current?.focus();
         break;
@@ -250,8 +236,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
               initial={reduce ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.985 }}
               animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
               exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.985 }}
-              // A palette is a keyboard tool: anything slow enough to watch is
-              // slow enough to get in the way of the next keystroke.
+              // A palette is a keyboard tool: anything slow enough to watch is slow enough to
+              // get in the way of the next keystroke.
               transition={{ duration: 0.14, ease: EASE_OUT_2 }}
             >
               <div className="flex items-center gap-2.5 border-b px-4" style={{ borderColor: "var(--glass-hairline)" }}>
@@ -311,9 +297,8 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
                               style={{
                                 background: isActive ? "var(--accent-soft)" : "transparent",
                                 color: isActive ? "var(--fg)" : "var(--fg-muted)",
-                                // A tinted row alone is easy to lose against
-                                // glass; the accent edge makes "this is the one
-                                // Enter fires" unambiguous.
+                                // A tinted row alone is easy to lose against glass; the accent
+                                // edge makes "this is the one Enter fires" unambiguous.
                                 boxShadow: isActive ? "inset 0 0 0 1px var(--accent-ring)" : "none",
                               }}
                             >

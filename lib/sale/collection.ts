@@ -1,8 +1,4 @@
-/**
- * Pure operations over the set of sales. Split from `store.ts` so the merge
- * rules — the part that can lose an officer's work if it is wrong — are tested
- * under plain Node without a browser.
- */
+/** Pure operations over the set of sales. */
 import { normalizeSale } from "./model.ts";
 import type { Sale } from "./types";
 
@@ -15,7 +11,7 @@ export interface SaleBook {
 
 export const EMPTY_BOOK: SaleBook = { owner: null, currentId: null, sales: [] };
 
-/** Newest first — the order the sale list shows. */
+/** Newest first, the order the sale list shows. */
 export function sortSales(sales: Sale[]): Sale[] {
   return [...sales].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
@@ -31,15 +27,7 @@ export function removeSale(book: SaleBook, id: string): SaleBook {
   return { ...book, sales, currentId };
 }
 
-/**
- * Combine this device's copy with the account's copy.
- *
- * Per sale, the most recently updated version wins; sales present on only one
- * side are kept. The naive alternative — "remote replaces local" — is what this
- * replaced, and it loses data: Supabase can report a sign-in before a debounced
- * save has reached the server, so the remote copy is older than what is on
- * screen and overwriting with it silently discards the officer's last edits.
- */
+/** Combine this device's copy with the account's copy. */
 export function mergeBooks(local: Sale[], remote: Sale[]): Sale[] {
   const byId = new Map<string, Sale>();
   for (const s of [...remote, ...local]) {
@@ -49,14 +37,7 @@ export function mergeBooks(local: Sale[], remote: Sale[]): Sale[] {
   return sortSales([...byId.values()]);
 }
 
-/**
- * Decide what the device should hold once `userId` signs in.
- *
- * Merging is only safe when the local copy already belongs to this account. On
- * a shared phone, a different officer's leftover sales must never be merged into
- * the new account — that is how one exporter's buyer list ends up in another's
- * records — so a foreign local copy is discarded and the account's copy used.
- */
+/** Decide what the device should hold once `userId` signs in. */
 export function bookOnSignIn(local: SaleBook, remote: SaleBook | null, userId: string): SaleBook {
   const remoteSales = remote?.sales ?? [];
   const sales = local.owner === userId ? mergeBooks(local.sales, remoteSales) : sortSales(remoteSales);

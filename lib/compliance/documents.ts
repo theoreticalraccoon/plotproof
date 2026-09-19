@@ -1,8 +1,5 @@
-/**
- * Pure helpers shared by the export-document generators (commercial invoice,
- * packing list, certificate of origin). No React/DOM here so the arithmetic is
- * Node-testable and the *same* numbers appear on every document a shipment uses.
- */
+// Pure helpers shared by the export-document generators (commercial invoice, packing list,
+// certificate of origin).
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -18,12 +15,7 @@ export interface PackingTotals {
   totalGrossKg: number;
 }
 
-/**
- * Totals for a packing list. Guards the physical invariants a customs officer
- * would check: whole packages, non-negative weights, and gross >= net (gross
- * includes the packaging), so a slip in one field can't produce a gross that is
- * lighter than the net.
- */
+/** Totals for a packing list. */
 export function computePackingTotals(input: PackingInput): PackingTotals {
   const packages = Math.max(0, Math.floor(input.packages || 0));
   const net = Math.max(0, input.netKgPerPackage || 0);
@@ -46,10 +38,8 @@ export function lineAmount(quantity: number, unitPrice: number): number {
   return round2((quantity || 0) * (unitPrice || 0));
 }
 
-/**
- * Human-readable document number, e.g. docNumber("INV") -> "INV-40312345".
- * Deterministic given `at`, so it's testable; defaults to now for real use.
- */
+// Human-readable document number, e.g. docNumber("INV") -> "INV-40312345". Deterministic given
+// `at`, so it's testable; defaults to now for real use.
 export function docNumber(prefix: string, at: number = Date.now()): string {
   return `${prefix}-${Math.floor(at).toString().slice(-8)}`;
 }
