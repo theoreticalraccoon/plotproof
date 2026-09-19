@@ -232,8 +232,8 @@ export default function WhatsRealPage() {
                 the frame parser rejects anything it cannot vouch for, two-point calibration turns
                 the probe&rsquo;s arbitrary count into a water content, and a saved reading takes the
                 top rung of the watering advice. What has <em>not</em> happened is any of it running
-                against an actual Magicbit. The firmware has never been flashed, the serial path has
-                never seen a real board, and no probe has been pushed into real soil. Until that
+                against real hardware. The firmware compiles for the ESP32 with no errors or
+                warnings, but it has never been flashed, the serial path has never seen a real board, and no probe has been pushed into real soil. Until that
                 happens, treat the lane as untested hardware code, and note that the calibration is a
                 field one &mdash; air and water remove the probe&rsquo;s arbitrary scale, but a water
                 content that is accurate for a specific soil needs oven-dried samples. The simulated
