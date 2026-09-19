@@ -40,9 +40,6 @@ export interface SensorReading {
   raw: number;
   /** Volumetric water content, m³/m³, after two-point calibration. Null until calibrated. */
   vwc: number | null;
-  soilTempC: number | null;
-  airTempC: number | null;
-  rhPct: number | null;
   source: SensorSource;
 }
 

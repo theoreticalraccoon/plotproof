@@ -1,9 +1,13 @@
 /*
  * PlotProof soil node — ESP32 (bare DevKit or Magicbit)
  *
- * Reads a capacitive soil-moisture probe and a DHT11 air temperature/humidity
- * sensor. Emits one JSON line per reading over USB serial at 115200 baud. That
- * is the entire job.
+ * Reads one capacitive soil-moisture probe and emits one JSON line per second
+ * over USB serial at 115200 baud:
+ *
+ *     {"raw":2431,"ms":184023}
+ *
+ * `raw` is the probe's ADC count; `ms` is board uptime, which the browser uses
+ * only to notice that the board has reset. That is the entire job.
  *
  * WHAT THIS DELIBERATELY DOES NOT DO:
  *
@@ -22,53 +26,39 @@
  *   - It does not connect to WiFi. USB serial is the whole transport. No broker,
  *     no cloud, no credentials on the device, nothing to leak or expire.
  *
- * WIRING (ESP32 DevKit, no breadboard):
+ *   - It does not read air temperature or humidity. The app takes weather from
+ *     a model grid for the plot; the probe is here to measure the one thing the
+ *     grid cannot, which is how wet this soil actually is.
+ *
+ * WIRING (ESP32 DevKit, no breadboard needed):
  *
  *   Capacitive probe v1.2   GND  (black)  -> GND
  *                           VCC  (red)    -> 3V3   (NOT VIN/5V: the ADC is not 5V tolerant)
  *                           AOUT (yellow) -> D32
  *     Check the wire colours against the GND/VCC/AOUT print on the probe itself.
  *
- *   DHT11                   +  / VCC  -> 3V3
- *                           -  / GND  -> GND
- *                           S  / DATA -> D4
- *
- *   Pins are set by SOIL_PIN and DHT_PIN below. SOIL_PIN must be an analogue
- *   pin: 32-39 always work; the ADC2 pins (e.g. 4, 13, 14, 15, 25-27) also work
- *   here only because this sketch never turns WiFi on. Avoid 2, 5, 12 and 15:
- *   they are boot-strapping pins, and a sensor holding one at the wrong level
- *   can stop the board booting or accepting uploads.
- *
- *   The DHT11 is optional. If it is missing or unplugged, the temperature and
- *   humidity fields are sent as null and the browser stores them as null —
- *   never as zero.
+ *   SOIL_PIN below must be an analogue pin. 32-39 always work; the ADC2 pins
+ *   (4, 13, 14, 25-27) also work here only because this sketch never turns WiFi
+ *   on. Avoid 2, 5, 12 and 15: they are boot-strapping pins, and a sensor
+ *   holding one at the wrong level can stop the board booting or taking uploads.
  *
  * BUILD: Arduino IDE with the Espressif "esp32" boards package, board
- *        "ESP32 Dev Module". One library: "DHT sensor library" by Adafruit
- *        (accept the prompt to also install "Adafruit Unified Sensor").
+ *        "ESP32 Dev Module". No libraries needed.
  *        Upload, then open Serial Monitor at 115200 to see one line a second.
  *        CLOSE the Serial Monitor before connecting from the browser: only one
  *        program can hold the port.
  */
 
 #include <Arduino.h>
-#include <DHT.h>
 
 static const int  SOIL_PIN      = 32;
-static const int  DHT_PIN       = 4;
 static const int  SAMPLES       = 16;    // ADC reads averaged into one reading
 static const int  SAMPLE_GAP_MS = 5;
 static const long INTERVAL_MS   = 1000;  // one line per second
 
-// The soil line goes out every second because the browser's calibration takes
-// the median of the last 12 lines: at one a second that is a 12 s window, short
-// enough that a reading captured just after dipping the probe is not diluted by
-// readings from before. The DHT11 cannot convert that often; the Adafruit
-// library knows this and re-issues its most recent successful measurement if
-// asked again within 2 s, so the temperature and humidity on a line are at most
-// 2 s old. A failed conversion is still reported as null, not as a stale value.
-
-DHT dht(DHT_PIN, DHT11);
+// One a second because the browser's calibration takes the median of the last
+// 12 lines: a 12 s window, short enough that a reading captured just after
+// dipping the probe is not diluted by readings from before.
 
 void setup() {
   Serial.begin(115200);
@@ -76,7 +66,7 @@ void setup() {
   // banner is safe to print: it is informative on a serial monitor and
   // invisible to the app.
   delay(200);
-  Serial.println("# PlotProof soil node ready (DHT11)");
+  Serial.println("# PlotProof soil node ready");
 
   // 12-bit resolution over the full 0-3.3V range. ADC_11db is the widest
   // attenuation the ESP32 offers; without it the probe's upper range clips
@@ -84,8 +74,6 @@ void setup() {
   // calibration spread.
   analogReadResolution(12);
   analogSetPinAttenuation(SOIL_PIN, ADC_11db);
-
-  dht.begin();
 }
 
 /*
@@ -105,12 +93,6 @@ int readSoilRaw() {
   return (int)(total / SAMPLES);
 }
 
-/* Print a float, or a literal null when the sensor is absent or failed. */
-void printNumberOrNull(float v, int decimals) {
-  if (isnan(v)) Serial.print("null");
-  else Serial.print(v, decimals);
-}
-
 void loop() {
   static unsigned long last = 0;
   unsigned long now = millis();
@@ -119,21 +101,11 @@ void loop() {
 
   int raw = readSoilRaw();
 
-  float soilT = NAN;                     // no soil thermometer in this build
-  float airT  = dht.readTemperature();   // NaN if the DHT11 did not answer
-  float rh    = dht.readHumidity();      // NaN if the DHT11 did not answer
-
   // One line, one object, newline-terminated. Field names match parseFrame()
   // in lib/sensor/protocol.ts; changing one without the other silently stops
   // every reading from being recorded, so they are named identically.
   Serial.print("{\"raw\":");
   Serial.print(raw);
-  Serial.print(",\"soilT\":");
-  printNumberOrNull(soilT, 1);
-  Serial.print(",\"airT\":");
-  printNumberOrNull(airT, 1);
-  Serial.print(",\"rh\":");
-  printNumberOrNull(rh, 1);
   Serial.print(",\"ms\":");
   Serial.print(now);
   Serial.println("}");

@@ -184,13 +184,7 @@ export function simulateSensor(
     // visibly changes over a few minutes of a demonstration.
     const saturation = Math.max(0.12, 0.42 - t * 0.0015);
     const raw = Math.round(dry - saturation * (dry - wet) + (rand() - 0.5) * 24);
-    handlers.onFrame({
-      raw,
-      soilTempC: Math.round((26 + (rand() - 0.5) * 1.5) * 10) / 10,
-      airTempC: Math.round((29 + (rand() - 0.5) * 3) * 10) / 10,
-      rhPct: Math.round((72 + (rand() - 0.5) * 8) * 10) / 10,
-      uptimeMs: t * interval,
-    });
+    handlers.onFrame({ raw, uptimeMs: t * interval });
   }, interval);
 
   return {

@@ -133,9 +133,6 @@ export default function SensorPanel({
         at: new Date(now - (frames.length - 1 - i) * 1000).toISOString(),
         raw: f.raw,
         vwc: rawToVwc(f.raw, cal),
-        soilTempC: f.soilTempC,
-        airTempC: f.airTempC,
-        rhPct: f.rhPct,
         source,
       }));
       await addSensorReadings(rows);
@@ -224,21 +221,13 @@ export default function SensorPanel({
             )}
           </div>
 
-          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-sm)] sm:grid-cols-4"
+          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[var(--radius-sm)]"
               style={{ background: "var(--glass-hairline)" }}>
             <Cell label={t(lang, "sensor_raw")} value={latest ? String(latest.raw) : "—"} />
             <Cell
               label={t(lang, "sensor_vwc")}
               value={latestVwc != null ? latestVwc.toFixed(3) : "—"}
               tone={latestVwc == null ? "faint" : undefined}
-            />
-            <Cell
-              label={t(lang, "sensor_air_temp")}
-              value={latest?.airTempC != null ? `${latest.airTempC.toFixed(1)}°C` : "—"}
-            />
-            <Cell
-              label={t(lang, "sensor_rh")}
-              value={latest?.rhPct != null ? `${latest.rhPct.toFixed(0)}%` : "—"}
             />
           </dl>
 

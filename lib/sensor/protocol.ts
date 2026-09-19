@@ -1,5 +1,5 @@
 /**
- * The wire format between the Magicbit and the browser, as a pure parser.
+ * The wire format between the ESP32 soil node and the browser, as a pure parser.
  *
  * Split from `serial.ts` for the same reason `preprocess.ts` is split from
  * `infer.ts` in the tea lane: everything that can be tested under plain Node
@@ -7,11 +7,12 @@
  *
  * The board emits one JSON object per line, newline-terminated:
  *
- *     {"raw":2431,"soilT":24.8,"airT":29.1,"rh":71.2,"ms":184023}
+ *     {"raw":2431,"ms":184023}
  *
- * Only `raw` is required. Everything else is optional because the sketch runs
- * with or without an SHT31 attached, and a missing sensor must produce `null`
- * rather than a zero — a zero would be read as 0 °C, which is a temperature.
+ * `raw` is required: it is the measurement. `ms` (board uptime) is optional.
+ * The node measures soil moisture only — air temperature and humidity come from
+ * the weather grid for the plot — so any other field an older sketch might send
+ * (`soilT`, `airT`, `rh`) is ignored rather than stored.
  *
  * The parser is deliberately strict and total: it never throws, and it returns
  * `null` for anything it cannot vouch for. A serial line is untrusted input —
@@ -27,9 +28,6 @@ export const ADC_MAX = 4095;
 /** One decoded frame, before calibration. `raw` is the only measured quantity. */
 export interface SensorFrame {
   raw: number;
-  soilTempC: number | null;
-  airTempC: number | null;
-  rhPct: number | null;
   /** Board uptime in ms, if reported. Used only to spot a board that reset. */
   uptimeMs: number | null;
 }
@@ -63,11 +61,6 @@ export function parseFrame(line: string): SensorFrame | null {
 
   return {
     raw,
-    // Physically generous bounds: these reject a broken sensor reporting -127
-    // (the classic disconnected-1-Wire value) without second-guessing weather.
-    soilTempC: finiteOrNull(o.soilT, -20, 80),
-    airTempC: finiteOrNull(o.airT, -20, 80),
-    rhPct: finiteOrNull(o.rh, 0, 100),
     uptimeMs: finiteOrNull(o.ms, 0, Number.MAX_SAFE_INTEGER),
   };
 }
