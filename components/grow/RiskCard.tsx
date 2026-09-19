@@ -67,7 +67,7 @@ export default function RiskCard({ risk, lang }: { risk: DiseaseRisk; lang: Lang
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="mt-3 inline-flex items-center gap-1.5 text-[0.82rem] font-medium transition-colors duration-150"
+            className="-ml-1 mt-2 inline-flex min-h-[40px] items-center gap-1.5 rounded-md px-1 text-[0.82rem] font-medium transition-colors duration-150"
             style={{ color: "var(--fg-muted)" }}
           >
             {t(lang, "risk_why")}

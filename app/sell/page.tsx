@@ -37,7 +37,7 @@ export default function SellPage() {
   const sale = useCurrentSale();
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-7xl px-5 pb-24 pt-6 sm:px-8">
+    <main className="mx-auto min-h-dvh w-full max-w-6xl px-5 pb-24 pt-6 sm:px-8">
       <Breadcrumb items={[{ label: t(lang, "nav_home"), href: "/" }, { label: t(lang, "nav_sell") }]} />
 
       <header className="mt-6">

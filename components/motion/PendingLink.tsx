@@ -54,6 +54,7 @@ export default function PendingLink({
   rel,
   onClick,
   ariaLabel,
+  inline = false,
 }: {
   href: string | UrlObject;
   children: ReactNode;
@@ -64,6 +65,13 @@ export default function PendingLink({
   rel?: string;
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
   ariaLabel?: string;
+  /**
+   * For a link inside running text. The pending slot is reserved space, which
+   * is right in a button or a nav item and wrong in a sentence: it leaves a
+   * visible gap after every in-prose link. Inline links skip the slot; they
+   * point at fast, static pages where a missed tap is not the risk.
+   */
+  inline?: boolean;
 }) {
   return (
     <Link
@@ -76,7 +84,7 @@ export default function PendingLink({
       onClick={onClick}
       aria-label={ariaLabel}
     >
-      <PendingInner>{children}</PendingInner>
+      {inline ? children : <PendingInner>{children}</PendingInner>}
     </Link>
   );
 }

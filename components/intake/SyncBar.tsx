@@ -104,8 +104,11 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
         {online ? "Online" : "Offline"}
       </span>
 
+      {/* Flowing text, not a flex row: as a flex row each phrase became its own
+          column on a phone and wrapped word by word into a narrow stack. The
+          basis pushes the Sync button onto the next line before that happens. */}
       <span
-        className="inline-flex min-w-0 flex-1 items-center gap-2 text-[0.95rem]"
+        className="min-w-0 flex-1 basis-[15rem] text-[0.95rem] leading-snug"
         role="status"
         aria-live="polite"
         aria-busy={pending === null && !readFailed}
@@ -118,16 +121,16 @@ export default function SyncBar({ refreshSignal }: { refreshSignal: number }) {
           <Skeleton className="skeleton-sm h-4 w-44" />
         ) : serverless ? (
           <>
-            <CloudOff size={15} className="shrink-0" style={{ color: "var(--fg-faint)" }} aria-hidden="true" />
-            <span className="font-semibold">On this device only</span>
+            <CloudOff size={15} className="mr-1.5 inline-block align-[-2px]" style={{ color: "var(--fg-faint)" }} aria-hidden="true" />
+            <span className="font-semibold">On this device only</span>{" "}
             <span className="muted">— no server sync connected</span>
-            {pending > 0 && <span className="tag tag-muted shrink-0 tabular-nums">{pending} queued</span>}
+            {pending > 0 && <span className="tag tag-muted ml-2 tabular-nums">{pending} queued</span>}
           </>
         ) : pending === 0 ? (
           <span className="muted">All synced</span>
         ) : (
           <>
-            <span className="tag tag-warn shrink-0 tabular-nums">{pending}</span>
+            <span className="tag tag-warn mr-2 tabular-nums">{pending}</span>
             <span className="font-medium">pending sync</span>
           </>
         )}

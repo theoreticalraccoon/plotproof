@@ -51,4 +51,12 @@ export function captureConfidence(method: CaptureMethod): CaptureConfidence {
           "Geometry taken from existing records and not verified in the field; accuracy depends on the source registry.",
       };
   }
+  // Unreachable for records this app wrote, but a record synced from the server
+  // or left by an older version can carry any string. Without this the whole
+  // plot list crashed on one bad row; with it, that row is marked as unverified.
+  return {
+    level: "low",
+    label: "Unknown capture method",
+    rationale: "The record does not say how this boundary was captured, so its accuracy cannot be assessed.",
+  };
 }

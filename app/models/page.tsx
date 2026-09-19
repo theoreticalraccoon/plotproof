@@ -138,11 +138,11 @@ export default function ModelsPage() {
         <p className="mt-4 text-[0.92rem] faint" style={{ maxWidth: "62ch" }}>
           Written for a reviewer, not a farmer. The same facts are phrased for the person holding
           the phone on{" "}
-          <PendingLink href="/grow/diagnose" className="underline underline-offset-4">
+          <PendingLink inline href="/grow/diagnose" className="underline underline-offset-4">
             the diagnosis screen
           </PendingLink>{" "}
           and inventoried plainly on{" "}
-          <PendingLink href="/whats-real" className="underline underline-offset-4">
+          <PendingLink inline href="/whats-real" className="underline underline-offset-4">
             what is real
           </PendingLink>
           .

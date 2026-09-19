@@ -166,14 +166,16 @@ export default function DiagnosePage() {
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 py-6 sm:px-8">
-      <div className="flex items-center justify-between gap-3">
-        <Breadcrumb
-          items={[
-            { label: t(lang, "nav_home"), href: "/" },
-            { label: t(lang, "nav_grow"), href: "/grow" },
-            { label: t(lang, "tea_title") },
-          ]}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-[13rem]">
+          <Breadcrumb
+            items={[
+              { label: t(lang, "nav_home"), href: "/" },
+              { label: t(lang, "nav_grow"), href: "/grow" },
+              { label: t(lang, "tea_title") },
+            ]}
+          />
+        </div>
         {/* Phones only: on desktop the nav bar already carries the switcher, and
             two of them side by side read as two different settings. */}
         <div className="md:hidden">
