@@ -1,8 +1,8 @@
 /*
  * PlotProof soil node — Magicbit (ESP32)
  *
- * Reads a capacitive soil-moisture probe and, if one is attached, an SHT31
- * temperature/humidity sensor. Emits one JSON line per reading over USB serial
+ * Reads a capacitive soil-moisture probe and, if one is attached, a DHT11 or
+ * SHT31 temperature/humidity sensor. Emits one JSON line per reading over USB serial
  * at 115200 baud. That is the entire job.
  *
  * WHAT THIS DELIBERATELY DOES NOT DO:
@@ -22,28 +22,49 @@
  *   - It does not connect to WiFi. USB serial is the whole transport. No broker,
  *     no cloud, no credentials on the device, nothing to leak or expire.
  *
- * WIRING (Magicbit / ESP32):
+ * WIRING (any ESP32 — a Magicbit, or a bare ESP32 DevKit):
  *
- *   Capacitive probe  VCC  -> 3V3        (NOT 5V: the ADC is not 5V tolerant)
- *                     GND  -> GND
- *                     AOUT -> GPIO 32    (ADC1_CH4; ADC2 is unusable with WiFi)
+ *   Capacitive probe v1.2   GND  (black)  -> GND
+ *                           VCC  (red)    -> 3V3   (NOT 5V: the ADC is not 5V tolerant)
+ *                           AOUT (yellow) -> GPIO 32  (ADC1; ADC2 is unusable with WiFi)
+ *     Check the wire colours against the GND/VCC/AOUT print on the probe itself.
  *
- *   SHT31 (optional)  VIN  -> 3V3
- *                     GND  -> GND
- *                     SDA  -> GPIO 21
- *                     SCL  -> GPIO 22
+ *   DHT11 (optional)        VCC/+  -> 3V3
+ *                           GND/-  -> GND
+ *                           DATA/S -> GPIO 4   (any free digital pin; set DHT_PIN)
  *
- * Without the SHT31 the sketch still runs; the temperature and humidity fields
- * are emitted as null and the browser stores them as null rather than as zero.
+ *   SHT31 (optional, instead of the DHT11)
+ *                           VIN -> 3V3, GND -> GND, SDA -> GPIO 21, SCL -> GPIO 22
  *
- * BUILD: Arduino IDE, board "MagicBit" or any ESP32 Dev Module.
- *        Library needed only for the optional sensor: "Adafruit SHT31".
- *        To build without it, leave USE_SHT31 at 0.
+ * On a Magicbit, plug each part into a port and set SOIL_PIN / DHT_PIN to the
+ * GPIO numbers printed beside that port. SOIL_PIN must be an ADC1 pin (32-39).
+ *
+ * Without a temperature sensor the sketch still runs; the temperature and
+ * humidity fields are emitted as null and the browser stores them as null
+ * rather than as zero.
+ *
+ * BUILD: Arduino IDE with the Espressif "esp32" boards package, board
+ *        "ESP32 Dev Module" (or "MagicBit" if that package is installed).
+ *        DHT11 needs the library "DHT sensor library" by Adafruit (it will
+ *        offer to install "Adafruit Unified Sensor" too — accept).
+ *        SHT31 needs "Adafruit SHT31". Leave both USE_ flags at 0 to build
+ *        with no libraries at all.
  */
 
 #include <Arduino.h>
 
-#define USE_SHT31 0   // set to 1 once the SHT31 library is installed
+#define USE_DHT   1   // DHT11 on DHT_PIN; needs "DHT sensor library" (Adafruit)
+#define USE_SHT31 0   // set to 1 (and USE_DHT to 0) for an SHT31 instead
+
+#if USE_DHT && USE_SHT31
+#error "Pick one temperature sensor: set USE_DHT or USE_SHT31, not both."
+#endif
+
+#if USE_DHT
+#include <DHT.h>
+static const int DHT_PIN = 4;
+DHT dht(DHT_PIN, DHT11);
+#endif
 
 #if USE_SHT31
 #include <Wire.h>
@@ -71,6 +92,10 @@ void setup() {
   // calibration spread.
   analogReadResolution(12);
   analogSetPinAttenuation(SOIL_PIN, ADC_11db);
+
+#if USE_DHT
+  dht.begin();
+#endif
 
 #if USE_SHT31
   Wire.begin(21, 22);
@@ -113,6 +138,14 @@ void loop() {
   float soilT = NAN;   // reserved: a soil thermistor is not wired in this build
   float airT  = NAN;
   float rh    = NAN;
+
+#if USE_DHT
+  // A DHT11 can be read at most about once a second, which is this loop's
+  // rate. A failed read comes back as NaN and is sent as null — never as the
+  // last good value, which would make a disconnected sensor look alive.
+  airT = dht.readTemperature();
+  rh   = dht.readHumidity();
+#endif
 
 #if USE_SHT31
   if (shtReady) {
