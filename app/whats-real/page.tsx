@@ -132,7 +132,7 @@ export default function WhatsRealPage() {
                 result. Details below.
               </Entry>
               <Entry term="An export assistant that can see the consignment.">
-                A Claude Haiku assistant answering from the same sourced requirement catalog the
+                A Gemini assistant answering from the same sourced requirement catalog the
                 checklist is built from, with the open sale summarised into its context. It is
                 instructed never to invent a regulation, form number, fee or deadline, and to name
                 the authority to confirm with. Rate-limited per account. Where the deployment has no

@@ -8,8 +8,7 @@ export const END = {
   refused: NUL + "REFUSED",
   /** Transient: the answer stopped part-way and trying again may work. */
   failed: NUL + "FAILED",
-  // Not transient: the deployment's API access is rejected outright, a bad key, a revoked key,
-  // or an account with no credit.
+  // Not transient: every API key was rejected (bad, revoked or out of quota).
   unavailable: NUL + "UNAVAILABLE",
 } as const;
 
@@ -19,8 +18,9 @@ export const LIMITS = {
   maxMessageChars: 2000,
   maxTotalChars: 14_000,
   /** Per account. */
+  perMinute: 5,
   perHour: 20,
   perDay: 80,
   /** Answers are meant to be short; this caps cost as well as length. */
-  maxOutputTokens: 1024,
+  maxOutputTokens: 2048,
 } as const;
