@@ -1,7 +1,6 @@
 "use client";
 
 /** /grow/diagnose, the complete advisory for one plot. */
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { Leaf } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -14,124 +13,18 @@ import AdvisoryExplanation from "@/components/grow/AdvisoryExplanation";
 import IrrigationCard from "@/components/grow/IrrigationCard";
 import RiskCard from "@/components/grow/RiskCard";
 import DiagnosticsPanel from "@/components/grow/DiagnosticsPanel";
+import { NoPlots, PlotPicker, WeatherUnavailable } from "@/components/grow/PlotStates";
 import { t, useLang } from "@/lib/i18n";
-import { listPlots } from "@/lib/intake/store";
-import { getGrowProfile } from "@/lib/grow/store";
-import { useGrowPlot } from "@/lib/grow/useGrowPlot";
-import { resolvePlotId, setSelectedPlotId, useSelectedPlotId } from "@/lib/grow/selection";
-import { MODEL_URL, loadTeaCard } from "@/lib/grow/tea/card";
-import { classifyLeaf } from "@/lib/grow/tea/infer";
-import { buildAdvisory } from "@/lib/grow/tea/evidence";
-import {
-  buildDiagnosticRows,
-  diagnosticsEnabled,
-  verifyPublishedModel,
-  type ArtifactCheck,
-  type RuntimeFacts,
-} from "@/lib/grow/tea/diagnostics";
-import type { TeaAdvisory, TeaModelCard, TeaPrediction } from "@/lib/grow/tea/types";
-import type { GrowProfile } from "@/lib/grow/types";
-import type { LocalPlot } from "@/lib/intake/types";
+import { useGrowSession } from "@/lib/grow/useGrowSession";
+import { useLeafDiagnosis } from "@/lib/grow/tea/useLeafDiagnosis";
 
 export default function DiagnosePage() {
   const lang = useLang();
-  const [plots, setPlots] = useState<LocalPlot[] | null>(null);
-  const [profile, setProfile] = useState<GrowProfile | null>(null);
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  const [card, setCard] = useState<TeaModelCard | null | "loading">("loading");
-  const [busy, setBusy] = useState(false);
-  const [prediction, setPrediction] = useState<TeaPrediction | null>(null);
-
-  // The plot is remembered across /grow <-> /grow/diagnose.
-  const remembered = useSelectedPlotId();
-  const plotId = resolvePlotId(plots ?? [], remembered);
-
-  // --- diagnostics (?diag=1) --------------------------------------------- Read in an effect,
-  // not during render.
-  const [diag, setDiag] = useState(false);
-  const [runtime, setRuntime] = useState<RuntimeFacts | null>(null);
-  const [artifact, setArtifact] = useState<ArtifactCheck | null>(null);
-
-  useEffect(() => {
-    listPlots()
-      .then(setPlots)
-      .catch(() => setPlots([]));
-    void loadTeaCard().then(setCard);
-    setDiag(diagnosticsEnabled(window.location.search));
-  }, []);
-
-  useEffect(() => {
-    if (!plotId) return;
-    // Clear first.
-    setProfile(null);
-    setProfileLoaded(false);
-    let cancelled = false;
-    getGrowProfile(plotId)
-      .then((p) => {
-        if (cancelled) return;
-        setProfile(p ?? null);
-        setProfileLoaded(true);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setProfile(null);
-        setProfileLoaded(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [plotId]);
-
-  // A leaf result belongs to the plot it was taken for.
-  useEffect(() => {
-    setPrediction(null);
-    setRuntime(null);
-  }, [plotId]);
-
-  // Hash the bytes the browser actually received and compare them to the card.
-  useEffect(() => {
-    if (!diag || !card || card === "loading") return;
-    void verifyPublishedModel(MODEL_URL, card).then(setArtifact);
-  }, [diag, card]);
-
-  const plot = plots?.find((p) => p.id === plotId) ?? null;
-  // Reads the existing engines. Nothing here recomputes weather, irrigation or risk, and no leaf
-  // result is an input to any of them.
-  const grow = useGrowPlot(plot, profile);
-
-  const analyse = useCallback(async (img: HTMLImageElement) => {
-    setBusy(true);
-    setPrediction(null);
-    try {
-      const { prediction: p, runtime: r } = await classifyLeaf(img);
-      setPrediction(p);
-      setRuntime(r);
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
-  const advisory: TeaAdvisory | null = useMemo(() => {
-    if (!prediction) return null;
-    return buildAdvisory({
-      prediction,
-      risks: grow.risks,
-      irrigation: grow.irrigation,
-      observedThrough: grow.observedThrough,
-    });
-  }, [prediction, grow.risks, grow.irrigation, grow.observedThrough]);
-
+  const session = useGrowSession();
+  const { plots, plot, profile, profileLoaded, grow } = session;
+  const leaf = useLeafDiagnosis(plot?.id ?? null, grow);
+  const { card, busy, prediction, advisory } = leaf;
   const teaPlot = profile?.crop === "tea";
-
-  const diagRows = useMemo(
-    () =>
-      diag
-        ? buildDiagnosticRows(card === "loading" ? null : card, prediction, runtime, artifact)
-        : [],
-    [diag, card, prediction, runtime, artifact],
-  );
-  const diagFailures = diagRows.filter((r) => r.ok === false).length;
-
   const ready = card && card !== "loading" && plots && plots.length > 0;
 
   return (
@@ -196,37 +89,11 @@ export default function DiagnosePage() {
         </div>
       )}
 
-      {plots?.length === 0 && (
-        <div className="glass-card mt-8 p-6 text-center">
-          <p className="text-[0.95rem] muted">{t(lang, "grow_no_plots")}</p>
-          <PendingLink href="/intake" className="btn btn-primary mt-4">
-            {t(lang, "grow_no_plots_cta")}
-          </PendingLink>
-        </div>
-      )}
+      {plots?.length === 0 && <NoPlots lang={lang} />}
 
       {ready && (
         <div className="mt-8 space-y-8">
-          {plots.length > 1 && (
-            <section aria-labelledby="dx-plot-picker">
-              <h2 id="dx-plot-picker" className="label">
-                {t(lang, "grow_pick_plot")}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {plots.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPlotId(p.id)}
-                    aria-pressed={p.id === plotId}
-                    className={p.id === plotId ? "chip chip-active" : "chip"}
-                  >
-                    {p.commodity ?? p.id.slice(0, 8)} · {p.computedAreaHa.toFixed(2)} ha
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          <PlotPicker plots={plots} selectedId={plot?.id ?? null} onSelect={session.selectPlot} lang={lang} id="dx-plot-picker" />
 
           {/* No grow profile yet: the whole advisory rests on crop and soil, so
               ask for them on /grow rather than guessing either. */}
@@ -248,29 +115,7 @@ export default function DiagnosePage() {
 
               {grow.state === "loading" && <Skeleton className="mt-3 h-40 w-full" />}
 
-              {grow.state === "unavailable" && (
-                <div
-                  className="mt-3 rounded-[var(--radius-sm)] px-4 py-3.5"
-                  style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
-                >
-                  <p className="text-[0.92rem]">{t(lang, "weather_unavailable")}</p>
-                  {/* Network-layer detail, English in every language: it is a
-                      diagnostic under an already-translated headline, so it is
-                      marked rather than left for a Sinhala voice to mispronounce. */}
-                  {grow.reason && (
-                    <p className="mt-1.5 text-[0.82rem] muted" lang="en">
-                      {grow.reason}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm mt-3 min-h-[44px]"
-                    onClick={grow.refresh}
-                  >
-                    {t(lang, "weather_retry")}
-                  </button>
-                </div>
-              )}
+              {grow.state === "unavailable" && <WeatherUnavailable grow={grow} lang={lang} className="mt-3" />}
 
               {grow.state === "ready" && grow.irrigation && (
                 <div className="mt-3">
@@ -320,8 +165,8 @@ export default function DiagnosePage() {
                 <LeafCapture
                   lang={lang}
                   busy={busy}
-                  onAnalyse={analyse}
-                  onError={(reason) => setPrediction({ state: "error", reason })}
+                  onAnalyse={leaf.analyse}
+                  onError={leaf.fail}
                 />
               )}
 
@@ -349,7 +194,7 @@ export default function DiagnosePage() {
                   prediction={prediction}
                   card={card}
                   lang={lang}
-                  onRetry={() => setPrediction(null)}
+                  onRetry={leaf.reset}
                 />
               )}
               </div>
@@ -389,9 +234,9 @@ export default function DiagnosePage() {
         </div>
       )}
 
-      {diag && card !== "loading" && (
+      {leaf.diag.enabled && card !== "loading" && (
         <div className="mt-10">
-          <DiagnosticsPanel rows={diagRows} failures={diagFailures} />
+          <DiagnosticsPanel rows={leaf.diag.rows} failures={leaf.diag.failures} />
         </div>
       )}
     </main>

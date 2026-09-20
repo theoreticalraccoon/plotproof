@@ -1,6 +1,6 @@
 /** The three documents this app issues, each as plain data built from a sale. */
 import { countryName } from "../geo/countries.ts";
-import { saleProduct, saleTotals } from "./model.ts";
+import { isSaleComplete, saleProduct, saleTotals } from "./model.ts";
 import type { Sale } from "./types";
 
 export type DocKind = "invoice" | "packing-list" | "certificate-of-origin";
@@ -221,4 +221,26 @@ export function buildDoc(kind: DocKind, sale: Sale, today: string, draft: boolea
 /** File name for a download: "INV-40312345-invoice.pdf". */
 export function docFileName(doc: ExportDoc): string {
   return `${doc.number}-${doc.kind}.pdf`;
+}
+
+/** The calendar date where the officer is, not in UTC: Sri Lanka is 5.5 hours ahead. */
+export function localDate(now: Date): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+}
+
+export interface DocumentSet {
+  /** Every document is marked draft until the sale is complete. */
+  draft: boolean;
+  docs: ExportDoc[];
+  /** One document keeps its own name; several share the invoice number. */
+  fileName: string;
+}
+
+/** The documents for a sale, dated today, ready to show or download. */
+export function documentSet(sale: Sale, now: Date, kinds: readonly DocKind[] = DOC_KINDS): DocumentSet {
+  const draft = !isSaleComplete(sale);
+  const docs = kinds.map((k) => buildDoc(k, sale, localDate(now), draft));
+  const fileName = docs.length === 1 ? docFileName(docs[0]) : `${sale.numbers.invoice}-export-documents.pdf`;
+  return { draft, docs, fileName };
 }

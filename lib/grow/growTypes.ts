@@ -27,9 +27,9 @@ export interface SensorReading {
 /** Two-point calibration for one probe in one soil. */
 export interface ProbeCalibration {
   plotId: string;
-  /** ADC count in dry air, the driest the probe will ever read. */
-  dryRaw: number;
-  /** ADC count submerged in water, the wettest. */
-  wetRaw: number;
+  /** ADC count in dry air, the driest the probe will ever read. Null until captured. */
+  dryRaw: number | null;
+  /** ADC count submerged in water, the wettest. Null until captured. */
+  wetRaw: number | null;
   capturedAt: string;
 }

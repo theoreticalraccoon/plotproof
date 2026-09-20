@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { createClient } from "@/lib/supabase/server";
+import { gfwMapUrl } from "@/lib/eudr/mapLink";
 
 export const metadata: Metadata = {
   title: "Lot verification",
@@ -25,13 +26,6 @@ interface LotRow {
   integrity_hash: string | null;
   integrity_algo: string | null;
   integrity_chain_seq: number | null;
-}
-
-function centroid(ring: [number, number][]): { lat: number; lng: number } {
-  const pts = ring.slice(0, -1);
-  const lng = pts.reduce((s, p) => s + p[0], 0) / pts.length;
-  const lat = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-  return { lat, lng };
 }
 
 export default async function VerifyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -86,10 +80,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
     );
   }
 
-  const c = centroid(data.ring);
-  const gfwUrl = `https://www.globalforestwatch.org/map/?map=${encodeURIComponent(
-    JSON.stringify({ center: { lat: c.lat, lng: c.lng }, zoom: 14 }),
-  )}`;
+  const gfwUrl = gfwMapUrl(data.ring);
 
   return (
     <Shell>

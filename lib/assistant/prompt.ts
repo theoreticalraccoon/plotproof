@@ -6,7 +6,6 @@ import { needsEudr, saleIssues, saleProduct, saleRequirements, saleTotals } from
 import type { Sale } from "../sale/types";
 import { LIMITS } from "./protocol.ts";
 
-export { END, LIMITS } from "./protocol.ts";
 
 const ISSUER: Record<string, string> = {
   authority: "issued by an authority",

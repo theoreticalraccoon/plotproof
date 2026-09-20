@@ -3,8 +3,9 @@
 /** The export assistant, beside the sale it can see. */
 import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2, MessageSquare, Send, X } from "lucide-react";
-import { t, type Lang } from "@/lib/i18n";
-import { END, LIMITS } from "@/lib/assistant/protocol";
+import { t, tOr, type Lang } from "@/lib/i18n";
+import { LIMITS, type Ending } from "@/lib/assistant/protocol";
+import { ask } from "@/lib/assistant/client";
 import { needsEudr } from "@/lib/sale/model";
 import type { Sale } from "@/lib/sale/types";
 
@@ -12,7 +13,7 @@ interface Turn {
   role: "user" | "assistant";
   content: string;
   /** How an assistant turn ended, when it did not end normally. */
-  ending?: "cut" | "refused" | "failed" | "unavailable";
+  ending?: Ending;
 }
 
 /** Per-sale threads for this session. */
@@ -62,48 +63,16 @@ export default function AssistantPanel({ sale, lang }: { sale: Sale; lang: Lang 
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch("/api/assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: history.map(({ role, content }) => ({ role, content })),
-          sale,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok || !res.body) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setProblem(body.error ?? "failed");
+      const result = await ask(
+        { messages: history.map(({ role, content }) => ({ role, content })), sale },
+        (visible) => setTurns([...history, { role: "assistant", content: visible }]),
+        controller.signal,
+      );
+      if (result.ok) {
+        setTurns([...history, { role: "assistant", content: result.text, ending: result.ending ?? undefined }]);
+      } else if (result.error !== "aborted") {
+        setProblem(result.error);
         setTurns(history); // drop the empty assistant bubble
-        return;
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let text = "";
-      for (;;) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        const visible = text.split(String.fromCharCode(0))[0];
-        setTurns([...history, { role: "assistant", content: visible }]);
-      }
-      const ending = text.endsWith(END.cut)
-        ? "cut"
-        : text.endsWith(END.refused)
-          ? "refused"
-          : text.endsWith(END.unavailable)
-            ? "unavailable"
-            : text.endsWith(END.failed)
-              ? "failed"
-              : undefined;
-      const visible = text.split(String.fromCharCode(0))[0];
-      setTurns([...history, { role: "assistant", content: visible, ending }]);
-    } catch {
-      if (!controller.signal.aborted) {
-        setProblem("offline");
-        setTurns(history);
       }
     } finally {
       setBusy(false);
@@ -195,9 +164,7 @@ export default function AssistantPanel({ sale, lang }: { sale: Sale; lang: Lang 
 
       {problem && (
         <p className="mx-4 mb-2 rounded-lg px-3 py-2 text-[0.8rem]" role="alert" style={{ background: "var(--warn-soft)", color: "var(--warn)" }}>
-          {t(lang, `assistant_err_${problem}`) === `assistant_err_${problem}`
-            ? t(lang, "assistant_err_failed")
-            : t(lang, `assistant_err_${problem}`)}
+          {tOr(lang, `assistant_err_${problem}`, "assistant_err_failed")}
         </p>
       )}
 

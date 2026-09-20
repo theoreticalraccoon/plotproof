@@ -594,6 +594,7 @@ const en: Dict = {
   eudr_err_not_configured: "The forest data service is not configured for this deployment, so the check cannot run.",
   eudr_err_timeout: "The forest data service did not answer in time. Try again.",
   eudr_err_upstream_failed: "The forest data service could not be reached. Nothing is assumed about this plot.",
+  eudr_stale: "This check is more than 90 days old. Run it again before relying on it.",
   eudr_err_offline: "You appear to be offline. The check needs a connection.",
   eudr_err_outside_sri_lanka: "This boundary is outside Sri Lanka.",
   eudr_err_too_large: "This boundary is larger than the check supports.",
@@ -618,7 +619,6 @@ const en: Dict = {
   assistant_end_cut: "The answer was cut short. Ask for the rest if you need it.",
   assistant_end_refused: "The assistant declined to answer that.",
   assistant_end_failed: "The answer stopped before it finished.",
-  assistant_end_unavailable: "The assistant is not working on this deployment: its API keys were rejected. Trying again will not help until the keys are fixed.",
   assistant_err_sign_in_required: "Sign in to use the assistant.",
   assistant_err_not_configured: "The assistant is not configured for this deployment.",
   assistant_err_limits_unavailable: "The assistant is unavailable: its usage limits cannot be checked, so it will not run.",
@@ -1536,4 +1536,9 @@ export function t(lang: Lang, key: string, slots?: Record<string, string | numbe
     for (const [k, v] of Object.entries(slots)) s = s.replaceAll(`{${k}}`, String(v));
   }
   return s;
+}
+
+/** Translate `key` if it exists in English, else `fallbackKey`. For keys built from codes. */
+export function tOr(lang: Lang, key: string, fallbackKey: string, slots?: Record<string, string | number>): string {
+  return t(lang, Object.prototype.hasOwnProperty.call(en, key) ? key : fallbackKey, slots);
 }

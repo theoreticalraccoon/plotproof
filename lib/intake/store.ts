@@ -6,8 +6,11 @@ import type { ProcessedImage } from "./image";
 import {
   INTEGRITY_ALGO,
   attestationContentHash,
+  recordFieldsOf,
   ringSha256,
   sha256Hex,
+  verifyAttestationIntegrity,
+  type VerifyResult,
 } from "./integrity";
 import type { OfficerIdentity } from "./officer";
 import type {
@@ -151,15 +154,7 @@ export async function saveAttestation(input: AttestationInput): Promise<LocalAtt
     prevHash,
     chainSeq,
     contentHash: await attestationContentHash({
-      plotId: attestation.plotId,
-      officerId: attestation.officerId,
-      officerName: attestation.officerName,
-      capturedAt: attestation.capturedAt,
-      location: attestation.location,
-      farmerNameSnapshot: attestation.farmerNameSnapshot,
-      farmerIdSnapshot: attestation.farmerIdSnapshot,
-      confirmationMethod: attestation.confirmationMethod,
-      consentAt: attestation.consentAt,
+      ...recordFieldsOf(attestation),
       photoSha256,
       signatureSha256,
       ringSha256: ringHash,
@@ -186,6 +181,22 @@ export async function saveAttestation(input: AttestationInput): Promise<LocalAtt
     },
   );
   return attestation;
+}
+
+/** Re-checks an attestation's seal against the bytes and boundary stored on this device. */
+export async function verifyAttestation(attestation: LocalAttestation, plot: LocalPlot): Promise<VerifyResult | null> {
+  if (!attestation.integrity) return null;
+  const [photoBlob, signatureBlob] = await Promise.all([
+    mediaBlob(attestation.photoMediaId),
+    attestation.signatureMediaId ? mediaBlob(attestation.signatureMediaId) : undefined,
+  ]);
+  return verifyAttestationIntegrity({
+    integrity: attestation.integrity,
+    attestation,
+    ring: plot.ring,
+    photoBlob,
+    signatureBlob,
+  });
 }
 
 export async function getAttestationForPlot(

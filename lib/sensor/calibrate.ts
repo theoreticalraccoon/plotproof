@@ -23,6 +23,7 @@ export function checkCalibration(cal: ProbeCalibration | null): CalibrationCheck
   if (!cal) return { ok: false, problem: "missing", spread: 0 };
 
   const { dryRaw, wetRaw } = cal;
+  if (dryRaw === null || wetRaw === null) return { ok: false, problem: "missing", spread: 0 };
   const inRange = (v: number) => Number.isFinite(v) && v >= ADC_MIN && v <= ADC_MAX;
   if (!inRange(dryRaw) || !inRange(wetRaw)) {
     return { ok: false, problem: "out_of_range", spread: 0 };
@@ -42,7 +43,8 @@ export function rawToVwc(raw: number, cal: ProbeCalibration | null): number | nu
   if (!check.ok || !cal) return null;
   if (!Number.isFinite(raw)) return null;
 
-  const fraction = (cal.dryRaw - raw) / (cal.dryRaw - cal.wetRaw);
+  const dry = cal.dryRaw as number;
+  const fraction = (dry - raw) / (dry - (cal.wetRaw as number));
   const clamped = Math.min(1, Math.max(0, fraction));
   return Math.round(clamped * 10_000) / 10_000;
 }

@@ -4,7 +4,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowser, isSupabaseConfigured } from "@/lib/supabase/client";
-import { clearLocalSales, syncSalesOnSignIn } from "@/lib/sale/store";
+import { syncSalesOnSignIn } from "@/lib/sale/store";
+import { claimDevice, releaseDevice } from "@/lib/device/account";
 
 interface AuthResult {
   error?: string;
@@ -88,6 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Once the account is known, clear data a different account left on this device.
+  useEffect(() => {
+    if (!loading) void claimDevice(user?.id ?? null);
+  }, [user, loading]);
+
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     const sb = await getSupabaseBrowser();
     if (!sb) return { error: "not_configured" };
@@ -141,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     const sb = await getSupabaseBrowser();
     if (sb) await sb.auth.signOut();
-    clearLocalSales();
+    await releaseDevice();
     setUser(null);
   }, []);
 

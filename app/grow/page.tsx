@@ -2,7 +2,7 @@
 
 // The GROW lane front door: pick a plot, state the crop and soil once, then see watering and
 // disease pressure computed from that plot's own weather.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Leaf } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -13,58 +13,27 @@ import ProfileForm from "@/components/grow/ProfileForm";
 import IrrigationCard from "@/components/grow/IrrigationCard";
 import RiskCard from "@/components/grow/RiskCard";
 import WeatherStrip from "@/components/grow/WeatherStrip";
+import { NoPlots, PlotPicker, WeatherUnavailable } from "@/components/grow/PlotStates";
 import { t, useLang } from "@/lib/i18n";
-import { listPlots } from "@/lib/intake/store";
-import { getGrowProfile, saveGrowProfile } from "@/lib/grow/store";
-import { useGrowPlot } from "@/lib/grow/useGrowPlot";
-import { resolvePlotId, setSelectedPlotId, useSelectedPlotId } from "@/lib/grow/selection";
+import { useGrowSession } from "@/lib/grow/useGrowSession";
 import { RISK_CAVEATS } from "@/lib/grow/risk";
 import type { GrowProfile } from "@/lib/grow/types";
-import type { LocalPlot } from "@/lib/intake/types";
 
 export default function GrowPage() {
   const lang = useLang();
-  const [plots, setPlots] = useState<LocalPlot[] | null>(null);
-  const [profile, setProfile] = useState<GrowProfile | null>(null);
-  const [editingProfile, setEditingProfile] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const session = useGrowSession({ paused: editing });
+  const { plots, plot, profile, profileLoaded, grow } = session;
+  // A plot with no profile yet goes straight to the form.
+  const editingProfile = editing || (profileLoaded && !profile);
 
-  // Dexie is browser-only, so every read is guarded and failure degrades to "no plots" rather
-  // than an unhandled rejection.
-  useEffect(() => {
-    listPlots()
-      .then(setPlots)
-      .catch(() => setPlots([]));
-  }, []);
-
-  // Shared with /grow/diagnose so the two pages cannot drift onto different plots. See
-  // lib/grow/selection.ts for why that mattered.
-  const remembered = useSelectedPlotId();
-  const plotId = resolvePlotId(plots ?? [], remembered);
-
-  useEffect(() => {
-    if (!plotId) return;
-    // Same reason as on /grow/diagnose: never let the previous plot's crop and soil drive this
-    // plot's numbers, not even for a frame.
-    setProfile(null);
-    getGrowProfile(plotId)
-      .then((p) => {
-        setProfile(p ?? null);
-        setEditingProfile(!p);
-      })
-      .catch(() => {
-        setProfile(null);
-        setEditingProfile(true);
-      });
-  }, [plotId]);
-
-  const plot = plots?.find((p) => p.id === plotId) ?? null;
-  const grow = useGrowPlot(editingProfile ? null : plot, profile);
-
-  const handleSaveProfile = useCallback((p: GrowProfile) => {
-    setProfile(p);
-    setEditingProfile(false);
-    void saveGrowProfile(p).catch(() => {});
-  }, []);
+  const handleSaveProfile = useCallback(
+    (p: GrowProfile) => {
+      session.saveProfile(p);
+      setEditing(false);
+    },
+    [session],
+  );
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl px-5 py-6 sm:px-8">
@@ -98,39 +67,18 @@ export default function GrowPage() {
 
       {plots === null && <Skeleton className="mt-8 h-32 w-full" />}
 
-      {/* No plots at all: the grow lane has nothing to stand on, so send the
-          farmer to the capture flow rather than showing an empty dashboard. */}
-      {plots?.length === 0 && (
-        <div className="glass-card mt-8 p-6 text-center">
-          <p className="text-[0.95rem] muted">{t(lang, "grow_no_plots")}</p>
-          <PendingLink href="/intake" className="btn btn-primary mt-4">
-            {t(lang, "grow_no_plots_cta")}
-          </PendingLink>
-        </div>
-      )}
+      {plots?.length === 0 && <NoPlots lang={lang} />}
 
       {plots && plots.length > 0 && (
         <>
-          {plots.length > 1 && (
-            <section className="mt-8" aria-labelledby="plot-picker">
-              <h2 id="plot-picker" className="label">
-                {t(lang, "grow_pick_plot")}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {plots.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPlotId(p.id)}
-                    aria-pressed={p.id === plotId}
-                    className={p.id === plotId ? "chip chip-active" : "chip"}
-                  >
-                    {p.commodity ?? p.id.slice(0, 8)} · {p.computedAreaHa.toFixed(2)} ha
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          <PlotPicker
+            plots={plots}
+            selectedId={plot?.id ?? null}
+            onSelect={session.selectPlot}
+            lang={lang}
+            id="plot-picker"
+            className="mt-8"
+          />
 
           {plot && editingProfile && (
             <div className="mt-6">
@@ -154,7 +102,7 @@ export default function GrowPage() {
                 <button
                   type="button"
                   className="inline-flex min-h-[40px] items-center text-[0.82rem] underline underline-offset-4 muted"
-                  onClick={() => setEditingProfile(true)}
+                  onClick={() => setEditing(true)}
                 >
                   {t(lang, "grow_edit_profile")}
                 </button>
@@ -191,23 +139,7 @@ export default function GrowPage() {
               {/* Weather down and nothing cached: say so, and show NOTHING below.
                   Every number on this page is derived from weather, so rendering
                   any of it without weather would be inventing it. */}
-              {grow.state === "unavailable" && (
-                <div
-                  className="rounded-[var(--radius-sm)] px-4 py-3.5"
-                  style={{ background: "var(--warn-soft)", borderLeft: "3px solid var(--warn)" }}
-                >
-                  <p className="text-[0.92rem]">{t(lang, "weather_unavailable")}</p>
-                  {/* Network-layer detail, English in every language. */}
-                  {grow.reason && (
-                    <p className="mt-1.5 text-[0.82rem] muted" lang="en">
-                      {grow.reason}
-                    </p>
-                  )}
-                  <button type="button" className="btn btn-ghost btn-sm mt-3" onClick={grow.refresh}>
-                    {t(lang, "weather_retry")}
-                  </button>
-                </div>
-              )}
+              {grow.state === "unavailable" && <WeatherUnavailable grow={grow} lang={lang} />}
 
               {grow.state === "ready" && (
                 <>

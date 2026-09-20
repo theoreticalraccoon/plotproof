@@ -1,7 +1,7 @@
 "use client";
 
 /** Evidence pack (on-screen). The demo's "show the generated pack" step. */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, FileJson, Printer } from "lucide-react";
@@ -12,13 +12,13 @@ import Breadcrumb from "@/components/shell/Breadcrumb";
 import { Skeleton } from "@/components/motion/Skeleton";
 import { staggerContainer, staggerItem } from "@/lib/motion/variants";
 import { printAs } from "@/lib/print";
-import { getAttestationForPlot, getFarmer, getPlot, mediaBlob, mediaObjectUrl } from "@/lib/intake/store";
-import { verifyAttestationIntegrity, type VerifyResult } from "@/lib/intake/integrity";
+import { getAttestationForPlot, getFarmer, getPlot, mediaObjectUrl, verifyAttestation } from "@/lib/intake/store";
+import type { VerifyResult } from "@/lib/intake/integrity";
+import { gfwMapUrl } from "@/lib/eudr/mapLink";
 import { captureConfidence } from "@/lib/intake/confidence";
 import type { LocalAttestation, LocalFarmer, LocalPlot } from "@/lib/intake/types";
-import { lossThresholdHa, screenPlot, type VerdictLevel } from "@/lib/eudr/verdict";
-import { latestCheck, requestCheck, saveCheck, type ForestCheck } from "@/lib/eudr/check";
-import { useSaleBook } from "@/lib/sale/store";
+import { lossThresholdHa, type VerdictLevel } from "@/lib/eudr/verdict";
+import { useForestCheck } from "@/lib/eudr/useForestCheck";
 import { t } from "@/lib/i18n";
 
 const CUTOFF = "2020-12-31";
@@ -99,12 +99,7 @@ export default function EvidencePackPage() {
 
   const conf = captureConfidence(plot.captureMethod);
   const generatedAt = new Date();
-  const gfwUrl = `https://www.globalforestwatch.org/map/?map=${encodeURIComponent(
-    JSON.stringify({
-      center: { lat: centroid(plot.ring).lat, lng: centroid(plot.ring).lng },
-      zoom: 14,
-    }),
-  )}`;
+  const gfwUrl = gfwMapUrl(plot.ring);
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-6 sm:px-6 print:p-0">
@@ -339,38 +334,19 @@ const byArea = (m: Record<string, number>) =>
 
 // The GFW screening for this plot. Reuses a check already run on /sell, or runs one on open.
 function ForestStatus({ plot }: { plot: LocalPlot }) {
-  const { sales } = useSaleBook();
-  const [check, setCheck] = useState<ForestCheck | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { check, verdict, stale, busy, run, errorMessage } = useForestCheck(plot);
   const tried = useRef(false);
 
-  const run = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    const result = await requestCheck(plot.ring);
-    if ("error" in result) setError(result.error);
-    else {
-      saveCheck(plot.id, result);
-      setCheck(result);
-    }
-    setBusy(false);
-  }, [plot.id, plot.ring]);
-
+  // A pack with no check runs one on open, once.
   useEffect(() => {
-    const found = latestCheck(plot.id, sales);
-    if (found) setCheck((c) => (c && c.at >= found.at ? c : found));
-    else if (!tried.current) {
+    if (!check && !tried.current) {
       tried.current = true;
       void run();
     }
-  }, [plot.id, sales, run]);
+  }, [check, run]);
 
-  const verdict = check ? screenPlot(check.stats) : null;
   const s = check?.stats;
-  const errorText = error
-    ? t("en", `eudr_err_${error}`) === `eudr_err_${error}` ? t("en", "eudr_err_upstream_failed") : t("en", `eudr_err_${error}`)
-    : null;
+  const errorText = errorMessage("en");
 
   return (
     <div>
@@ -405,6 +381,11 @@ function ForestStatus({ plot }: { plot: LocalPlot }) {
                 ))}
               </ul>
             </>
+          )}
+          {stale && (
+            <p className="mt-4 text-[0.8rem]" style={{ color: "#b45309" }}>
+              {t("en", "eudr_stale")}
+            </p>
           )}
           <p className="doc-faint mt-4 text-[0.75rem] leading-relaxed">
             Checked {new Date(check.at).toISOString().slice(0, 16).replace("T", " ")} UTC via the Global Forest
@@ -514,29 +495,7 @@ function IntegritySeal({ attestation, plot }: { attestation: LocalAttestation; p
 
   const verify = async () => {
     if (!plot) throw new Error("The plot this attestation belongs to is not loaded.");
-    const [photoBlob, signatureBlob] = await Promise.all([
-      mediaBlob(attestation.photoMediaId),
-      attestation.signatureMediaId ? mediaBlob(attestation.signatureMediaId) : undefined,
-    ]);
-    setResult(
-      await verifyAttestationIntegrity({
-        integrity,
-        hashInput: {
-          plotId: attestation.plotId,
-          officerId: attestation.officerId,
-          officerName: attestation.officerName,
-          capturedAt: attestation.capturedAt,
-          location: attestation.location,
-          farmerNameSnapshot: attestation.farmerNameSnapshot,
-          farmerIdSnapshot: attestation.farmerIdSnapshot,
-          confirmationMethod: attestation.confirmationMethod,
-          consentAt: attestation.consentAt,
-        },
-        ring: plot.ring,
-        photoBlob,
-        signatureBlob,
-      }),
-    );
+    setResult(await verifyAttestation(attestation, plot));
   };
 
   const rows = result?.checks ?? [];
@@ -692,13 +651,3 @@ function downloadDds(plot: LocalPlot, farmer: LocalFarmer | null): void {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-function centroid(ring: [number, number][]): { lng: number; lat: number } {
-  const pts = ring.slice(0, -1);
-  const n = pts.length || 1;
-  return {
-    lng: pts.reduce((s, p) => s + p[0], 0) / n,
-    lat: pts.reduce((s, p) => s + p[1], 0) / n,
-  };
-}
-

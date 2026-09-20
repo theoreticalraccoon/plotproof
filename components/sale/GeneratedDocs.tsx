@@ -2,36 +2,18 @@
 
 // The documents this app produces for the open sale: download all of them as one file, download
 // each alone, or open one to edit.
-import { useState } from "react";
 import { Download, FileText, Pencil, Loader2 } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { t, type Lang } from "@/lib/i18n";
-import { buildDoc, DOC_KINDS, docFileName, docKey, type DocKind } from "@/lib/sale/documents";
+import { DOC_KINDS, docKey, type DocKind } from "@/lib/sale/documents";
 import { isSaleComplete } from "@/lib/sale/model";
-import { downloadDocs } from "@/lib/sale/download";
+import { useDocumentDownload } from "@/lib/sale/download";
 import type { Sale } from "@/lib/sale/types";
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 export default function GeneratedDocs({ sale, lang }: { sale: Sale; lang: Lang }) {
   const complete = isSaleComplete(sale);
-  const [busy, setBusy] = useState<DocKind | "all" | null>(null);
-  const [error, setError] = useState(false);
-
-  const run = async (which: DocKind | "all") => {
-    setBusy(which);
-    setError(false);
-    try {
-      const kinds = which === "all" ? DOC_KINDS : [which];
-      const docs = kinds.map((k) => buildDoc(k, sale, today(), !complete));
-      const name = which === "all" ? `${sale.numbers.invoice}-export-documents.pdf` : docFileName(docs[0]);
-      await downloadDocs(docs, name);
-    } catch {
-      setError(true);
-    } finally {
-      setBusy(null);
-    }
-  };
+  const { busy, error, download } = useDocumentDownload<DocKind | "all">();
+  const run = (which: DocKind | "all") => download(which, sale, which === "all" ? DOC_KINDS : [which]);
 
   return (
     <section aria-labelledby="gen-heading" id="documents">

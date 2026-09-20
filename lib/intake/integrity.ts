@@ -63,6 +63,23 @@ export interface AttestationHashInput {
   prevHash: string | null;
 }
 
+type RecordFields = Omit<AttestationHashInput, "photoSha256" | "signatureSha256" | "ringSha256" | "prevHash">;
+
+/** The record fields a seal commits to, taken from an attestation. The one place they are listed. */
+export function recordFieldsOf(a: RecordFields): RecordFields {
+  return {
+    plotId: a.plotId,
+    officerId: a.officerId,
+    officerName: a.officerName,
+    capturedAt: a.capturedAt,
+    location: a.location,
+    farmerNameSnapshot: a.farmerNameSnapshot,
+    farmerIdSnapshot: a.farmerIdSnapshot,
+    confirmationMethod: a.confirmationMethod,
+    consentAt: a.consentAt,
+  };
+}
+
 export function attestationContentHash(input: AttestationHashInput): Promise<string> {
   return sha256Hex(canonicalJson(input));
 }
@@ -76,7 +93,8 @@ export interface VerifyResult {
 /** Recompute every hash from the stored bytes and compare. */
 export async function verifyAttestationIntegrity(args: {
   integrity: AttestationIntegrity;
-  hashInput: Omit<AttestationHashInput, "photoSha256" | "signatureSha256" | "ringSha256" | "prevHash">;
+  /** The stored attestation; only the sealed fields are read from it. */
+  attestation: RecordFields;
   ring: LngLat[];
   photoBlob?: Blob;
   signatureBlob?: Blob;
@@ -119,7 +137,7 @@ export async function verifyAttestationIntegrity(args: {
   }
 
   const recomputed = await attestationContentHash({
-    ...args.hashInput,
+    ...recordFieldsOf(args.attestation),
     photoSha256: integrity.photoSha256,
     signatureSha256: integrity.signatureSha256,
     ringSha256: integrity.ringSha256,

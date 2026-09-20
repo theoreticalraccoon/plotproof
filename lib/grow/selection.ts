@@ -2,18 +2,13 @@
 
 /** Which plot the GROW lane is currently looking at. */
 import { useSyncExternalStore } from "react";
+import { readText, writeText } from "../device/local.ts";
 
 const KEY = "plotproof.grow.plotId";
 const listeners = new Set<() => void>();
 
 function snapshot(): string | null {
-  if (typeof localStorage === "undefined") return null;
-  try {
-    return localStorage.getItem(KEY);
-  } catch {
-    // Private mode, or storage disabled. Selection simply does not persist.
-    return null;
-  }
+  return typeof localStorage === "undefined" ? null : readText(KEY);
 }
 
 /** Server snapshot. Always null so hydration cannot mismatch. */
@@ -22,12 +17,7 @@ function serverSnapshot(): string | null {
 }
 
 export function setSelectedPlotId(id: string | null): void {
-  try {
-    if (id === null) localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, id);
-  } catch {
-    // Non-fatal; the in-memory selection for this page still works.
-  }
+  writeText(KEY, id);
   listeners.forEach((fn) => fn());
 }
 

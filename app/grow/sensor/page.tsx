@@ -9,51 +9,38 @@ import PendingLink from "@/components/motion/PendingLink";
 import Reveal from "@/components/motion/Reveal";
 import { Skeleton } from "@/components/motion/Skeleton";
 import SensorPanel from "@/components/grow/SensorPanel";
+import { NoPlots, PlotPicker } from "@/components/grow/PlotStates";
 import { t, useLang } from "@/lib/i18n";
-import { listPlots } from "@/lib/intake/store";
-import { getGrowProfile, latestSoilMoisture, recentSensorReadings, clearSensorReadings } from "@/lib/grow/store";
-import { useGrowPlot } from "@/lib/grow/useGrowPlot";
-import { resolvePlotId, setSelectedPlotId, useSelectedPlotId } from "@/lib/grow/selection";
+import { recentSensorReadings, clearSensorReadings } from "@/lib/grow/store";
+import { useGrowSession } from "@/lib/grow/useGrowSession";
 import { gridDisagreement } from "@/lib/sensor/calibrate";
-import type { GrowProfile } from "@/lib/grow/types";
 import type { SensorReading } from "@/lib/grow/growTypes";
-import type { LocalPlot } from "@/lib/intake/types";
 
 export default function SensorPage() {
   const lang = useLang();
-  const [plots, setPlots] = useState<LocalPlot[] | null>(null);
-  const [profile, setProfile] = useState<GrowProfile | null>(null);
-  const [stored, setStored] = useState<SensorReading[]>([]);
-  const [anchorVwc, setAnchorVwc] = useState<number | null>(null);
+  const session = useGrowSession();
+  const { plots, plot, grow } = session;
+  const plotId = plot?.id ?? null;
+  const [stored, setStored] = useState<{ plotId: string; rows: SensorReading[] } | null>(null);
 
-  const remembered = useSelectedPlotId();
-  const plotId = resolvePlotId(plots ?? [], remembered);
-
-  useEffect(() => {
-    listPlots()
-      .then(setPlots)
-      .catch(() => setPlots([]));
-  }, []);
-
-  const refresh = useCallback(() => {
+  const loadStored = useCallback(() => {
     if (!plotId) return;
-    void recentSensorReadings(plotId, 200).then(setStored).catch(() => setStored([]));
-    // The same call the irrigation engine makes, so what is shown here is what the ladder will
-    // actually use, including its staleness and plausibility rules.
-    void latestSoilMoisture(plotId).then(setAnchorVwc).catch(() => setAnchorVwc(null));
+    void recentSensorReadings(plotId, 200)
+      .catch(() => [])
+      .then((rows) => setStored({ plotId, rows }));
   }, [plotId]);
 
-  useEffect(() => {
-    if (!plotId) return;
-    setProfile(null);
-    setStored([]);
-    getGrowProfile(plotId).then((p) => setProfile(p ?? null)).catch(() => setProfile(null));
-    refresh();
-  }, [plotId, refresh]);
+  useEffect(loadStored, [loadStored]);
 
-  const plot = plots?.find((p) => p.id === plotId) ?? null;
-  const grow = useGrowPlot(plot, profile);
+  // After a save or a clear, the ladder re-reads the probe too, so the anchor shown is current.
+  const { refresh: refreshGrow } = grow;
+  const refresh = useCallback(() => {
+    loadStored();
+    refreshGrow();
+  }, [loadStored, refreshGrow]);
 
+  const storedRows = stored?.plotId === plotId ? stored.rows : [];
+  const anchorVwc = grow.soilMoisture;
   const gridVwc =
     grow.days.length > 0 ? grow.days[grow.days.length - 1].soilMoistureRootZone : null;
   const gap = gridDisagreement(anchorVwc, gridVwc);
@@ -94,37 +81,11 @@ export default function SensorPage() {
 
       {plots === null && <Skeleton className="mt-8 h-40 w-full" />}
 
-      {plots?.length === 0 && (
-        <div className="glass-card mt-8 p-6 text-center">
-          <p className="text-[0.95rem] muted">{t(lang, "grow_no_plots")}</p>
-          <PendingLink href="/intake" className="btn btn-primary mt-4">
-            {t(lang, "grow_no_plots_cta")}
-          </PendingLink>
-        </div>
-      )}
+      {plots?.length === 0 && <NoPlots lang={lang} />}
 
       {plots && plots.length > 0 && plotId && (
         <div className="mt-8 space-y-6">
-          {plots.length > 1 && (
-            <section aria-labelledby="sensor-plot-picker">
-              <h2 id="sensor-plot-picker" className="label">
-                {t(lang, "grow_pick_plot")}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {plots.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedPlotId(p.id)}
-                    aria-pressed={p.id === plotId}
-                    className={p.id === plotId ? "chip chip-active" : "chip"}
-                  >
-                    {p.commodity ?? p.id.slice(0, 8)} · {p.computedAreaHa.toFixed(2)} ha
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          <PlotPicker plots={plots} selectedId={plotId} onSelect={session.selectPlot} lang={lang} id="sensor-plot-picker" />
 
           {/* What the ladder is currently using for this plot. */}
           <section className="glass p-4" aria-labelledby="sensor-anchor-heading">
@@ -145,10 +106,10 @@ export default function SensorPage() {
                 })}
               </p>
             )}
-            {stored.length > 0 && (
+            {storedRows.length > 0 && (
               <p className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8rem] faint">
-                <span>{t(lang, "sensor_stored", { n: stored.length })}</span>
-                {stored.some((r) => r.source === "simulated") && (
+                <span>{t(lang, "sensor_stored", { n: storedRows.length })}</span>
+                {storedRows.some((r) => r.source === "simulated") && (
                   <span style={{ color: "var(--warn)" }}>{t(lang, "sensor_stored_simulated")}</span>
                 )}
                 <button

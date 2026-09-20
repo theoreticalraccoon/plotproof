@@ -14,7 +14,7 @@ import { SkeletonMap } from "@/components/motion/Skeleton";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import { stepTransition } from "@/lib/motion/variants";
 import { clearIntakeData } from "@/lib/intake/db";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { DEVICE_CLEARED_EVENT } from "@/lib/device/account";
 import { t, useLang } from "@/lib/i18n";
 import { warmup } from "@/lib/net";
 
@@ -29,7 +29,6 @@ type Tab = "import" | "trace";
 
 export default function IntakePage() {
   const lang = useLang();
-  const { user, loading } = useAuth();
   const reduce = useReducedMotion();
   const [tab, setTab] = useState<Tab>("import");
   const [refresh, setRefresh] = useState(0);
@@ -40,19 +39,12 @@ export default function IntakePage() {
   // Wake the serverless analysis routes early, so opening a pack later is warm.
   useEffect(() => warmup(), []);
 
-  // Account isolation: if a different account (or an anonymous session) than the last one used
-  // this browser.
+  // Account isolation lives in lib/device/account.ts; this just re-reads after a clear.
   useEffect(() => {
-    if (loading) return;
-    const KEY = "plotproof.intakeOwner";
-    const current = user?.id ?? "anon";
-    const last = typeof localStorage !== "undefined" ? localStorage.getItem(KEY) : null;
-    if (last === current) return;
-    void clearIntakeData().then(() => {
-      if (typeof localStorage !== "undefined") localStorage.setItem(KEY, current);
-      bump();
-    });
-  }, [user, loading]);
+    const onCleared = () => bump();
+    window.addEventListener(DEVICE_CLEARED_EVENT, onCleared);
+    return () => window.removeEventListener(DEVICE_CLEARED_EVENT, onCleared);
+  }, []);
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-20 pt-4 sm:px-6">

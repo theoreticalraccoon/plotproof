@@ -12,13 +12,11 @@ import {
   type SerialStatus,
 } from "@/lib/sensor/serial";
 import type { SensorFrame } from "@/lib/sensor/protocol";
-import { checkCalibration, medianRaw, rawToVwc, MIN_ANCHOR_SPREAD } from "@/lib/sensor/calibrate";
-import { addSensorReadings, getCalibration, saveCalibration, clearCalibration } from "@/lib/grow/store";
-import { isPlausibleVwc } from "@/lib/grow/sensorGuard";
-import type { ProbeCalibration, SensorReading, SensorSource } from "@/lib/grow/growTypes";
+import { checkCalibration, rawToVwc, MIN_ANCHOR_SPREAD } from "@/lib/sensor/calibrate";
+import { ANCHOR_WINDOW, captureAnchor as anchorFromFrames } from "@/lib/sensor/readings";
+import { recordReadings, getCalibration, saveCalibration, clearCalibration } from "@/lib/grow/store";
+import type { ProbeCalibration, SensorSource } from "@/lib/grow/growTypes";
 
-/** How many recent frames a calibration anchor is taken from. */
-const ANCHOR_WINDOW = 12;
 /** How many frames the live trace keeps on screen. */
 const TRACE_WINDOW = 90;
 
@@ -89,15 +87,8 @@ export default function SensorPanel({
 
   const captureAnchor = useCallback(
     (which: "dry" | "wet") => {
-      const window = frames.slice(-ANCHOR_WINDOW).map((f) => f.raw);
-      const median = medianRaw(window);
-      if (median === null) return;
-      const next: ProbeCalibration = {
-        plotId,
-        dryRaw: which === "dry" ? median : (cal?.dryRaw ?? 0),
-        wetRaw: which === "wet" ? median : (cal?.wetRaw ?? 0),
-        capturedAt: new Date().toISOString(),
-      };
+      const next = anchorFromFrames(frames, which, cal, plotId, new Date());
+      if (!next) return;
       saveCalibration(next);
       setCal(next);
     },
@@ -108,18 +99,7 @@ export default function SensorPanel({
     if (frames.length === 0) return;
     setSaving(true);
     try {
-      const now = Date.now();
-      const rows: SensorReading[] = frames.map((f, i) => ({
-        plotId,
-        // Space the stored timestamps over the window that was actually observed, so a saved
-        // trace reads as a trace rather than a spike.
-        at: new Date(now - (frames.length - 1 - i) * 1000).toISOString(),
-        raw: f.raw,
-        vwc: rawToVwc(f.raw, cal),
-        source,
-      }));
-      await addSensorReadings(rows);
-      setSavedCount(rows.length);
+      setSavedCount(await recordReadings(plotId, frames, cal, source));
       onSaved();
     } finally {
       setSaving(false);
@@ -378,5 +358,3 @@ function Sparkline({ frames }: { frames: SensorFrame[] }) {
   );
 }
 
-/** Re-exported for the page's "is this reading usable" note. */
-export { isPlausibleVwc };

@@ -1,7 +1,9 @@
 /** Dexie accessors for the GROW lane. */
 import { db } from "../intake/db";
-import { guardVwc } from "./sensorGuard";
-import type { CachedWeatherDay, ProbeCalibration, SensorReading } from "./growTypes";
+import { readJson, writeJson } from "../device/local";
+import { anchorFrom, readingsFromFrames } from "../sensor/readings";
+import type { SensorFrame } from "../sensor/protocol";
+import type { CachedWeatherDay, ProbeCalibration, SensorReading, SensorSource } from "./growTypes";
 import type { DailyWeather, GrowProfile } from "./types";
 
 const CAL_KEY = "plotproof.probeCalibration";
@@ -32,9 +34,16 @@ export async function cachedWeather(plotId: string): Promise<CachedWeatherDay[]>
 
 // --- sensor readings -----------------------------------------------------
 
-export async function addSensorReadings(readings: SensorReading[]): Promise<void> {
-  if (readings.length === 0) return;
-  await db().sensorReadings.bulkAdd(readings);
+/** Stores a live trace for a plot, converted and guarded. Returns how many rows were saved. */
+export async function recordReadings(
+  plotId: string,
+  frames: readonly SensorFrame[],
+  cal: ProbeCalibration | null,
+  source: SensorSource,
+): Promise<number> {
+  const rows = readingsFromFrames(frames, cal, plotId, source, new Date());
+  if (rows.length > 0) await db().sensorReadings.bulkAdd(rows);
+  return rows.length;
 }
 
 /** Most recent readings for a plot, newest first. */
@@ -45,13 +54,8 @@ export async function recentSensorReadings(plotId: string, limit = 500): Promise
 
 /** The latest calibrated soil-moisture value, or null. */
 export async function latestSoilMoisture(plotId: string, maxAgeHours = 24): Promise<number | null> {
-  const rows = await recentSensorReadings(plotId, 1);
-  const latest = rows[0];
-  if (!latest) return null;
-  const ageHours = (Date.now() - new Date(latest.at).getTime()) / 3_600_000;
-  if (!Number.isFinite(ageHours) || ageHours > maxAgeHours) return null;
-  // Guard the VALUE as well as its age.
-  return guardVwc(latest.vwc);
+  const [latest] = await recentSensorReadings(plotId, 1);
+  return anchorFrom(latest, new Date(), maxAgeHours);
 }
 
 export async function clearSensorReadings(plotId: string): Promise<void> {
@@ -62,28 +66,21 @@ export async function clearSensorReadings(plotId: string): Promise<void> {
 // Dexie: it is a handful of scalars per plot, it is read on every reading parsed.
 
 function readCalibrations(): Record<string, ProbeCalibration> {
-  if (typeof localStorage === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(CAL_KEY) ?? "{}") as Record<string, ProbeCalibration>;
-  } catch {
-    return {};
-  }
+  return readJson<Record<string, ProbeCalibration>>(CAL_KEY, {});
 }
 
 export function getCalibration(plotId: string): ProbeCalibration | null {
-  return readCalibrations()[plotId] ?? null;
+  const cal = readCalibrations()[plotId];
+  if (!cal) return null;
+  // Older saves wrote 0 for an anchor that had not been captured yet.
+  return { ...cal, dryRaw: cal.dryRaw || null, wetRaw: cal.wetRaw || null };
 }
 
 export function saveCalibration(cal: ProbeCalibration): void {
-  if (typeof localStorage === "undefined") return;
-  const all = readCalibrations();
-  all[cal.plotId] = cal;
-  localStorage.setItem(CAL_KEY, JSON.stringify(all));
+  writeJson(CAL_KEY, { ...readCalibrations(), [cal.plotId]: cal });
 }
 
 export function clearCalibration(plotId: string): void {
-  if (typeof localStorage === "undefined") return;
-  const all = readCalibrations();
-  delete all[plotId];
-  localStorage.setItem(CAL_KEY, JSON.stringify(all));
+  const { [plotId]: _drop, ...rest } = readCalibrations();
+  writeJson(CAL_KEY, rest);
 }

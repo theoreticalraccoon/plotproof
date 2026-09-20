@@ -1,14 +1,15 @@
 "use client";
 
 /** EUDR, as part of the sale rather than a separate tab. */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { AlertTriangle, CheckCircle2, HelpCircle, Loader2, MapPinned, Plus, SearchCheck, X } from "lucide-react";
 import PendingLink from "@/components/motion/PendingLink";
 import { t, type Lang } from "@/lib/i18n";
 import { listPlots } from "@/lib/intake/store";
 import { consignmentLevel, lossThresholdHa, screenPlot, type VerdictLevel } from "@/lib/eudr/verdict";
-import { requestCheck, saveCheck } from "@/lib/eudr/check";
+import { latestCheck } from "@/lib/eudr/check";
+import { useForestCheck } from "@/lib/eudr/useForestCheck";
 import { updateSale } from "@/lib/sale/store";
 import type { Sale } from "@/lib/sale/types";
 import type { LocalPlot } from "@/lib/intake/types";
@@ -42,7 +43,7 @@ export default function EudrPanel({ sale, lang }: { sale: Sale; lang: Lang }) {
   const available = (plots ?? []).filter((p) => !sale.plotIds.includes(p.id));
 
   const levels = sale.plotIds.map((id) => {
-    const check = sale.eudrChecks[id];
+    const check = latestCheck(id, [sale]);
     return check ? screenPlot(check.stats).level : ("unknown" as const);
   });
   const overall = consignmentLevel(levels);
@@ -85,7 +86,7 @@ export default function EudrPanel({ sale, lang }: { sale: Sale; lang: Lang }) {
 
           <ul className="mt-4 space-y-4">
             {attached.map((p) => (
-              <PlotCheck key={p.id} plot={p} sale={sale} lang={lang} onRemove={() => detach(p.id)} />
+              <PlotCheck key={p.id} plot={p} lang={lang} onRemove={() => detach(p.id)} />
             ))}
           </ul>
 
@@ -141,35 +142,15 @@ export default function EudrPanel({ sale, lang }: { sale: Sale; lang: Lang }) {
 
 function PlotCheck({
   plot,
-  sale,
   lang,
   onRemove,
 }: {
   plot: LocalPlot;
-  sale: Sale;
   lang: Lang;
   onRemove: () => void;
 }) {
-  const check = sale.eudrChecks[plot.id];
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const verdict = check ? screenPlot(check.stats) : null;
-
-  const run = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await requestCheck(plot.ring);
-      if ("error" in result) {
-        setError(result.error);
-        return;
-      }
-      saveCheck(plot.id, result);
-      updateSale(sale.id, (s) => ({ ...s, eudrChecks: { ...s.eudrChecks, [plot.id]: result } }));
-    } finally {
-      setBusy(false);
-    }
-  }, [plot.id, plot.ring, sale.id]);
+  const { check, verdict, stale, busy, run, errorMessage } = useForestCheck(plot);
+  const error = errorMessage(lang);
 
   return (
     <li className="glass-card p-4">
@@ -227,7 +208,12 @@ function PlotCheck({
 
       {error && (
         <p className="mt-3 text-[0.85rem]" role="alert" style={{ color: "var(--danger)" }}>
-          {t(lang, `eudr_err_${error}`) === `eudr_err_${error}` ? t(lang, "eudr_err_upstream_failed") : t(lang, `eudr_err_${error}`)}
+          {error}
+        </p>
+      )}
+      {stale && (
+        <p className="mt-3 text-[0.82rem]" style={{ color: "var(--warn)" }}>
+          {t(lang, "eudr_stale")}
         </p>
       )}
 

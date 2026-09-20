@@ -3,39 +3,26 @@
 /** /documents, just the documents. */
 import Link from "next/link";
 import { Download, FileText, Loader2, Pencil } from "lucide-react";
-import { useState } from "react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import DocPreview from "@/components/documents/DocPreview";
 import NoSale from "@/components/documents/NoSale";
 import { t, useLang } from "@/lib/i18n";
-import { buildDoc, DOC_KINDS, docKey } from "@/lib/sale/documents";
-import { downloadDocs } from "@/lib/sale/download";
-import { isSaleComplete, saleTitle } from "@/lib/sale/model";
+import { docKey, documentSet } from "@/lib/sale/documents";
+import { useDocumentDownload } from "@/lib/sale/download";
+import { saleTitle } from "@/lib/sale/model";
 import { useCurrentSale } from "@/lib/sale/store";
 
 export default function DocumentsPage() {
   const lang = useLang();
   const sale = useCurrentSale();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const { busy: running, error, download } = useDocumentDownload<"all">();
+  const busy = running !== null;
 
   if (!sale) return <NoSale />;
 
-  const complete = isSaleComplete(sale);
-  const today = new Date().toISOString().slice(0, 10);
-  const docs = DOC_KINDS.map((k) => buildDoc(k, sale, today, !complete));
-
-  const downloadAll = async () => {
-    setBusy(true);
-    setError(false);
-    try {
-      await downloadDocs(docs, `${sale.numbers.invoice}-export-documents.pdf`);
-    } catch {
-      setError(true);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const { docs, draft } = documentSet(sale, new Date());
+  const complete = !draft;
+  const downloadAll = () => download("all", sale);
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-5xl px-5 pb-24 pt-6 sm:px-8">

@@ -136,15 +136,30 @@ in the provenance record; CS-D's archive is verified by SHA-256 before use.
 
 ## Running it
 
+Node 22 or newer.
+
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-No API keys are needed to see the whole app. Open-Meteo requires none, and the
-classifier is a static file. Supabase credentials are optional — without them the
-app runs as an anonymous prototype: sync says "on this device only" and
-`/verify/<id>` says verification is unavailable. Nothing is faked.
+That is the whole setup. Most of the app needs no keys at all: plot capture, the
+documents, the weather and watering advice (Open-Meteo needs no key) and the tea
+leaf classifier (a static file that runs in the browser) all work from a clean
+clone.
+
+Two features call a service that needs a key of its own. Copy `.env.example` to
+`.env.local` and fill in whichever you want:
+
+| Variable | Powers | Without it |
+| --- | --- | --- |
+| `GFW_API_KEY` | The EUDR forest check on `/sell` and the evidence pack | The check says the forest data service is not configured. Everything else works. |
+| `GEMINI_API_KEYS` | The export assistant on `/sell`, comma separated for several keys | The assistant says it is not configured. Everything else works. |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Accounts and sync | Anonymous prototype: sync says "on this device only" and `/verify/<id>` says verification is unavailable. |
+
+Keys live only in `.env.local`, which is gitignored and never committed.
+`docs/GFW-API-KEY.md` explains how to get a GFW key; Gemini keys come from
+Google AI Studio. Nothing is faked when a key is missing: the feature says so.
 
 **Deploying.** Vercel builds this repository directly; the only environment
 variables are `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
@@ -174,8 +189,8 @@ write-up, the deployment runbook, the device-test checklist — and the unit-tes
 suite are kept with the working copy rather than published here.
 
 That means `npm test` will not run from a fresh clone of this repository: the
-`test/` directory is not part of the published tree. The suite is 196 cases
-across 13 files and runs with no test framework at all, directly under Node's
+`test/` directory is not part of the published tree. The suite is 289 cases
+across 17 files and runs with no test framework at all, directly under Node's
 `--experimental-strip-types`.
 
 ## Testing and checks

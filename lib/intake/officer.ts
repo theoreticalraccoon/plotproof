@@ -5,17 +5,12 @@ export interface OfficerIdentity {
   name: string;
 }
 
+import { readJson, writeJson } from "../device/local";
+
 const KEY = "plotproof.officer";
 
 export function getOfficer(): OfficerIdentity | null {
-  if (typeof localStorage === "undefined") return null;
-  const raw = localStorage.getItem(KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as OfficerIdentity;
-  } catch {
-    return null;
-  }
+  return readJson<OfficerIdentity | null>(KEY, null);
 }
 
 export function setOfficer(name: string): OfficerIdentity {
@@ -24,6 +19,6 @@ export function setOfficer(name: string): OfficerIdentity {
     id: existing?.id ?? crypto.randomUUID(),
     name: name.trim(),
   };
-  localStorage.setItem(KEY, JSON.stringify(identity));
+  writeJson(KEY, identity);
   return identity;
 }

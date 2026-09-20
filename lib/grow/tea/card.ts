@@ -10,7 +10,7 @@ let cached: Promise<TeaModelCard | null> | null = null;
 
 // A card that parses but is missing the fields inference depends on is worse than no card: it
 // would produce predictions from undefined constants.
-function isUsable(c: unknown): c is TeaModelCard {
+export function isUsableCard(c: unknown): c is TeaModelCard {
   const card = c as TeaModelCard | null;
   return !!(
     card &&
@@ -33,15 +33,17 @@ function isUsable(c: unknown): c is TeaModelCard {
   );
 }
 
-/** Test seam: the audit asserts directly that a tampered card is refused. */
-export const __isUsableCardForTests = isUsable;
-
 export function loadTeaCard(): Promise<TeaModelCard | null> {
   if (!cached) {
     cached = fetch(CARD_URL)
       .then((r) => (r.ok ? r.json() : null))
-      .then((j) => (isUsable(j) ? j : null))
-      .catch(() => null);
+      .then((j) => (isUsableCard(j) ? j : null))
+      .catch(() => null)
+      .then((card) => {
+        // A failed load is not remembered, so the next visit tries again.
+        if (!card) cached = null;
+        return card;
+      });
   }
   return cached;
 }

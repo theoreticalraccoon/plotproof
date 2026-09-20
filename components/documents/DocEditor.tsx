@@ -1,44 +1,36 @@
 "use client";
 
 /** One document, with only the fields that document prints beside it. */
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import Breadcrumb from "@/components/shell/Breadcrumb";
 import DocPreview from "@/components/documents/DocPreview";
 import SaleField from "@/components/sale/SaleField";
 import { t, useLang } from "@/lib/i18n";
-import { buildDoc, docFileName, docKey, type DocKind } from "@/lib/sale/documents";
-import { downloadDocs } from "@/lib/sale/download";
+import { docKey, documentSet, type DocKind } from "@/lib/sale/documents";
+import { useDocumentDownload } from "@/lib/sale/download";
 import { fieldsForDoc } from "@/lib/sale/fields";
-import { isSaleComplete, saleIssues } from "@/lib/sale/model";
+import { saleIssues } from "@/lib/sale/model";
 import { useCurrentSale } from "@/lib/sale/store";
 import NoSale from "./NoSale";
 
 export default function DocEditor({ kind }: { kind: DocKind }) {
   const lang = useLang();
   const sale = useCurrentSale();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const { busy: running, error, download: downloadKinds } = useDocumentDownload<"one">();
+  const busy = running !== null;
 
   if (!sale) return <NoSale />;
 
-  const complete = isSaleComplete(sale);
-  const doc = buildDoc(kind, sale, new Date().toISOString().slice(0, 10), !complete);
+  const {
+    docs: [doc],
+    draft,
+  } = documentSet(sale, new Date(), [kind]);
+  const complete = !draft;
   const issues = saleIssues(sale);
   const errorFor = (path: string) => issues.find((x) => x.field === path)?.messageKey;
 
-  const download = async () => {
-    setBusy(true);
-    setError(false);
-    try {
-      await downloadDocs([doc], docFileName(doc));
-    } catch {
-      setError(true);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const download = () => downloadKinds("one", sale, [kind]);
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-6xl px-5 pb-24 pt-6 sm:px-8">
