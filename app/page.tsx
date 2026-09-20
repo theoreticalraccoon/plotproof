@@ -1,6 +1,6 @@
 "use client";
 
-/** The homepage: what an export certification officer gets, shown with the product's own paperwork. */
+/** The homepage: what the exporter or factory gets, shown with the product's own paperwork. */
 import type { CSSProperties, ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, Check, Circle } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";

@@ -13,7 +13,7 @@ type Dict = Record<string, string>;
 
 const en: Dict = {
   app_tagline:
-    "Sell your harvest abroad, legally, and keep the margin. We tell you exactly which certifications and customs documents you need to export directly to the EU, UK, and US, and generate the ones we can.",
+    "Export paperwork and plot evidence in one place. For the factory, cooperative or exporter who files the documents and has to show where every supplier's crop was grown.",
   sell_cta: "Sell your harvest →",
   sell_cta_sub: "Four questions. Get your documents checklist and shipping options.",
   also_here: "Also here",
@@ -201,11 +201,11 @@ const en: Dict = {
   price_your_qty: "Your {kg} kg at this reference price ≈ ${value}.",
   price_forecast: "Next month ({month}): likely between ${low} and ${high} per kg.",
   price_caveat:
-    "World reference price, not a farm-gate offer. Use it to judge the offers you receive.",
+    "World price for the processed commodity, not a farm-gate or green-leaf price. Sri Lanka's green-leaf price is set by the Tea Board formula from the auction net sale average; this series is a market backdrop, not what a factory owes a grower.",
   price_none: "No world reference price series exists for this product, so none is shown.",
   price_stale:
     "The reference price data in this deployment ends at {month} and is out of date, so no price is shown. It needs a refresh from the World Bank series.",
-  sell_sub: "Answer four simple questions. We'll show you exactly which papers you need and make the ones we can.",
+  sell_sub: "Answer four questions. We'll show exactly which papers this shipment needs and make the ones we can.",
   q_product: "What do you grow?",
   q_product_free: "Or describe it in your own words",
   q_origin: "Where do you farm?",
@@ -408,7 +408,7 @@ const en: Dict = {
 
   // --- the sale workspace (/sell) ---------------------------------------
   sell_title: "Export consignment",
-  sell_lede: "Everything one shipment needs: the details, the documents we produce, the documents an authority must issue, and an assistant that can see this sale.",
+  sell_lede: "Everything one shipment needs: the details, the documents we produce, the documents an authority must issue, the supplier plots behind it, and an assistant that can see this sale.",
   sell_empty_title: "No sale open",
   sell_empty_body: "Start one and the questionnaire, the documents and the checklist all fill in from it.",
   sell_empty_cta: "Start a sale",
@@ -543,7 +543,7 @@ const en: Dict = {
   // --- EUDR ---------------------------------------------------------------------
   eudr_eyebrow: "EU Deforestation Regulation",
   eudr_title: "Where this consignment was grown",
-  eudr_lede: "This commodity may only enter the EU if it was not grown on land deforested after 31 December 2020. Attach the plots and check each one against the satellite record.",
+  eudr_lede: "This commodity is on EUDR Annex I, so it may only enter the EU if it was not grown on land deforested after 31 December 2020. Attach every supplier plot behind the shipment and check each one against the satellite record.",
   eudr_no_plots: "No plots attached yet. The EU operator cannot file a due-diligence statement without the plot boundaries this consignment came from.",
   eudr_attach: "Attach a plot",
   eudr_map_new: "Map a new plot",
@@ -595,6 +595,11 @@ const en: Dict = {
   eudr_err_timeout: "The forest data service did not answer in time. Try again.",
   eudr_err_upstream_failed: "The forest data service could not be reached. Nothing is assumed about this plot.",
   eudr_stale: "This check is more than 90 days old. Run it again before relying on it.",
+  eudr_nc_title: "No deforestation check for this shipment",
+  eudr_nc_annex: "EUDR Annex I covers cattle, cocoa, coffee, oil palm, rubber, soya and wood.",
+  eudr_nc_product: "{product} is not on that list, so no plot polygons and no due-diligence statement are required.",
+  eudr_nc_destination: "This shipment is not going to the EU, so EUDR does not apply to it.",
+  eudr_nc_why: "We show the check only where the regulation actually applies.",
   eudr_err_offline: "You appear to be offline. The check needs a connection.",
   eudr_err_outside_sri_lanka: "This boundary is outside Sri Lanka.",
   eudr_err_too_large: "This boundary is larger than the check supports.",
@@ -645,8 +650,8 @@ const en: Dict = {
   doc_preview_label: "Document preview",
 
   // --- homepage ---
-  home_title: "Everything one consignment needs, on one page.",
-  home_lede: "For export certification officers in Sri Lanka. Enter the shipment once and PlotProof writes the invoice, packing list and origin draft, lists every certificate an authority has to issue, and checks the farmer's plot against the EU forest maps.",
+  home_title: "Every supplier's plot, and every paper the shipment needs.",
+  home_lede: "For the Sri Lankan factory, cooperative or exporter that ships the crop. Walk each smallholder's boundary on a phone with no signal, check it against the EU forest maps, and write the invoice, packing list and origin draft from the same record.",
   home_cta_start: "Start a consignment",
   home_cta_how: "How it works",
   home_example_caption: "An example consignment. The invoice is drawn by the same code that makes the PDF.",
@@ -668,8 +673,8 @@ const en: Dict = {
   home_step_2_body: "Invoice, packing list and certificate-of-origin draft, all from the same record, so the weights and totals always match. Customs checks exactly that.",
   home_step_3_title: "Get the rest from the right office",
   home_step_3_body: "Phytosanitary certificates from NPQS, CusDec with Sri Lanka Customs, Tea Board papers for tea. Each one says who issues it and how to apply.",
-  home_step_4_title: "Check the plot, if the EU asks",
-  home_step_4_body: "Rubber, coffee and cocoa going to the EU get a deforestation check on each farmer's plot.",
+  home_step_4_title: "Check the plots the EU asks about",
+  home_step_4_body: "Rubber, coffee and cocoa bound for the EU get a deforestation check on every supplier's plot. Tea is not on the EUDR list, so we don't run one, and we say so rather than selling you a check you don't need.",
   home_step_5_title: "Ask when you're stuck",
   home_step_5_body: "An assistant that can see the consignment answers questions about the paperwork and names the authority to confirm with.",
   home_eudr_title: "Two plots, checked against the real satellite record",
@@ -686,12 +691,12 @@ const en: Dict = {
   home_eudr_a_note: "Mapped as forest in 2020. Planting records and dated imagery would settle it.",
   home_eudr_b_result: "Cleared after the cut-off",
   home_eudr_b_note: "Cleared in 2022, 2024 and 2025. An EU buyer will refuse crops from that land.",
-  home_eudr_foot: "There is no such thing as an EUDR certificate. The EU importer files a due-diligence statement, and this check is evidence for it.",
+  home_eudr_foot: "There is no such thing as an EUDR certificate. The EU importer files the due-diligence statement and carries the obligation; this check is the evidence you hand them. EUDR Annex I covers cattle, cocoa, coffee, oil palm, rubber, soya and wood. Tea is not on it.",
   home_farm_title: "And for the farm itself",
   home_farm_grow_title: "Watering and disease weather",
   home_farm_grow_body: "Daily watering advice from the plot's own weather, and how much the last two weeks favoured blister blight.",
   home_farm_leaf_title: "Leaf check",
-  home_farm_leaf_body: "Photograph a tea leaf. It names the problem, or says plainly that it can't tell.",
+  home_farm_leaf_body: "Photograph a tea leaf. On farms like the ones it learned from it is right 99.6% of the time; on photographs from farms it has never seen that falls to 71%, so it refuses about a third of them instead of guessing.",
   home_farm_probe_title: "Soil probe",
   home_farm_probe_body: "Plug in a soil sensor over USB and the watering advice uses a real measurement.",
   home_rule_title: "We don't invent law",
@@ -701,12 +706,9 @@ const en: Dict = {
 };
 
 const si: Dict = {
-  app_tagline:
-    "ඔබේ අස්වැන්න නීත්‍යානුකූලව විදේශයට විකුණන්න, ලාභය ඔබ ළඟම තබාගන්න. EU, UK සහ US වෙත සෘජුවම අපනයනය කිරීමට අවශ්‍ය සහතික සහ රේගු ලේඛන මොනවාදැයි අපි නිවැරදිව කියමු, සෑදිය හැකි ඒවා අපි සාදමු.",
   sell_cta: "ඔබේ අස්වැන්න විකුණන්න →",
   sell_cta_sub: "ප්‍රශ්න හතරයි. ඔබට අවශ්‍ය ලේඛන ලැයිස්තුව සහ නැව්ගත කිරීමේ විකල්ප ලබාගන්න.",
   also_here: "තවත් මෙහි ඇත",
-  sell_sub: "සරල ප්‍රශ්න හතරකට පිළිතුරු දෙන්න. ඔබට අවශ්‍ය ලේඛන මොනවාදැයි පෙන්වා, සෑදිය හැකි ඒවා අපි සාදමු.",
   q_product: "ඔබ වගා කරන්නේ මොනවාද?",
   q_product_free: "නැතහොත් ඔබේම වචනවලින් විස්තර කරන්න",
   q_origin: "ඔබ ගොවිතැන් කරන්නේ කොහේද?",
@@ -815,8 +817,6 @@ const si: Dict = {
   price_yoy: "වසරකට පෙරට සාපේක්ෂව {dir}{yoy}%.",
   price_your_qty: "මෙම යොමු මිලට ඔබේ කි.ග්‍රෑ. {kg} ≈ ඩොලර් {value}.",
   price_forecast: "ලබන මාසය ({month}): කි.ග්‍රෑ. එකකට ඩොලර් {low} – {high} අතර විය හැක.",
-  price_caveat:
-    "මෙය ලෝක යොමු මිලයි, ගොවිපොළ-දොරටු මිලක් නොවේ. ඔබට ලැබෙන දීමනා විනිශ්චය කිරීමට භාවිත කරන්න.",
   price_none: "මෙම නිෂ්පාදනයට ලෝක යොමු මිල මාලාවක් නොමැති නිසා මිලක් නොපෙන්වයි.",
   price_stale:
     "මෙහි ඇති යොමු මිල දත්ත {month} දක්වා පමණක් වන අතර යල් පැන ගොස් ඇති නිසා මිලක් නොපෙන්වයි. ලෝක බැංකු මාලාවෙන් යාවත්කාලීන කිරීමක් අවශ්‍යයි.",
@@ -1101,7 +1101,6 @@ const si: Dict = {
   doc_back_to_sale: "තොගය වෙත ආපසු",
   doc_edit_title: "මෙම ලේඛනයේ මුද්‍රණය වන දේ",
 
-  home_title: "එක් අපනයන තොගයකට අවශ්‍ය සියල්ල, එක් පිටුවක.",
   home_cta_start: "තොගයක් අරඹන්න",
   home_cta_how: "එය ක්‍රියා කරන ආකාරය",
   home_how_title: "එක් නැව්ගත කිරීමක්, මුල සිට අග දක්වා",
@@ -1112,12 +1111,9 @@ const si: Dict = {
 };
 
 const ta: Dict = {
-  app_tagline:
-    "உங்கள் அறுவடையை சட்டப்படி வெளிநாட்டில் விற்கவும், லாபத்தை நீங்களே வைத்திருங்கள். EU, UK, US சந்தைகளுக்கு நேரடியாக ஏற்றுமதி செய்யத் தேவையான சான்றிதழ்களும் சுங்க ஆவணங்களும் எவை என்று சரியாகச் சொல்கிறோம்; உருவாக்கக்கூடியவற்றை நாங்களே உருவாக்குகிறோம்.",
   sell_cta: "உங்கள் அறுவடையை விற்கவும் →",
   sell_cta_sub: "நான்கு கேள்விகள். உங்கள் ஆவணப் பட்டியலும் அனுப்புதல் வழிகளும் பெறுங்கள்.",
   also_here: "மேலும் இங்கே",
-  sell_sub: "நான்கு எளிய கேள்விகளுக்கு பதிலளியுங்கள். உங்களுக்குத் தேவையான ஆவணங்களைக் காட்டி, முடிந்தவற்றை உருவாக்குகிறோம்.",
   q_product: "நீங்கள் என்ன பயிரிடுகிறீர்கள்?",
   q_product_free: "அல்லது உங்கள் சொந்த வார்த்தைகளில் விவரிக்கவும்",
   q_origin: "நீங்கள் எங்கு விவசாயம் செய்கிறீர்கள்?",
@@ -1226,8 +1222,6 @@ const ta: Dict = {
   price_yoy: "ஓராண்டுக்கு முன்பை விட {dir}{yoy}%.",
   price_your_qty: "இந்த குறிப்பு விலையில் உங்கள் {kg} கி.கி. ≈ ${value}.",
   price_forecast: "அடுத்த மாதம் ({month}): கி.கி. ஒன்றுக்கு ${low} – ${high} இடையில் இருக்கலாம்.",
-  price_caveat:
-    "இது உலக குறிப்பு விலை, பண்ணை-வாயில் விலை அல்ல. உங்களுக்கு வரும் சலுகைகளை மதிப்பிட பயன்படுத்துங்கள்.",
   price_none: "இந்த பொருளுக்கு உலக குறிப்பு விலைத் தொடர் இல்லை, எனவே எதுவும் காட்டப்படவில்லை.",
   price_stale:
     "இங்குள்ள குறிப்பு விலைத் தரவு {month} வரை மட்டுமே உள்ளது; காலாவதியானதால் விலை காட்டப்படவில்லை. உலக வங்கித் தொடரிலிருந்து புதுப்பிப்பு தேவை.",
@@ -1512,7 +1506,6 @@ const ta: Dict = {
   doc_back_to_sale: "சரக்குக்குத் திரும்பு",
   doc_edit_title: "இந்த ஆவணம் அச்சிடுவது",
 
-  home_title: "ஒரு ஏற்றுமதி சரக்குக்குத் தேவையான அனைத்தும், ஒரே பக்கத்தில்.",
   home_cta_start: "ஒரு சரக்கைத் தொடங்கு",
   home_cta_how: "இது எப்படி வேலை செய்கிறது",
   home_how_title: "ஒரு கப்பல் அனுப்புதல், தொடக்கம் முதல் முடிவு வரை",

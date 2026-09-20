@@ -246,6 +246,13 @@ export default function WhatsRealPage() {
                 and no budget for this. PlotProof&apos;s output is therefore built to be consumed by
                 the cooperative or exporter who does file.
               </Entry>
+              <Entry term="Tea is not covered.">
+                EUDR Annex I lists cattle, cocoa, coffee, oil palm, rubber, soya and wood. Tea is
+                not on it, so Sri Lanka&apos;s largest agricultural export needs no deforestation
+                check and gets none here: the product catalogue marks tea <code>eudrCovered:
+                false</code> and the screening never appears for it. Rubber, coffee and cocoa to
+                the EU are where this lane does work.
+              </Entry>
               <Entry term="Timing.">
                 Regulation (EU) 2025/2650 (OJ, 23 December 2025) postponed EUDR application to 30
                 December 2026 for medium and large operators and 30 June 2027 for micro and small

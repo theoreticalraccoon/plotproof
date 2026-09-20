@@ -1,9 +1,16 @@
 # PlotProof
 
-Software for a smallholder farmer in Sri Lanka, or the cooperative officer standing
-next to them, with one mid-range Android phone and intermittent signal. It covers
-three jobs across a season — **grow the crop, price it, prove it** — from a single
-plot record.
+Software for the Sri Lankan factory, cooperative or exporter that ships smallholder
+crops, and for the field officer standing in the plot with one mid-range Android
+phone and no signal. The grower holds the phone; the customer is whoever files the
+paperwork and has to show where every supplier's crop was grown. It covers three
+jobs across a season — **grow the crop, price it, prove it** — from a single plot
+record.
+
+Under EUDR the EU operator files the due-diligence statement, never the smallholder,
+so the evidence this produces is built to be handed up the chain. EUDR Annex I covers
+cattle, cocoa, coffee, oil palm, rubber, soya and wood: **tea is not on it**, and the
+product catalogue marks it `eudrCovered: false` so the check never appears for tea.
 
 Trilingual (English, Sinhala, Tamil). Offline-first, because that is the operating
 condition rather than a feature.

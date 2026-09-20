@@ -9,6 +9,7 @@ import Questionnaire from "@/components/sale/Questionnaire";
 import GeneratedDocs from "@/components/sale/GeneratedDocs";
 import AuthorityDocs from "@/components/sale/AuthorityDocs";
 import EudrPanel from "@/components/sale/EudrPanel";
+import EudrNotCovered from "@/components/sale/EudrNotCovered";
 import AssistantPanel from "@/components/sale/AssistantPanel";
 import SectionNav from "@/components/sale/SectionNav";
 import { t, useLang } from "@/lib/i18n";
@@ -56,7 +57,7 @@ export default function SellPage() {
           <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
             <div className="min-w-0 space-y-12">
               <Questionnaire sale={sale} lang={lang} />
-              {needsEudr(sale) && <EudrPanel sale={sale} lang={lang} />}
+              {needsEudr(sale) ? <EudrPanel sale={sale} lang={lang} /> : <EudrNotCovered sale={sale} lang={lang} />}
               <GeneratedDocs sale={sale} lang={lang} />
               <AuthorityDocs sale={sale} lang={lang} />
             </div>
